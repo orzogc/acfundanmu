@@ -1,0 +1,19 @@
+﻿syntax = "proto3";
+
+option go_package = "acproto";
+
+package AcFunDanmu;
+
+message AccessPoint {
+	AddressType addressType = 1;
+	uint32 port = 2;
+	fixed32 ipV4 = 3;
+	bytes ipV6= 4;
+	string domain = 5;
+
+	enum AddressType{
+		kIPV4 = 0;
+		kIPV6= 1;
+		kDomain = 2;
+	}
+}
