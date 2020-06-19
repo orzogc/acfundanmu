@@ -2,6 +2,7 @@
 AcFun直播弹幕下载，实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
 
 ### 示例代码
+##### 获取弹幕
 ```go
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
@@ -15,4 +16,18 @@ for {
         break
     }
 }
+```
+##### 将弹幕转换成ass字幕文件
+```go
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+// uid为主播的uid
+q := acfundanmu.Start(ctx, uid)
+q.WriteASS(ctx, acfundanmu.SubConfig{
+    Title:     "foo",
+    PlayResX:  1280,
+    PlayResY:  720,
+    FontSize:  40,
+    StartTime: time.Now().UnixNano()},
+    "foo.ass")
 ```
