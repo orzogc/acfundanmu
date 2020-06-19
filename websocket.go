@@ -16,7 +16,17 @@ import (
 )
 
 // 定时发送heartbeat和keepalive数据
-func (t *token) wsHeartbeat(hbctx context.Context, c *websocket.Conn, hb <-chan int64) {
+func (t *token) wsHeartbeat(hbctx context.Context, c *websocket.Conn, hb chan int64) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("Recovering from panic in wsHeartbeat(), the error is:", err)
+			// 重新启动wsHeartbeat()
+			time.Sleep(2 * time.Second)
+			hb <- 10000
+			t.wsHeartbeat(hbctx, c, hb)
+		}
+	}()
+
 	b := <-hb
 	ticker := time.NewTicker(time.Duration(b) * time.Millisecond)
 	defer ticker.Stop()
@@ -60,7 +70,7 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 		return errors.New("获取token失败，主播可能不在直播")
 	}
 
-	t.gifts = updateGiftList(cookieContainer, deviceID, t)
+	t.gifts = t.updateGiftList(cookieContainer, deviceID)
 
 	c, _, err := websocket.Dial(ctx, host, nil)
 	checkErr(err)
@@ -84,7 +94,7 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 	err = c.Write(ctx, websocket.MessageBinary, *t.enterRoom())
 	checkErr(err)
 
-	hb := make(chan int64, 5)
+	hb := make(chan int64, 20)
 	hbCtx, hbCancel := context.WithCancel(ctx)
 	defer hbCancel()
 	go t.wsHeartbeat(hbCtx, c, hb)

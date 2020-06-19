@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/valyala/fastjson"
 )
@@ -82,7 +83,9 @@ func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *to
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in initialize(), the error is:", err)
-			deviceID, t = "", nil
+			// 重新初始化
+			time.Sleep(2 * time.Second)
+			deviceID, t = initialize(uid, cookieContainer)
 		}
 	}()
 
@@ -192,7 +195,16 @@ func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *to
 }
 
 // 更新礼物列表
-func updateGiftList(cookieContainer []*http.Cookie, deviceID string, t *token) map[int]string {
+func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) (gifts map[int]string) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("Recovering from panic in updateGiftList(), the error is:", err)
+			// 重新获取礼物列表
+			time.Sleep(2 * time.Second)
+			gifts = t.updateGiftList(cookieContainer, deviceID)
+		}
+	}()
+
 	if t == nil {
 		log.Println("获取token失败，可能主播不在直播")
 		return nil
@@ -227,7 +239,7 @@ func updateGiftList(cookieContainer []*http.Cookie, deviceID string, t *token) m
 		return nil
 	}
 
-	gifts := make(map[int]string)
+	gifts = make(map[int]string)
 	for _, gift := range v.GetArray("data", "giftList") {
 		gifts[gift.GetInt("giftId")] = string(gift.GetStringBytes("giftName"))
 	}
@@ -236,7 +248,16 @@ func updateGiftList(cookieContainer []*http.Cookie, deviceID string, t *token) m
 }
 
 // 获取在线观众列表
-func watchingList(cookieContainer []*http.Cookie, deviceID string, t *token) map[int]string {
+func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (watchList map[int]string) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("Recovering from panic in watchingList(), the error is:", err)
+			// 重新获取礼物列表
+			time.Sleep(2 * time.Second)
+			watchList = t.watchingList(cookieContainer, deviceID)
+		}
+	}()
+
 	if t == nil {
 		log.Println("获取token失败，可能主播不在直播")
 		return nil
@@ -271,7 +292,7 @@ func watchingList(cookieContainer []*http.Cookie, deviceID string, t *token) map
 		return nil
 	}
 
-	watchList := make(map[int]string)
+	watchList = make(map[int]string)
 	for _, watch := range v.GetArray("data", "list") {
 		watchList[watch.GetInt("userId")] = string(watch.GetStringBytes("nickname"))
 	}

@@ -3,6 +3,7 @@ package acfundanmu
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 	"unicode/utf8"
@@ -76,6 +77,12 @@ func (d danmuTime) String() string {
 
 // WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕
 func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("Recovering from panic in WriteASS(), the error is:", err)
+		}
+	}()
+
 	info := fmt.Sprintf(scriptInfo, s.Title, s.PlayResX, s.PlayResY)
 	style := fmt.Sprintf(sytles, s.FontSize)
 
