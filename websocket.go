@@ -15,6 +15,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
+// 定时发送heartbeat和keepalive数据
 func (t *token) wsHeartbeat(hbctx context.Context, c *websocket.Conn, hb <-chan int64) {
 	b := <-hb
 	ticker := time.NewTicker(time.Duration(b) * time.Millisecond)

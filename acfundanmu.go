@@ -2,10 +2,12 @@ package acfundanmu
 
 import (
 	"context"
+	"sort"
 
 	"github.com/Workiva/go-datastructures/queue"
 )
 
+// 队列长度
 const queueLen = 1000
 
 // Comment 就是弹幕的数据
@@ -26,7 +28,7 @@ func Start(ctx context.Context, uid int) *Queue {
 	return (*Queue)(q)
 }
 
-// GetDanmu 返回弹幕数据，返回nil时说明弹幕获取结束（主播可能下播）
+// GetDanmu 返回弹幕数据，返回nil时说明弹幕获取结束（出现错误或者主播可能下播）
 func (q *Queue) GetDanmu() (comments []Comment) {
 	if (*queue.Queue)(q).Disposed() {
 		return nil
@@ -39,26 +41,10 @@ func (q *Queue) GetDanmu() (comments []Comment) {
 	for _, c := range coms {
 		comments = append(comments, c.(Comment))
 	}
+	// 按SendTime大小排序
+	sort.Slice(comments, func(i, j int) bool {
+		return comments[i].SendTime < comments[j].SendTime
+	})
+
 	return comments
 }
-
-/*
-func main() {
-	if len(os.Args) != 2 {
-		return
-	}
-	uid, err := strconv.Atoi(os.Args[1])
-	checkErr(err)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	q := Start(ctx, uid)
-	for {
-		if d := q.GetDanmu(); d != nil {
-			fmt.Println(d)
-		} else {
-			fmt.Println("直播结束")
-			break
-		}
-	}
-}
-*/

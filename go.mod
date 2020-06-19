@@ -7,6 +7,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/klauspost/compress v1.10.9 // indirect
 	github.com/valyala/fastjson v1.5.1
+	golang.org/x/sys v0.0.0-20200515095857-1151b9dac4a9 // indirect
 	google.golang.org/protobuf v1.24.0
 	nhooyr.io/websocket v1.8.6
 )
