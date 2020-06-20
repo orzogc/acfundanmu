@@ -108,6 +108,7 @@ func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string) {
 			if comments == nil {
 				return
 			}
+
 			for _, c := range comments {
 				length := utf8.RuneCountInString(c.Content) * s.FontSize
 				// leftTime就是弹幕运动到视频左边的时间
@@ -137,5 +138,7 @@ func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string) {
 				}
 			}
 		}
+
+		time.Sleep(time.Second)
 	}
 }

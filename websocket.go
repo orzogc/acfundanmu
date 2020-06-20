@@ -42,6 +42,7 @@ func (t *token) wsHeartbeat(hbctx context.Context, c *websocket.Conn, hb chan in
 			err = c.Write(ctx, websocket.MessageBinary, *t.keepAlive(false))
 			checkErr(err)
 		default:
+			time.Sleep(time.Second)
 		}
 	}
 }
@@ -113,6 +114,9 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 		}
 		stream := t.decode(&buffer)
 		t.handleCommand(ctx, c, stream, q, hb)
+
+		// 每秒获取一次弹幕
+		time.Sleep(time.Second)
 	}
 
 	q.Dispose()
