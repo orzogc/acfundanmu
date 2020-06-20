@@ -139,6 +139,6 @@ func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string) {
 			}
 		}
 
-		time.Sleep(time.Second)
+		time.Sleep(100 * time.Millisecond)
 	}
 }
