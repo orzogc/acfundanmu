@@ -12,7 +12,7 @@ const queueLen = 1000
 
 // Comment 就是弹幕的数据
 type Comment struct {
-	SendTime int64  // 弹幕发送时间，单位为毫秒
+	SendTime int64  // 弹幕发送时间，单位为纳秒
 	UserID   int64  // 用户uid
 	Nickname string // 用户名字
 	Content  string // 弹幕内容

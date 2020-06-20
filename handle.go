@@ -136,7 +136,7 @@ func handleMsgAct(payload []byte, q *queue.Queue) {
 				checkErr(err)
 				//fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
 				c := Comment{
-					SendTime: comment.SendTimeMs,
+					SendTime: comment.SendTimeMs * 1e6,
 					UserID:   comment.UserInfo.UserId,
 					Nickname: comment.UserInfo.Nickname,
 					Content:  comment.Content}

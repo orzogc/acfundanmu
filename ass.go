@@ -112,11 +112,11 @@ func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string) {
 			for _, c := range comments {
 				length := utf8.RuneCountInString(c.Content) * s.FontSize
 				// leftTime就是弹幕运动到视频左边的时间
-				leftTime := c.SendTime*1e6 - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
+				leftTime := c.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
 				dt := dTime{
-					appear:    c.SendTime*1e6 - s.StartTime,
-					emerge:    c.SendTime*1e6 - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
-					disappear: c.SendTime*1e6 - s.StartTime + duration}
+					appear:    c.SendTime - s.StartTime,
+					emerge:    c.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
+					disappear: c.SendTime - s.StartTime + duration}
 				for i, t := range lastTime {
 					// 防止弹幕发生碰撞重叠
 					if dt.appear > t.emerge && leftTime > t.disappear {
@@ -138,7 +138,5 @@ func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string) {
 				}
 			}
 		}
-
-		time.Sleep(100 * time.Millisecond)
 	}
 }
