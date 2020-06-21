@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -32,7 +33,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `
 
 // 弹幕字幕
-const dialogue = `Dialogue: 0,%s,%s,Danmu,%d,20,20,2,,{\move(%d,%d,%d,%d)}%s
+const dialogue = `Dialogue: 0,%s,%s,Danmu,%s(%d),20,20,2,,{\move(%d,%d,%d,%d)}%s
 `
 
 // ass文件里弹幕的出现和消失时间
@@ -73,6 +74,11 @@ func (d danmuTime) String() string {
 		t.Second(),
 		t.Nanosecond()/1e7,
 	)
+}
+
+// 不能使用","，需要转换用户昵称
+func convert(name string) string {
+	return strings.ReplaceAll(name, ",", " ")
 }
 
 // WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕
@@ -124,6 +130,7 @@ func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string) {
 						s := fmt.Sprintf(dialogue,
 							danmuTime(dt.appear),
 							danmuTime(dt.disappear),
+							convert(c.Nickname),
 							c.UserID,
 							s.PlayResX+length/2,
 							s.FontSize*(i+1),
