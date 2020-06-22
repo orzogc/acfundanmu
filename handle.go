@@ -77,9 +77,9 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 		}
 		switch message.MessageType {
 		case "ZtLiveScActionSignal":
-			handleMsgAct(payload, q)
+			handleMsgAct(&payload, q)
 		case "ZtLiveScStateSignal":
-			handleMsgState(payload)
+			handleMsgState(&payload)
 		case "ZtLiveScStatusChanged":
 			statusChanged := &acproto.ZtLiveScStatusChanged{}
 			err := proto.Unmarshal(payload, statusChanged)
@@ -122,9 +122,9 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 }
 
 // 处理action signal数据
-func handleMsgAct(payload []byte, q *queue.Queue) {
+func handleMsgAct(payload *[]byte, q *queue.Queue) {
 	actionSignal := &acproto.ZtLiveScActionSignal{}
-	err := proto.Unmarshal(payload, actionSignal)
+	err := proto.Unmarshal(*payload, actionSignal)
 	checkErr(err)
 
 	for _, item := range actionSignal.Item {
@@ -178,16 +178,16 @@ func handleMsgAct(payload []byte, q *queue.Queue) {
 				checkErr(err)
 				//fmt.Println(gift.User.Name, "送出礼物：", gifts[int(gift.ItemId)], "数量：", gift.Count, "连击总数：", gift.Combo, "单个价值：", gift.Value)
 			default:
-				log.Println("未知的item.SingalType：", item.SingalType, string(pl))
+				log.Println("未知的action signal和item.SingalType：", item.SingalType, string(pl))
 			}
 		}
 	}
 }
 
 // 处理state signal数据
-func handleMsgState(payload []byte) {
+func handleMsgState(payload *[]byte) {
 	signal := &acproto.ZtLiveScStateSignal{}
-	err := proto.Unmarshal(payload, signal)
+	err := proto.Unmarshal(*payload, signal)
 	checkErr(err)
 
 	for _, item := range signal.Item {
@@ -217,7 +217,7 @@ func handleMsgState(payload []byte) {
 			//	fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
 			//}
 		default:
-			log.Println("未知的item.SingalType：", item.SingalType, string(item.Payload))
+			log.Println("未知的state signal和item.SingalType：", item.SingalType, string(item.Payload))
 		}
 	}
 }

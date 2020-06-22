@@ -1,4 +1,5 @@
 *.json
+*.ass
 test/
 
 # Binaries for programs and plugins
