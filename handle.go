@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/base64"
 	"io/ioutil"
 	"log"
 
@@ -46,7 +47,10 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 			err = proto.Unmarshal(cmd.Payload, heartbeat)
 			checkErr(err)
 		default:
-			log.Println("未知的cmd.CmdAckType：", cmd.CmdAckType, string(cmd.Payload))
+			log.Printf("未知的cmd.CmdAckType：%s, payload string: %s, payload base64: %s\n",
+				cmd.CmdAckType,
+				string(cmd.Payload),
+				base64.StdEncoding.EncodeToString(cmd.Payload))
 		}
 	case "Basic.KeepAlive":
 		keepalive := &acproto.KeepAliveResponse{}
@@ -95,7 +99,10 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 			err = c.Write(ctx, websocket.MessageBinary, *t.enterRoom())
 			checkErr(err)
 		default:
-			log.Println("未知的message.MessageType：", message.MessageType, string(payload))
+			log.Printf("未知的message.MessageType：%s, payload string: %s, payload base64: %s\n",
+				message.MessageType,
+				string(payload),
+				base64.StdEncoding.EncodeToString(payload))
 		}
 	case "Push.Message":
 		msg := &acproto.Message_Message{}
@@ -116,7 +123,10 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 			}
 			log.Println(string(stream.ErrorData))
 		} else {
-			log.Println("未知的stream.Command：", stream.Command, string(stream.PayloadData))
+			log.Printf("未知的stream.Command：%s, payload string: %s, payload base64: %s\n",
+				stream.Command,
+				string(stream.PayloadData),
+				base64.StdEncoding.EncodeToString(stream.PayloadData))
 		}
 	}
 }
@@ -178,7 +188,10 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				checkErr(err)
 				//fmt.Println(gift.User.Name, "送出礼物：", gifts[int(gift.ItemId)], "数量：", gift.Count, "连击总数：", gift.Combo, "单个价值：", gift.Value)
 			default:
-				log.Println("未知的action signal和item.SingalType：", item.SingalType, string(pl))
+				log.Printf("未知的Action Signal item.SingalType：%s, payload string: %s, payload base64: %s\n",
+					item.SingalType,
+					string(pl),
+					base64.StdEncoding.EncodeToString(pl))
 			}
 		}
 	}
@@ -217,7 +230,10 @@ func handleMsgState(payload *[]byte) {
 			//	fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
 			//}
 		default:
-			log.Println("未知的state signal和item.SingalType：", item.SingalType, string(item.Payload))
+			log.Printf("未知的State Signal item.SingalType：%s, payload string: %s, payload base64: %s\n",
+				item.SingalType,
+				string(item.Payload),
+				base64.StdEncoding.EncodeToString(item.Payload))
 		}
 	}
 }

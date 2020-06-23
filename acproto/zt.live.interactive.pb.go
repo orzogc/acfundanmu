@@ -25,6 +25,55 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type ChatMediaType int32
+
+const (
+	ChatMediaType_UNKNOWN ChatMediaType = 0
+	ChatMediaType_AUDIO   ChatMediaType = 1
+	ChatMediaType_VIDEO   ChatMediaType = 2
+)
+
+// Enum value maps for ChatMediaType.
+var (
+	ChatMediaType_name = map[int32]string{
+		0: "UNKNOWN",
+		1: "AUDIO",
+		2: "VIDEO",
+	}
+	ChatMediaType_value = map[string]int32{
+		"UNKNOWN": 0,
+		"AUDIO":   1,
+		"VIDEO":   2,
+	}
+)
+
+func (x ChatMediaType) Enum() *ChatMediaType {
+	p := new(ChatMediaType)
+	*p = x
+	return p
+}
+
+func (x ChatMediaType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ChatMediaType) Descriptor() protoreflect.EnumDescriptor {
+	return file_zt_live_interactive_proto_enumTypes[0].Descriptor()
+}
+
+func (ChatMediaType) Type() protoreflect.EnumType {
+	return &file_zt_live_interactive_proto_enumTypes[0]
+}
+
+func (x ChatMediaType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ChatMediaType.Descriptor instead.
+func (ChatMediaType) EnumDescriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{0}
+}
+
 type CsAckErrorCode int32
 
 const (
@@ -73,11 +122,11 @@ func (x CsAckErrorCode) String() string {
 }
 
 func (CsAckErrorCode) Descriptor() protoreflect.EnumDescriptor {
-	return file_zt_live_interactive_proto_enumTypes[0].Descriptor()
+	return file_zt_live_interactive_proto_enumTypes[1].Descriptor()
 }
 
 func (CsAckErrorCode) Type() protoreflect.EnumType {
-	return &file_zt_live_interactive_proto_enumTypes[0]
+	return &file_zt_live_interactive_proto_enumTypes[1]
 }
 
 func (x CsAckErrorCode) Number() protoreflect.EnumNumber {
@@ -86,7 +135,7 @@ func (x CsAckErrorCode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CsAckErrorCode.Descriptor instead.
 func (CsAckErrorCode) EnumDescriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{0}
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{1}
 }
 
 type ZtLiveDownstreamPayloadErrorCode int32
@@ -125,11 +174,11 @@ func (x ZtLiveDownstreamPayloadErrorCode) String() string {
 }
 
 func (ZtLiveDownstreamPayloadErrorCode) Descriptor() protoreflect.EnumDescriptor {
-	return file_zt_live_interactive_proto_enumTypes[1].Descriptor()
+	return file_zt_live_interactive_proto_enumTypes[2].Descriptor()
 }
 
 func (ZtLiveDownstreamPayloadErrorCode) Type() protoreflect.EnumType {
-	return &file_zt_live_interactive_proto_enumTypes[1]
+	return &file_zt_live_interactive_proto_enumTypes[2]
 }
 
 func (x ZtLiveDownstreamPayloadErrorCode) Number() protoreflect.EnumNumber {
@@ -138,7 +187,7 @@ func (x ZtLiveDownstreamPayloadErrorCode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ZtLiveDownstreamPayloadErrorCode.Descriptor instead.
 func (ZtLiveDownstreamPayloadErrorCode) EnumDescriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{1}
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{2}
 }
 
 type ZtLiveScMessage_CompressionType int32
@@ -174,11 +223,11 @@ func (x ZtLiveScMessage_CompressionType) String() string {
 }
 
 func (ZtLiveScMessage_CompressionType) Descriptor() protoreflect.EnumDescriptor {
-	return file_zt_live_interactive_proto_enumTypes[2].Descriptor()
+	return file_zt_live_interactive_proto_enumTypes[3].Descriptor()
 }
 
 func (ZtLiveScMessage_CompressionType) Type() protoreflect.EnumType {
-	return &file_zt_live_interactive_proto_enumTypes[2]
+	return &file_zt_live_interactive_proto_enumTypes[3]
 }
 
 func (x ZtLiveScMessage_CompressionType) Number() protoreflect.EnumNumber {
@@ -229,11 +278,11 @@ func (x ZtLiveScStatusChanged_Type) String() string {
 }
 
 func (ZtLiveScStatusChanged_Type) Descriptor() protoreflect.EnumDescriptor {
-	return file_zt_live_interactive_proto_enumTypes[3].Descriptor()
+	return file_zt_live_interactive_proto_enumTypes[4].Descriptor()
 }
 
 func (ZtLiveScStatusChanged_Type) Type() protoreflect.EnumType {
-	return &file_zt_live_interactive_proto_enumTypes[3]
+	return &file_zt_live_interactive_proto_enumTypes[4]
 }
 
 func (x ZtLiveScStatusChanged_Type) Number() protoreflect.EnumNumber {
@@ -243,6 +292,70 @@ func (x ZtLiveScStatusChanged_Type) Number() protoreflect.EnumNumber {
 // Deprecated: Use ZtLiveScStatusChanged_Type.Descriptor instead.
 func (ZtLiveScStatusChanged_Type) EnumDescriptor() ([]byte, []int) {
 	return file_zt_live_interactive_proto_rawDescGZIP(), []int{15, 0}
+}
+
+type CommonStateSignalChatEnd_EndType int32
+
+const (
+	CommonStateSignalChatEnd_UNKNOWN                  CommonStateSignalChatEnd_EndType = 0
+	CommonStateSignalChatEnd_CANCEL_BY_AUTHOR         CommonStateSignalChatEnd_EndType = 1
+	CommonStateSignalChatEnd_END_BY_AUTHOR            CommonStateSignalChatEnd_EndType = 2
+	CommonStateSignalChatEnd_END_BY_GUEST             CommonStateSignalChatEnd_EndType = 3
+	CommonStateSignalChatEnd_GUEST_REJECT             CommonStateSignalChatEnd_EndType = 4
+	CommonStateSignalChatEnd_GUEST_TIMEOUT            CommonStateSignalChatEnd_EndType = 5
+	CommonStateSignalChatEnd_GUEST_HEARTBEAT_TIMEOUT  CommonStateSignalChatEnd_EndType = 6
+	CommonStateSignalChatEnd_AUTHOR_HEARTBEAT_TIMEOUT CommonStateSignalChatEnd_EndType = 7
+)
+
+// Enum value maps for CommonStateSignalChatEnd_EndType.
+var (
+	CommonStateSignalChatEnd_EndType_name = map[int32]string{
+		0: "UNKNOWN",
+		1: "CANCEL_BY_AUTHOR",
+		2: "END_BY_AUTHOR",
+		3: "END_BY_GUEST",
+		4: "GUEST_REJECT",
+		5: "GUEST_TIMEOUT",
+		6: "GUEST_HEARTBEAT_TIMEOUT",
+		7: "AUTHOR_HEARTBEAT_TIMEOUT",
+	}
+	CommonStateSignalChatEnd_EndType_value = map[string]int32{
+		"UNKNOWN":                  0,
+		"CANCEL_BY_AUTHOR":         1,
+		"END_BY_AUTHOR":            2,
+		"END_BY_GUEST":             3,
+		"GUEST_REJECT":             4,
+		"GUEST_TIMEOUT":            5,
+		"GUEST_HEARTBEAT_TIMEOUT":  6,
+		"AUTHOR_HEARTBEAT_TIMEOUT": 7,
+	}
+)
+
+func (x CommonStateSignalChatEnd_EndType) Enum() *CommonStateSignalChatEnd_EndType {
+	p := new(CommonStateSignalChatEnd_EndType)
+	*p = x
+	return p
+}
+
+func (x CommonStateSignalChatEnd_EndType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CommonStateSignalChatEnd_EndType) Descriptor() protoreflect.EnumDescriptor {
+	return file_zt_live_interactive_proto_enumTypes[5].Descriptor()
+}
+
+func (CommonStateSignalChatEnd_EndType) Type() protoreflect.EnumType {
+	return &file_zt_live_interactive_proto_enumTypes[5]
+}
+
+func (x CommonStateSignalChatEnd_EndType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CommonStateSignalChatEnd_EndType.Descriptor instead.
+func (CommonStateSignalChatEnd_EndType) EnumDescriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{32, 0}
 }
 
 type ZtLiveCsCmd struct {
@@ -1201,17 +1314,18 @@ func (*ZtLiveScTicketInvalid) Descriptor() ([]byte, []int) {
 	return file_zt_live_interactive_proto_rawDescGZIP(), []int{16}
 }
 
-type ZtUserInfo struct {
+type ZtLiveUserInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId   int64  `protobuf:"varint,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	Nickname string `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	UserId   int64           `protobuf:"varint,1,opt,name=userId,proto3" json:"userId,omitempty"`
+	Nickname string          `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Avatar   []*ImageCdnNode `protobuf:"bytes,3,rep,name=avatar,proto3" json:"avatar,omitempty"`
 }
 
-func (x *ZtUserInfo) Reset() {
-	*x = ZtUserInfo{}
+func (x *ZtLiveUserInfo) Reset() {
+	*x = ZtLiveUserInfo{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_zt_live_interactive_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1219,13 +1333,13 @@ func (x *ZtUserInfo) Reset() {
 	}
 }
 
-func (x *ZtUserInfo) String() string {
+func (x *ZtLiveUserInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ZtUserInfo) ProtoMessage() {}
+func (*ZtLiveUserInfo) ProtoMessage() {}
 
-func (x *ZtUserInfo) ProtoReflect() protoreflect.Message {
+func (x *ZtLiveUserInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_zt_live_interactive_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1237,21 +1351,91 @@ func (x *ZtUserInfo) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ZtUserInfo.ProtoReflect.Descriptor instead.
-func (*ZtUserInfo) Descriptor() ([]byte, []int) {
+// Deprecated: Use ZtLiveUserInfo.ProtoReflect.Descriptor instead.
+func (*ZtLiveUserInfo) Descriptor() ([]byte, []int) {
 	return file_zt_live_interactive_proto_rawDescGZIP(), []int{17}
 }
 
-func (x *ZtUserInfo) GetUserId() int64 {
+func (x *ZtLiveUserInfo) GetUserId() int64 {
 	if x != nil {
 		return x.UserId
 	}
 	return 0
 }
 
-func (x *ZtUserInfo) GetNickname() string {
+func (x *ZtLiveUserInfo) GetNickname() string {
 	if x != nil {
 		return x.Nickname
+	}
+	return ""
+}
+
+func (x *ZtLiveUserInfo) GetAvatar() []*ImageCdnNode {
+	if x != nil {
+		return x.Avatar
+	}
+	return nil
+}
+
+type ImageCdnNode struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Cdn        string `protobuf:"bytes,1,opt,name=cdn,proto3" json:"cdn,omitempty"`
+	Url        string `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	UrlPattern string `protobuf:"bytes,3,opt,name=urlPattern,proto3" json:"urlPattern,omitempty"`
+}
+
+func (x *ImageCdnNode) Reset() {
+	*x = ImageCdnNode{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ImageCdnNode) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImageCdnNode) ProtoMessage() {}
+
+func (x *ImageCdnNode) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImageCdnNode.ProtoReflect.Descriptor instead.
+func (*ImageCdnNode) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ImageCdnNode) GetCdn() string {
+	if x != nil {
+		return x.Cdn
+	}
+	return ""
+}
+
+func (x *ImageCdnNode) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *ImageCdnNode) GetUrlPattern() string {
+	if x != nil {
+		return x.UrlPattern
 	}
 	return ""
 }
@@ -1261,15 +1445,15 @@ type CommonActionSignalComment struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Content    string      `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
-	SendTimeMs int64       `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
-	UserInfo   *ZtUserInfo `protobuf:"bytes,3,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
+	Content    string          `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	SendTimeMs int64           `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
+	UserInfo   *ZtLiveUserInfo `protobuf:"bytes,3,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
 }
 
 func (x *CommonActionSignalComment) Reset() {
 	*x = CommonActionSignalComment{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[18]
+		mi := &file_zt_live_interactive_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1282,7 +1466,7 @@ func (x *CommonActionSignalComment) String() string {
 func (*CommonActionSignalComment) ProtoMessage() {}
 
 func (x *CommonActionSignalComment) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[18]
+	mi := &file_zt_live_interactive_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1295,7 +1479,7 @@ func (x *CommonActionSignalComment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommonActionSignalComment.ProtoReflect.Descriptor instead.
 func (*CommonActionSignalComment) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{18}
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *CommonActionSignalComment) GetContent() string {
@@ -1312,7 +1496,7 @@ func (x *CommonActionSignalComment) GetSendTimeMs() int64 {
 	return 0
 }
 
-func (x *CommonActionSignalComment) GetUserInfo() *ZtUserInfo {
+func (x *CommonActionSignalComment) GetUserInfo() *ZtLiveUserInfo {
 	if x != nil {
 		return x.UserInfo
 	}
@@ -1324,14 +1508,14 @@ type CommonActionSignalLike struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserInfo   *ZtUserInfo `protobuf:"bytes,1,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
-	SendTimeMs int64       `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
+	UserInfo   *ZtLiveUserInfo `protobuf:"bytes,1,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
+	SendTimeMs int64           `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
 }
 
 func (x *CommonActionSignalLike) Reset() {
 	*x = CommonActionSignalLike{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[19]
+		mi := &file_zt_live_interactive_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1344,7 +1528,7 @@ func (x *CommonActionSignalLike) String() string {
 func (*CommonActionSignalLike) ProtoMessage() {}
 
 func (x *CommonActionSignalLike) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[19]
+	mi := &file_zt_live_interactive_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1357,10 +1541,10 @@ func (x *CommonActionSignalLike) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommonActionSignalLike.ProtoReflect.Descriptor instead.
 func (*CommonActionSignalLike) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{19}
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *CommonActionSignalLike) GetUserInfo() *ZtUserInfo {
+func (x *CommonActionSignalLike) GetUserInfo() *ZtLiveUserInfo {
 	if x != nil {
 		return x.UserInfo
 	}
@@ -1379,14 +1563,14 @@ type CommonActionSignalUserEnterRoom struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserInfo   *ZtUserInfo `protobuf:"bytes,1,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
-	SendTimeMs int64       `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
+	UserInfo   *ZtLiveUserInfo `protobuf:"bytes,1,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
+	SendTimeMs int64           `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
 }
 
 func (x *CommonActionSignalUserEnterRoom) Reset() {
 	*x = CommonActionSignalUserEnterRoom{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[20]
+		mi := &file_zt_live_interactive_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1399,7 +1583,7 @@ func (x *CommonActionSignalUserEnterRoom) String() string {
 func (*CommonActionSignalUserEnterRoom) ProtoMessage() {}
 
 func (x *CommonActionSignalUserEnterRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[20]
+	mi := &file_zt_live_interactive_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1412,10 +1596,10 @@ func (x *CommonActionSignalUserEnterRoom) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommonActionSignalUserEnterRoom.ProtoReflect.Descriptor instead.
 func (*CommonActionSignalUserEnterRoom) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{20}
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{21}
 }
 
-func (x *CommonActionSignalUserEnterRoom) GetUserInfo() *ZtUserInfo {
+func (x *CommonActionSignalUserEnterRoom) GetUserInfo() *ZtLiveUserInfo {
 	if x != nil {
 		return x.UserInfo
 	}
@@ -1434,14 +1618,14 @@ type CommonActionSignalUserFollowAuthor struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserInfo   *ZtUserInfo `protobuf:"bytes,1,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
-	SendTimeMs int64       `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
+	UserInfo   *ZtLiveUserInfo `protobuf:"bytes,1,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
+	SendTimeMs int64           `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
 }
 
 func (x *CommonActionSignalUserFollowAuthor) Reset() {
 	*x = CommonActionSignalUserFollowAuthor{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[21]
+		mi := &file_zt_live_interactive_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1454,7 +1638,7 @@ func (x *CommonActionSignalUserFollowAuthor) String() string {
 func (*CommonActionSignalUserFollowAuthor) ProtoMessage() {}
 
 func (x *CommonActionSignalUserFollowAuthor) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[21]
+	mi := &file_zt_live_interactive_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1467,10 +1651,10 @@ func (x *CommonActionSignalUserFollowAuthor) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use CommonActionSignalUserFollowAuthor.ProtoReflect.Descriptor instead.
 func (*CommonActionSignalUserFollowAuthor) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{21}
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{22}
 }
 
-func (x *CommonActionSignalUserFollowAuthor) GetUserInfo() *ZtUserInfo {
+func (x *CommonActionSignalUserFollowAuthor) GetUserInfo() *ZtLiveUserInfo {
 	if x != nil {
 		return x.UserInfo
 	}
@@ -1484,332 +1668,26 @@ func (x *CommonActionSignalUserFollowAuthor) GetSendTimeMs() int64 {
 	return 0
 }
 
-type CommonNotifySignalKickedOut struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Reason string `protobuf:"bytes,1,opt,name=reason,proto3" json:"reason,omitempty"`
-}
-
-func (x *CommonNotifySignalKickedOut) Reset() {
-	*x = CommonNotifySignalKickedOut{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[22]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CommonNotifySignalKickedOut) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CommonNotifySignalKickedOut) ProtoMessage() {}
-
-func (x *CommonNotifySignalKickedOut) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[22]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CommonNotifySignalKickedOut.ProtoReflect.Descriptor instead.
-func (*CommonNotifySignalKickedOut) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *CommonNotifySignalKickedOut) GetReason() string {
-	if x != nil {
-		return x.Reason
-	}
-	return ""
-}
-
-type CommonNotifySignalViolationAlert struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	ViolationContent string `protobuf:"bytes,1,opt,name=violationContent,proto3" json:"violationContent,omitempty"`
-}
-
-func (x *CommonNotifySignalViolationAlert) Reset() {
-	*x = CommonNotifySignalViolationAlert{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[23]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CommonNotifySignalViolationAlert) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CommonNotifySignalViolationAlert) ProtoMessage() {}
-
-func (x *CommonNotifySignalViolationAlert) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[23]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CommonNotifySignalViolationAlert.ProtoReflect.Descriptor instead.
-func (*CommonNotifySignalViolationAlert) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *CommonNotifySignalViolationAlert) GetViolationContent() string {
-	if x != nil {
-		return x.ViolationContent
-	}
-	return ""
-}
-
-type CommonStateSignalDisplayInfo struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	WatchingCount string `protobuf:"bytes,1,opt,name=watchingCount,proto3" json:"watchingCount,omitempty"`
-	LikeCount     string `protobuf:"bytes,2,opt,name=likeCount,proto3" json:"likeCount,omitempty"`
-}
-
-func (x *CommonStateSignalDisplayInfo) Reset() {
-	*x = CommonStateSignalDisplayInfo{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[24]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CommonStateSignalDisplayInfo) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CommonStateSignalDisplayInfo) ProtoMessage() {}
-
-func (x *CommonStateSignalDisplayInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[24]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CommonStateSignalDisplayInfo.ProtoReflect.Descriptor instead.
-func (*CommonStateSignalDisplayInfo) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *CommonStateSignalDisplayInfo) GetWatchingCount() string {
-	if x != nil {
-		return x.WatchingCount
-	}
-	return ""
-}
-
-func (x *CommonStateSignalDisplayInfo) GetLikeCount() string {
-	if x != nil {
-		return x.LikeCount
-	}
-	return ""
-}
-
-type AcUserInfo struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Detail       *AcUserInfo_Detail `protobuf:"bytes,1,opt,name=detail,proto3" json:"detail,omitempty"`
-	UserInfoJson string             `protobuf:"bytes,3,opt,name=userInfoJson,proto3" json:"userInfoJson,omitempty"`
-	Unknown      string             `protobuf:"bytes,4,opt,name=unknown,proto3" json:"unknown,omitempty"`
-}
-
-func (x *AcUserInfo) Reset() {
-	*x = AcUserInfo{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[25]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AcUserInfo) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AcUserInfo) ProtoMessage() {}
-
-func (x *AcUserInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[25]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AcUserInfo.ProtoReflect.Descriptor instead.
-func (*AcUserInfo) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *AcUserInfo) GetDetail() *AcUserInfo_Detail {
-	if x != nil {
-		return x.Detail
-	}
-	return nil
-}
-
-func (x *AcUserInfo) GetUserInfoJson() string {
-	if x != nil {
-		return x.UserInfoJson
-	}
-	return ""
-}
-
-func (x *AcUserInfo) GetUnknown() string {
-	if x != nil {
-		return x.Unknown
-	}
-	return ""
-}
-
-type CommonStateSignalTopUsers struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	User []*AcUserInfo `protobuf:"bytes,1,rep,name=user,proto3" json:"user,omitempty"`
-}
-
-func (x *CommonStateSignalTopUsers) Reset() {
-	*x = CommonStateSignalTopUsers{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[26]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CommonStateSignalTopUsers) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CommonStateSignalTopUsers) ProtoMessage() {}
-
-func (x *CommonStateSignalTopUsers) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[26]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CommonStateSignalTopUsers.ProtoReflect.Descriptor instead.
-func (*CommonStateSignalTopUsers) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *CommonStateSignalTopUsers) GetUser() []*AcUserInfo {
-	if x != nil {
-		return x.User
-	}
-	return nil
-}
-
-type CommonStateSignalRecentComment struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Comment []*CommonActionSignalComment `protobuf:"bytes,1,rep,name=comment,proto3" json:"comment,omitempty"`
-}
-
-func (x *CommonStateSignalRecentComment) Reset() {
-	*x = CommonStateSignalRecentComment{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[27]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CommonStateSignalRecentComment) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CommonStateSignalRecentComment) ProtoMessage() {}
-
-func (x *CommonStateSignalRecentComment) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[27]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CommonStateSignalRecentComment.ProtoReflect.Descriptor instead.
-func (*CommonStateSignalRecentComment) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *CommonStateSignalRecentComment) GetComment() []*CommonActionSignalComment {
-	if x != nil {
-		return x.Comment
-	}
-	return nil
-}
-
 type CommonActionSignalGift struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	User       *AcUserInfo_Detail `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	SendTimeMs int64              `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
-	ItemId     int32              `protobuf:"varint,3,opt,name=itemId,proto3" json:"itemId,omitempty"`
-	Count      int32              `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`
-	Combo      int32              `protobuf:"varint,5,opt,name=combo,proto3" json:"combo,omitempty"`
-	Value      int32              `protobuf:"varint,6,opt,name=value,proto3" json:"value,omitempty"`
-	Uuid       string             `protobuf:"bytes,7,opt,name=uuid,proto3" json:"uuid,omitempty"`
-	Number5    int32              `protobuf:"varint,8,opt,name=number5,proto3" json:"number5,omitempty"`
-	Number6    int32              `protobuf:"varint,9,opt,name=number6,proto3" json:"number6,omitempty"`
+	User                  *ZtLiveUserInfo `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	SendTimeMs            int64           `protobuf:"varint,2,opt,name=sendTimeMs,proto3" json:"sendTimeMs,omitempty"`
+	GiftId                int32           `protobuf:"varint,3,opt,name=giftId,proto3" json:"giftId,omitempty"`
+	Count                 int32           `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`
+	Combo                 int32           `protobuf:"varint,5,opt,name=combo,proto3" json:"combo,omitempty"`
+	Value                 int32           `protobuf:"varint,6,opt,name=value,proto3" json:"value,omitempty"`
+	ComboId               string          `protobuf:"bytes,7,opt,name=comboId,proto3" json:"comboId,omitempty"`
+	SlotDisplayDurationMs int32           `protobuf:"varint,8,opt,name=slotDisplayDurationMs,proto3" json:"slotDisplayDurationMs,omitempty"`
+	ExpireDurationMs      int32           `protobuf:"varint,9,opt,name=expireDurationMs,proto3" json:"expireDurationMs,omitempty"`
 }
 
 func (x *CommonActionSignalGift) Reset() {
 	*x = CommonActionSignalGift{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[28]
+		mi := &file_zt_live_interactive_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1822,7 +1700,7 @@ func (x *CommonActionSignalGift) String() string {
 func (*CommonActionSignalGift) ProtoMessage() {}
 
 func (x *CommonActionSignalGift) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[28]
+	mi := &file_zt_live_interactive_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1835,10 +1713,10 @@ func (x *CommonActionSignalGift) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommonActionSignalGift.ProtoReflect.Descriptor instead.
 func (*CommonActionSignalGift) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{28}
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{23}
 }
 
-func (x *CommonActionSignalGift) GetUser() *AcUserInfo_Detail {
+func (x *CommonActionSignalGift) GetUser() *ZtLiveUserInfo {
 	if x != nil {
 		return x.User
 	}
@@ -1852,9 +1730,9 @@ func (x *CommonActionSignalGift) GetSendTimeMs() int64 {
 	return 0
 }
 
-func (x *CommonActionSignalGift) GetItemId() int32 {
+func (x *CommonActionSignalGift) GetGiftId() int32 {
 	if x != nil {
-		return x.ItemId
+		return x.GiftId
 	}
 	return 0
 }
@@ -1880,25 +1758,504 @@ func (x *CommonActionSignalGift) GetValue() int32 {
 	return 0
 }
 
-func (x *CommonActionSignalGift) GetUuid() string {
+func (x *CommonActionSignalGift) GetComboId() string {
 	if x != nil {
-		return x.Uuid
+		return x.ComboId
 	}
 	return ""
 }
 
-func (x *CommonActionSignalGift) GetNumber5() int32 {
+func (x *CommonActionSignalGift) GetSlotDisplayDurationMs() int32 {
 	if x != nil {
-		return x.Number5
+		return x.SlotDisplayDurationMs
 	}
 	return 0
 }
 
-func (x *CommonActionSignalGift) GetNumber6() int32 {
+func (x *CommonActionSignalGift) GetExpireDurationMs() int32 {
 	if x != nil {
-		return x.Number6
+		return x.ExpireDurationMs
 	}
 	return 0
+}
+
+type CommonNotifySignalKickedOut struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Reason string `protobuf:"bytes,1,opt,name=reason,proto3" json:"reason,omitempty"`
+}
+
+func (x *CommonNotifySignalKickedOut) Reset() {
+	*x = CommonNotifySignalKickedOut{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[24]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonNotifySignalKickedOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonNotifySignalKickedOut) ProtoMessage() {}
+
+func (x *CommonNotifySignalKickedOut) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[24]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonNotifySignalKickedOut.ProtoReflect.Descriptor instead.
+func (*CommonNotifySignalKickedOut) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *CommonNotifySignalKickedOut) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type CommonNotifySignalViolationAlert struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ViolationContent string `protobuf:"bytes,1,opt,name=violationContent,proto3" json:"violationContent,omitempty"`
+}
+
+func (x *CommonNotifySignalViolationAlert) Reset() {
+	*x = CommonNotifySignalViolationAlert{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[25]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonNotifySignalViolationAlert) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonNotifySignalViolationAlert) ProtoMessage() {}
+
+func (x *CommonNotifySignalViolationAlert) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[25]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonNotifySignalViolationAlert.ProtoReflect.Descriptor instead.
+func (*CommonNotifySignalViolationAlert) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *CommonNotifySignalViolationAlert) GetViolationContent() string {
+	if x != nil {
+		return x.ViolationContent
+	}
+	return ""
+}
+
+type CommonStateSignalDisplayInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	WatchingCount string `protobuf:"bytes,1,opt,name=watchingCount,proto3" json:"watchingCount,omitempty"`
+	LikeCount     string `protobuf:"bytes,2,opt,name=likeCount,proto3" json:"likeCount,omitempty"`
+}
+
+func (x *CommonStateSignalDisplayInfo) Reset() {
+	*x = CommonStateSignalDisplayInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[26]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonStateSignalDisplayInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonStateSignalDisplayInfo) ProtoMessage() {}
+
+func (x *CommonStateSignalDisplayInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[26]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonStateSignalDisplayInfo.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalDisplayInfo) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *CommonStateSignalDisplayInfo) GetWatchingCount() string {
+	if x != nil {
+		return x.WatchingCount
+	}
+	return ""
+}
+
+func (x *CommonStateSignalDisplayInfo) GetLikeCount() string {
+	if x != nil {
+		return x.LikeCount
+	}
+	return ""
+}
+
+type CommonStateSignalTopUsers struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	User []*CommonStateSignalTopUsers_TopUser `protobuf:"bytes,1,rep,name=user,proto3" json:"user,omitempty"`
+}
+
+func (x *CommonStateSignalTopUsers) Reset() {
+	*x = CommonStateSignalTopUsers{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[27]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonStateSignalTopUsers) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonStateSignalTopUsers) ProtoMessage() {}
+
+func (x *CommonStateSignalTopUsers) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[27]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonStateSignalTopUsers.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalTopUsers) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *CommonStateSignalTopUsers) GetUser() []*CommonStateSignalTopUsers_TopUser {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+type CommonStateSignalRecentComment struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Comment []*CommonActionSignalComment `protobuf:"bytes,1,rep,name=comment,proto3" json:"comment,omitempty"`
+}
+
+func (x *CommonStateSignalRecentComment) Reset() {
+	*x = CommonStateSignalRecentComment{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[28]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonStateSignalRecentComment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonStateSignalRecentComment) ProtoMessage() {}
+
+func (x *CommonStateSignalRecentComment) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[28]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonStateSignalRecentComment.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalRecentComment) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *CommonStateSignalRecentComment) GetComment() []*CommonActionSignalComment {
+	if x != nil {
+		return x.Comment
+	}
+	return nil
+}
+
+type CommonStateSignalChatCall struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ChatId string `protobuf:"bytes,1,opt,name=chatId,proto3" json:"chatId,omitempty"`
+	LiveId string `protobuf:"bytes,2,opt,name=liveId,proto3" json:"liveId,omitempty"`
+}
+
+func (x *CommonStateSignalChatCall) Reset() {
+	*x = CommonStateSignalChatCall{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[29]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonStateSignalChatCall) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonStateSignalChatCall) ProtoMessage() {}
+
+func (x *CommonStateSignalChatCall) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[29]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonStateSignalChatCall.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalChatCall) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *CommonStateSignalChatCall) GetChatId() string {
+	if x != nil {
+		return x.ChatId
+	}
+	return ""
+}
+
+func (x *CommonStateSignalChatCall) GetLiveId() string {
+	if x != nil {
+		return x.LiveId
+	}
+	return ""
+}
+
+type CommonStateSignalChatAccept struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ChatId          string        `protobuf:"bytes,1,opt,name=chatId,proto3" json:"chatId,omitempty"`
+	MediaType       ChatMediaType `protobuf:"varint,2,opt,name=mediaType,proto3,enum=AcFunDanmu.ChatMediaType" json:"mediaType,omitempty"`
+	ArraySignalInfo string        `protobuf:"bytes,3,opt,name=arraySignalInfo,proto3" json:"arraySignalInfo,omitempty"`
+}
+
+func (x *CommonStateSignalChatAccept) Reset() {
+	*x = CommonStateSignalChatAccept{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[30]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonStateSignalChatAccept) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonStateSignalChatAccept) ProtoMessage() {}
+
+func (x *CommonStateSignalChatAccept) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[30]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonStateSignalChatAccept.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalChatAccept) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *CommonStateSignalChatAccept) GetChatId() string {
+	if x != nil {
+		return x.ChatId
+	}
+	return ""
+}
+
+func (x *CommonStateSignalChatAccept) GetMediaType() ChatMediaType {
+	if x != nil {
+		return x.MediaType
+	}
+	return ChatMediaType_UNKNOWN
+}
+
+func (x *CommonStateSignalChatAccept) GetArraySignalInfo() string {
+	if x != nil {
+		return x.ArraySignalInfo
+	}
+	return ""
+}
+
+type CommonStateSignalChatReady struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ChatId        string          `protobuf:"bytes,1,opt,name=chatId,proto3" json:"chatId,omitempty"`
+	GuestUserInfo *ZtLiveUserInfo `protobuf:"bytes,2,opt,name=guestUserInfo,proto3" json:"guestUserInfo,omitempty"`
+	MediaType     int32           `protobuf:"varint,3,opt,name=mediaType,proto3" json:"mediaType,omitempty"`
+}
+
+func (x *CommonStateSignalChatReady) Reset() {
+	*x = CommonStateSignalChatReady{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[31]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonStateSignalChatReady) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonStateSignalChatReady) ProtoMessage() {}
+
+func (x *CommonStateSignalChatReady) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[31]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonStateSignalChatReady.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalChatReady) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *CommonStateSignalChatReady) GetChatId() string {
+	if x != nil {
+		return x.ChatId
+	}
+	return ""
+}
+
+func (x *CommonStateSignalChatReady) GetGuestUserInfo() *ZtLiveUserInfo {
+	if x != nil {
+		return x.GuestUserInfo
+	}
+	return nil
+}
+
+func (x *CommonStateSignalChatReady) GetMediaType() int32 {
+	if x != nil {
+		return x.MediaType
+	}
+	return 0
+}
+
+type CommonStateSignalChatEnd struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ChatId  string                           `protobuf:"bytes,1,opt,name=chatId,proto3" json:"chatId,omitempty"`
+	EndType CommonStateSignalChatEnd_EndType `protobuf:"varint,2,opt,name=endType,proto3,enum=AcFunDanmu.CommonStateSignalChatEnd_EndType" json:"endType,omitempty"`
+}
+
+func (x *CommonStateSignalChatEnd) Reset() {
+	*x = CommonStateSignalChatEnd{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_zt_live_interactive_proto_msgTypes[32]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonStateSignalChatEnd) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonStateSignalChatEnd) ProtoMessage() {}
+
+func (x *CommonStateSignalChatEnd) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[32]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonStateSignalChatEnd.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalChatEnd) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *CommonStateSignalChatEnd) GetChatId() string {
+	if x != nil {
+		return x.ChatId
+	}
+	return ""
+}
+
+func (x *CommonStateSignalChatEnd) GetEndType() CommonStateSignalChatEnd_EndType {
+	if x != nil {
+		return x.EndType
+	}
+	return CommonStateSignalChatEnd_UNKNOWN
 }
 
 type ZtLiveScStatusChanged_BannedInfo struct {
@@ -1912,7 +2269,7 @@ type ZtLiveScStatusChanged_BannedInfo struct {
 func (x *ZtLiveScStatusChanged_BannedInfo) Reset() {
 	*x = ZtLiveScStatusChanged_BannedInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[29]
+		mi := &file_zt_live_interactive_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1925,7 +2282,7 @@ func (x *ZtLiveScStatusChanged_BannedInfo) String() string {
 func (*ZtLiveScStatusChanged_BannedInfo) ProtoMessage() {}
 
 func (x *ZtLiveScStatusChanged_BannedInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[29]
+	mi := &file_zt_live_interactive_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1948,33 +2305,34 @@ func (x *ZtLiveScStatusChanged_BannedInfo) GetBanReason() string {
 	return ""
 }
 
-type AcUserInfo_Detail struct {
+type CommonStateSignalTopUsers_TopUser struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId int64                     `protobuf:"varint,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	Name   string                    `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Avator *AcUserInfo_Detail_Avatar `protobuf:"bytes,3,opt,name=avator,proto3" json:"avator,omitempty"`
+	UserInfo               *ZtLiveUserInfo `protobuf:"bytes,1,opt,name=userInfo,proto3" json:"userInfo,omitempty"`
+	CustomWatchingListData string          `protobuf:"bytes,2,opt,name=customWatchingListData,proto3" json:"customWatchingListData,omitempty"`
+	DisplaySendAmount      string          `protobuf:"bytes,3,opt,name=displaySendAmount,proto3" json:"displaySendAmount,omitempty"`
+	AnonymousUser          bool            `protobuf:"varint,4,opt,name=anonymousUser,proto3" json:"anonymousUser,omitempty"`
 }
 
-func (x *AcUserInfo_Detail) Reset() {
-	*x = AcUserInfo_Detail{}
+func (x *CommonStateSignalTopUsers_TopUser) Reset() {
+	*x = CommonStateSignalTopUsers_TopUser{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[30]
+		mi := &file_zt_live_interactive_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *AcUserInfo_Detail) String() string {
+func (x *CommonStateSignalTopUsers_TopUser) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AcUserInfo_Detail) ProtoMessage() {}
+func (*CommonStateSignalTopUsers_TopUser) ProtoMessage() {}
 
-func (x *AcUserInfo_Detail) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[30]
+func (x *CommonStateSignalTopUsers_TopUser) ProtoReflect() protoreflect.Message {
+	mi := &file_zt_live_interactive_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1985,93 +2343,37 @@ func (x *AcUserInfo_Detail) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AcUserInfo_Detail.ProtoReflect.Descriptor instead.
-func (*AcUserInfo_Detail) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{25, 0}
+// Deprecated: Use CommonStateSignalTopUsers_TopUser.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalTopUsers_TopUser) Descriptor() ([]byte, []int) {
+	return file_zt_live_interactive_proto_rawDescGZIP(), []int{27, 0}
 }
 
-func (x *AcUserInfo_Detail) GetUserId() int64 {
+func (x *CommonStateSignalTopUsers_TopUser) GetUserInfo() *ZtLiveUserInfo {
 	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-func (x *AcUserInfo_Detail) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *AcUserInfo_Detail) GetAvator() *AcUserInfo_Detail_Avatar {
-	if x != nil {
-		return x.Avator
+		return x.UserInfo
 	}
 	return nil
 }
 
-type AcUserInfo_Detail_Avatar struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Unknown string `protobuf:"bytes,1,opt,name=unknown,proto3" json:"unknown,omitempty"`
-	Url1    string `protobuf:"bytes,2,opt,name=url1,proto3" json:"url1,omitempty"`
-	Url2    string `protobuf:"bytes,3,opt,name=url2,proto3" json:"url2,omitempty"`
-}
-
-func (x *AcUserInfo_Detail_Avatar) Reset() {
-	*x = AcUserInfo_Detail_Avatar{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_zt_live_interactive_proto_msgTypes[31]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AcUserInfo_Detail_Avatar) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AcUserInfo_Detail_Avatar) ProtoMessage() {}
-
-func (x *AcUserInfo_Detail_Avatar) ProtoReflect() protoreflect.Message {
-	mi := &file_zt_live_interactive_proto_msgTypes[31]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AcUserInfo_Detail_Avatar.ProtoReflect.Descriptor instead.
-func (*AcUserInfo_Detail_Avatar) Descriptor() ([]byte, []int) {
-	return file_zt_live_interactive_proto_rawDescGZIP(), []int{25, 0, 0}
-}
-
-func (x *AcUserInfo_Detail_Avatar) GetUnknown() string {
+func (x *CommonStateSignalTopUsers_TopUser) GetCustomWatchingListData() string {
 	if x != nil {
-		return x.Unknown
+		return x.CustomWatchingListData
 	}
 	return ""
 }
 
-func (x *AcUserInfo_Detail_Avatar) GetUrl1() string {
+func (x *CommonStateSignalTopUsers_TopUser) GetDisplaySendAmount() string {
 	if x != nil {
-		return x.Url1
+		return x.DisplaySendAmount
 	}
 	return ""
 }
 
-func (x *AcUserInfo_Detail_Avatar) GetUrl2() string {
+func (x *CommonStateSignalTopUsers_TopUser) GetAnonymousUser() bool {
 	if x != nil {
-		return x.Url2
+		return x.AnonymousUser
 	}
-	return ""
+	return false
 }
 
 var File_zt_live_interactive_proto protoreflect.FileDescriptor
@@ -2205,127 +2507,180 @@ var file_zt_live_interactive_proto_rawDesc = []byte{
 	0x55, 0x52, 0x4c, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x44, 0x10, 0x03, 0x12, 0x0f, 0x0a,
 	0x0b, 0x4c, 0x49, 0x56, 0x45, 0x5f, 0x42, 0x41, 0x4e, 0x4e, 0x45, 0x44, 0x10, 0x04, 0x22, 0x17,
 	0x0a, 0x15, 0x5a, 0x74, 0x4c, 0x69, 0x76, 0x65, 0x53, 0x63, 0x54, 0x69, 0x63, 0x6b, 0x65, 0x74,
-	0x49, 0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x22, 0x40, 0x0a, 0x0a, 0x5a, 0x74, 0x55, 0x73, 0x65,
-	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x16, 0x0a, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x1a, 0x0a,
-	0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x89, 0x01, 0x0a, 0x19, 0x43, 0x6f,
-	0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c,
-	0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65,
-	0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e,
-	0x74, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d,
-	0x73, 0x12, 0x32, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75,
-	0x2e, 0x5a, 0x74, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x75, 0x73, 0x65,
-	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x22, 0x6c, 0x0a, 0x16, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x41,
-	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x4c, 0x69, 0x6b, 0x65, 0x12,
-	0x32, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x16, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x5a,
-	0x74, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49,
-	0x6e, 0x66, 0x6f, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d,
-	0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d,
-	0x65, 0x4d, 0x73, 0x22, 0x75, 0x0a, 0x1f, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x55, 0x73, 0x65, 0x72, 0x45, 0x6e, 0x74,
-	0x65, 0x72, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x32, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e,
-	0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e,
-	0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x5a, 0x74, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f,
-	0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65,
-	0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a,
-	0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x22, 0x78, 0x0a, 0x22, 0x43, 0x6f,
-	0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c,
-	0x55, 0x73, 0x65, 0x72, 0x46, 0x6f, 0x6c, 0x6c, 0x6f, 0x77, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72,
-	0x12, 0x32, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x16, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e,
-	0x5a, 0x74, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72,
-	0x49, 0x6e, 0x66, 0x6f, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65,
-	0x4d, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69,
-	0x6d, 0x65, 0x4d, 0x73, 0x22, 0x35, 0x0a, 0x1b, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x4e, 0x6f,
-	0x74, 0x69, 0x66, 0x79, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x4b, 0x69, 0x63, 0x6b, 0x65, 0x64,
-	0x4f, 0x75, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x22, 0x4e, 0x0a, 0x20, 0x43,
-	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x53, 0x69, 0x67, 0x6e, 0x61,
-	0x6c, 0x56, 0x69, 0x6f, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x41, 0x6c, 0x65, 0x72, 0x74, 0x12,
-	0x2a, 0x0a, 0x10, 0x76, 0x69, 0x6f, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x74,
-	0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x76, 0x69, 0x6f, 0x6c, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x62, 0x0a, 0x1c, 0x43,
-	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c,
-	0x44, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x24, 0x0a, 0x0d, 0x77,
-	0x61, 0x74, 0x63, 0x68, 0x69, 0x6e, 0x67, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x0d, 0x77, 0x61, 0x74, 0x63, 0x68, 0x69, 0x6e, 0x67, 0x43, 0x6f, 0x75, 0x6e,
-	0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6c, 0x69, 0x6b, 0x65, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x6b, 0x65, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x22,
-	0xc2, 0x02, 0x0a, 0x0a, 0x41, 0x63, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x35,
-	0x0a, 0x06, 0x64, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d,
-	0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x41, 0x63, 0x55, 0x73,
-	0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x52, 0x06, 0x64,
-	0x65, 0x74, 0x61, 0x69, 0x6c, 0x12, 0x22, 0x0a, 0x0c, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66,
-	0x6f, 0x4a, 0x73, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x75, 0x73, 0x65,
-	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x4a, 0x73, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x75, 0x6e, 0x6b,
-	0x6e, 0x6f, 0x77, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x75, 0x6e, 0x6b, 0x6e,
-	0x6f, 0x77, 0x6e, 0x1a, 0xbe, 0x01, 0x0a, 0x06, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x12, 0x16,
-	0x0a, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06,
-	0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3c, 0x0a, 0x06, 0x61, 0x76,
-	0x61, 0x74, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x41, 0x63, 0x46,
-	0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x41, 0x63, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e,
-	0x66, 0x6f, 0x2e, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x2e, 0x41, 0x76, 0x61, 0x74, 0x61, 0x72,
-	0x52, 0x06, 0x61, 0x76, 0x61, 0x74, 0x6f, 0x72, 0x1a, 0x4a, 0x0a, 0x06, 0x41, 0x76, 0x61, 0x74,
-	0x61, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x75, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x07, 0x75, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x12, 0x12, 0x0a, 0x04,
-	0x75, 0x72, 0x6c, 0x31, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x72, 0x6c, 0x31,
-	0x12, 0x12, 0x0a, 0x04, 0x75, 0x72, 0x6c, 0x32, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
-	0x75, 0x72, 0x6c, 0x32, 0x22, 0x47, 0x0a, 0x19, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74,
-	0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x54, 0x6f, 0x70, 0x55, 0x73, 0x65, 0x72,
-	0x73, 0x12, 0x2a, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x16, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x41, 0x63, 0x55,
-	0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x22, 0x61, 0x0a,
-	0x1e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e,
-	0x61, 0x6c, 0x52, 0x65, 0x63, 0x65, 0x6e, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x12,
-	0x3f, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x25, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x43, 0x6f,
-	0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c,
-	0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74,
-	0x22, 0x8d, 0x02, 0x0a, 0x16, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63, 0x74, 0x69, 0x6f,
-	0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x47, 0x69, 0x66, 0x74, 0x12, 0x31, 0x0a, 0x04, 0x75,
-	0x73, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x41, 0x63, 0x46, 0x75,
-	0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x41, 0x63, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66,
-	0x6f, 0x2e, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x1e,
+	0x49, 0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x22, 0x76, 0x0a, 0x0e, 0x5a, 0x74, 0x4c, 0x69, 0x76,
+	0x65, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x16, 0x0a, 0x06, 0x75, 0x73, 0x65,
+	0x72, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49,
+	0x64, 0x12, 0x1a, 0x0a, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x30, 0x0a,
+	0x06, 0x61, 0x76, 0x61, 0x74, 0x61, 0x72, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e,
+	0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x49, 0x6d, 0x61, 0x67, 0x65,
+	0x43, 0x64, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x06, 0x61, 0x76, 0x61, 0x74, 0x61, 0x72, 0x22,
+	0x52, 0x0a, 0x0c, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x43, 0x64, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x12,
+	0x10, 0x0a, 0x03, 0x63, 0x64, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x63, 0x64,
+	0x6e, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
+	0x75, 0x72, 0x6c, 0x12, 0x1e, 0x0a, 0x0a, 0x75, 0x72, 0x6c, 0x50, 0x61, 0x74, 0x74, 0x65, 0x72,
+	0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x75, 0x72, 0x6c, 0x50, 0x61, 0x74, 0x74,
+	0x65, 0x72, 0x6e, 0x22, 0x8d, 0x01, 0x0a, 0x19, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63,
+	0x74, 0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e,
+	0x74, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x1e, 0x0a, 0x0a, 0x73,
+	0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x12, 0x36, 0x0a, 0x08, 0x75,
+	0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
+	0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x5a, 0x74, 0x4c, 0x69, 0x76,
+	0x65, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49,
+	0x6e, 0x66, 0x6f, 0x22, 0x70, 0x0a, 0x16, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x4c, 0x69, 0x6b, 0x65, 0x12, 0x36, 0x0a,
+	0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x1a, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x5a, 0x74, 0x4c,
+	0x69, 0x76, 0x65, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x75, 0x73, 0x65,
+	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d,
+	0x65, 0x4d, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54,
+	0x69, 0x6d, 0x65, 0x4d, 0x73, 0x22, 0x79, 0x0a, 0x1f, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x41,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x55, 0x73, 0x65, 0x72, 0x45,
+	0x6e, 0x74, 0x65, 0x72, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x36, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72,
+	0x49, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x41, 0x63, 0x46,
+	0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x5a, 0x74, 0x4c, 0x69, 0x76, 0x65, 0x55, 0x73,
+	0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f,
+	0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73,
+	0x22, 0x7c, 0x0a, 0x22, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e,
+	0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x55, 0x73, 0x65, 0x72, 0x46, 0x6f, 0x6c, 0x6c, 0x6f, 0x77,
+	0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x12, 0x36, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e,
+	0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e,
+	0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x5a, 0x74, 0x4c, 0x69, 0x76, 0x65, 0x55, 0x73, 0x65, 0x72,
+	0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x1e,
 	0x0a, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x03, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x12, 0x16,
-	0x0a, 0x06, 0x69, 0x74, 0x65, 0x6d, 0x49, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06,
-	0x69, 0x74, 0x65, 0x6d, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18,
-	0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x14, 0x0a, 0x05,
-	0x63, 0x6f, 0x6d, 0x62, 0x6f, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x63, 0x6f, 0x6d,
-	0x62, 0x6f, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28,
-	0x05, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64,
-	0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x12, 0x18, 0x0a, 0x07,
-	0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x35, 0x18, 0x08, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x6e,
-	0x75, 0x6d, 0x62, 0x65, 0x72, 0x35, 0x12, 0x18, 0x0a, 0x07, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72,
-	0x36, 0x18, 0x09, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x36,
-	0x2a, 0xc5, 0x01, 0x0a, 0x0e, 0x43, 0x73, 0x41, 0x63, 0x6b, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43,
-	0x6f, 0x64, 0x65, 0x12, 0x12, 0x0a, 0x0e, 0x53, 0x55, 0x43, 0x43, 0x45, 0x53, 0x53, 0x5f, 0x43,
-	0x53, 0x5f, 0x41, 0x43, 0x4b, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b, 0x4c, 0x49, 0x56, 0x45, 0x5f,
-	0x43, 0x4c, 0x4f, 0x53, 0x45, 0x44, 0x10, 0x01, 0x12, 0x12, 0x0a, 0x0e, 0x54, 0x49, 0x43, 0x4b,
-	0x45, 0x54, 0x5f, 0x49, 0x4c, 0x4c, 0x45, 0x47, 0x41, 0x4c, 0x10, 0x02, 0x12, 0x12, 0x0a, 0x0e,
-	0x41, 0x54, 0x54, 0x41, 0x43, 0x48, 0x5f, 0x49, 0x4c, 0x4c, 0x45, 0x47, 0x41, 0x4c, 0x10, 0x03,
-	0x12, 0x14, 0x0a, 0x10, 0x55, 0x53, 0x45, 0x52, 0x5f, 0x4e, 0x4f, 0x54, 0x5f, 0x49, 0x4e, 0x5f,
-	0x52, 0x4f, 0x4f, 0x4d, 0x10, 0x04, 0x12, 0x10, 0x0a, 0x0c, 0x53, 0x45, 0x52, 0x56, 0x45, 0x52,
-	0x5f, 0x45, 0x52, 0x52, 0x4f, 0x52, 0x10, 0x05, 0x12, 0x19, 0x0a, 0x15, 0x52, 0x45, 0x51, 0x55,
-	0x45, 0x53, 0x54, 0x5f, 0x50, 0x41, 0x52, 0x41, 0x4d, 0x5f, 0x49, 0x4e, 0x56, 0x41, 0x4c, 0x49,
-	0x44, 0x10, 0x06, 0x12, 0x23, 0x0a, 0x1f, 0x52, 0x4f, 0x4f, 0x4d, 0x5f, 0x4e, 0x4f, 0x54, 0x5f,
-	0x45, 0x58, 0x49, 0x53, 0x54, 0x5f, 0x49, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x45, 0x5f, 0x4d,
-	0x41, 0x4e, 0x41, 0x47, 0x45, 0x52, 0x10, 0x07, 0x2a, 0x97, 0x01, 0x0a, 0x20, 0x5a, 0x74, 0x4c,
-	0x69, 0x76, 0x65, 0x44, 0x6f, 0x77, 0x6e, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x50, 0x61, 0x79,
-	0x6c, 0x6f, 0x61, 0x64, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64, 0x65, 0x12, 0x1e, 0x0a,
-	0x1a, 0x53, 0x55, 0x43, 0x43, 0x45, 0x53, 0x53, 0x5f, 0x44, 0x4f, 0x57, 0x4e, 0x53, 0x54, 0x52,
-	0x45, 0x41, 0x4d, 0x5f, 0x50, 0x41, 0x59, 0x4c, 0x4f, 0x41, 0x44, 0x10, 0x00, 0x12, 0x18, 0x0a,
-	0x12, 0x43, 0x53, 0x5f, 0x43, 0x4d, 0x44, 0x5f, 0x50, 0x41, 0x52, 0x53, 0x45, 0x5f, 0x45, 0x52,
-	0x52, 0x4f, 0x52, 0x10, 0xa1, 0x8d, 0x06, 0x12, 0x1c, 0x0a, 0x16, 0x43, 0x53, 0x5f, 0x43, 0x4d,
-	0x44, 0x5f, 0x43, 0x4d, 0x44, 0x5f, 0x4e, 0x4f, 0x54, 0x5f, 0x53, 0x55, 0x50, 0x50, 0x4f, 0x52,
-	0x54, 0x10, 0xa2, 0x8d, 0x06, 0x12, 0x1b, 0x0a, 0x15, 0x43, 0x53, 0x5f, 0x43, 0x4d, 0x44, 0x5f,
-	0x54, 0x49, 0x43, 0x4b, 0x45, 0x54, 0x5f, 0x49, 0x4c, 0x4c, 0x45, 0x47, 0x41, 0x4c, 0x10, 0xa3,
-	0x8d, 0x06, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x28, 0x03, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x22, 0xbe,
+	0x02, 0x0a, 0x16, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53,
+	0x69, 0x67, 0x6e, 0x61, 0x6c, 0x47, 0x69, 0x66, 0x74, 0x12, 0x2e, 0x0a, 0x04, 0x75, 0x73, 0x65,
+	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44,
+	0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x5a, 0x74, 0x4c, 0x69, 0x76, 0x65, 0x55, 0x73, 0x65, 0x72, 0x49,
+	0x6e, 0x66, 0x6f, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x6e,
+	0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x73,
+	0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x4d, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x67, 0x69, 0x66,
+	0x74, 0x49, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x67, 0x69, 0x66, 0x74, 0x49,
+	0x64, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05,
+	0x52, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x6d, 0x62, 0x6f,
+	0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x63, 0x6f, 0x6d, 0x62, 0x6f, 0x12, 0x14, 0x0a,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x76, 0x61,
+	0x6c, 0x75, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x62, 0x6f, 0x49, 0x64, 0x18, 0x07,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x62, 0x6f, 0x49, 0x64, 0x12, 0x34, 0x0a,
+	0x15, 0x73, 0x6c, 0x6f, 0x74, 0x44, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x44, 0x75, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x73, 0x18, 0x08, 0x20, 0x01, 0x28, 0x05, 0x52, 0x15, 0x73, 0x6c,
+	0x6f, 0x74, 0x44, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x44, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x4d, 0x73, 0x12, 0x2a, 0x0a, 0x10, 0x65, 0x78, 0x70, 0x69, 0x72, 0x65, 0x44, 0x75, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x73, 0x18, 0x09, 0x20, 0x01, 0x28, 0x05, 0x52, 0x10, 0x65,
+	0x78, 0x70, 0x69, 0x72, 0x65, 0x44, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x73, 0x22,
+	0x35, 0x0a, 0x1b, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x53,
+	0x69, 0x67, 0x6e, 0x61, 0x6c, 0x4b, 0x69, 0x63, 0x6b, 0x65, 0x64, 0x4f, 0x75, 0x74, 0x12, 0x16,
+	0x0a, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x22, 0x4e, 0x0a, 0x20, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
+	0x4e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x56, 0x69, 0x6f, 0x6c,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x41, 0x6c, 0x65, 0x72, 0x74, 0x12, 0x2a, 0x0a, 0x10, 0x76, 0x69,
+	0x6f, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x76, 0x69, 0x6f, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43,
+	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x62, 0x0a, 0x1c, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
+	0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x44, 0x69, 0x73, 0x70, 0x6c,
+	0x61, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x24, 0x0a, 0x0d, 0x77, 0x61, 0x74, 0x63, 0x68, 0x69,
+	0x6e, 0x67, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x77,
+	0x61, 0x74, 0x63, 0x68, 0x69, 0x6e, 0x67, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x1c, 0x0a, 0x09,
+	0x6c, 0x69, 0x6b, 0x65, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x09, 0x6c, 0x69, 0x6b, 0x65, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0xae, 0x02, 0x0a, 0x19, 0x43,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c,
+	0x54, 0x6f, 0x70, 0x55, 0x73, 0x65, 0x72, 0x73, 0x12, 0x41, 0x0a, 0x04, 0x75, 0x73, 0x65, 0x72,
+	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61,
+	0x6e, 0x6d, 0x75, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53,
+	0x69, 0x67, 0x6e, 0x61, 0x6c, 0x54, 0x6f, 0x70, 0x55, 0x73, 0x65, 0x72, 0x73, 0x2e, 0x54, 0x6f,
+	0x70, 0x55, 0x73, 0x65, 0x72, 0x52, 0x04, 0x75, 0x73, 0x65, 0x72, 0x1a, 0xcd, 0x01, 0x0a, 0x07,
+	0x54, 0x6f, 0x70, 0x55, 0x73, 0x65, 0x72, 0x12, 0x36, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49,
+	0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x41, 0x63, 0x46, 0x75,
+	0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x5a, 0x74, 0x4c, 0x69, 0x76, 0x65, 0x55, 0x73, 0x65,
+	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12,
+	0x36, 0x0a, 0x16, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x57, 0x61, 0x74, 0x63, 0x68, 0x69, 0x6e,
+	0x67, 0x4c, 0x69, 0x73, 0x74, 0x44, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x16, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x57, 0x61, 0x74, 0x63, 0x68, 0x69, 0x6e, 0x67, 0x4c,
+	0x69, 0x73, 0x74, 0x44, 0x61, 0x74, 0x61, 0x12, 0x2c, 0x0a, 0x11, 0x64, 0x69, 0x73, 0x70, 0x6c,
+	0x61, 0x79, 0x53, 0x65, 0x6e, 0x64, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x11, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x53, 0x65, 0x6e, 0x64, 0x41,
+	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x24, 0x0a, 0x0d, 0x61, 0x6e, 0x6f, 0x6e, 0x79, 0x6d, 0x6f,
+	0x75, 0x73, 0x55, 0x73, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0d, 0x61, 0x6e,
+	0x6f, 0x6e, 0x79, 0x6d, 0x6f, 0x75, 0x73, 0x55, 0x73, 0x65, 0x72, 0x22, 0x61, 0x0a, 0x1e, 0x43,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c,
+	0x52, 0x65, 0x63, 0x65, 0x6e, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x3f, 0x0a,
+	0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x25,
+	0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x43, 0x6f, 0x6d, 0x6d,
+	0x6f, 0x6e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x43, 0x6f,
+	0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x22, 0x4b,
+	0x0a, 0x19, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67,
+	0x6e, 0x61, 0x6c, 0x43, 0x68, 0x61, 0x74, 0x43, 0x61, 0x6c, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x63,
+	0x68, 0x61, 0x74, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x63, 0x68, 0x61,
+	0x74, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x6c, 0x69, 0x76, 0x65, 0x49, 0x64, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x6c, 0x69, 0x76, 0x65, 0x49, 0x64, 0x22, 0x98, 0x01, 0x0a, 0x1b,
+	0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61,
+	0x6c, 0x43, 0x68, 0x61, 0x74, 0x41, 0x63, 0x63, 0x65, 0x70, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x63,
+	0x68, 0x61, 0x74, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x63, 0x68, 0x61,
+	0x74, 0x49, 0x64, 0x12, 0x37, 0x0a, 0x09, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x54, 0x79, 0x70, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x19, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61,
+	0x6e, 0x6d, 0x75, 0x2e, 0x43, 0x68, 0x61, 0x74, 0x4d, 0x65, 0x64, 0x69, 0x61, 0x54, 0x79, 0x70,
+	0x65, 0x52, 0x09, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x54, 0x79, 0x70, 0x65, 0x12, 0x28, 0x0a, 0x0f,
+	0x61, 0x72, 0x72, 0x61, 0x79, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x61, 0x72, 0x72, 0x61, 0x79, 0x53, 0x69, 0x67, 0x6e,
+	0x61, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x22, 0x94, 0x01, 0x0a, 0x1a, 0x43, 0x6f, 0x6d, 0x6d, 0x6f,
+	0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x43, 0x68, 0x61, 0x74,
+	0x52, 0x65, 0x61, 0x64, 0x79, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x68, 0x61, 0x74, 0x49, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x63, 0x68, 0x61, 0x74, 0x49, 0x64, 0x12, 0x40, 0x0a,
+	0x0d, 0x67, 0x75, 0x65, 0x73, 0x74, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d,
+	0x75, 0x2e, 0x5a, 0x74, 0x4c, 0x69, 0x76, 0x65, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f,
+	0x52, 0x0d, 0x67, 0x75, 0x65, 0x73, 0x74, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12,
+	0x1c, 0x0a, 0x09, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x54, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x05, 0x52, 0x09, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x54, 0x79, 0x70, 0x65, 0x22, 0xae, 0x02,
+	0x0a, 0x18, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67,
+	0x6e, 0x61, 0x6c, 0x43, 0x68, 0x61, 0x74, 0x45, 0x6e, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x68,
+	0x61, 0x74, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x63, 0x68, 0x61, 0x74,
+	0x49, 0x64, 0x12, 0x46, 0x0a, 0x07, 0x65, 0x6e, 0x64, 0x54, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0e, 0x32, 0x2c, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75,
+	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e,
+	0x61, 0x6c, 0x43, 0x68, 0x61, 0x74, 0x45, 0x6e, 0x64, 0x2e, 0x45, 0x6e, 0x64, 0x54, 0x79, 0x70,
+	0x65, 0x52, 0x07, 0x65, 0x6e, 0x64, 0x54, 0x79, 0x70, 0x65, 0x22, 0xb1, 0x01, 0x0a, 0x07, 0x45,
+	0x6e, 0x64, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57,
+	0x4e, 0x10, 0x00, 0x12, 0x14, 0x0a, 0x10, 0x43, 0x41, 0x4e, 0x43, 0x45, 0x4c, 0x5f, 0x42, 0x59,
+	0x5f, 0x41, 0x55, 0x54, 0x48, 0x4f, 0x52, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d, 0x45, 0x4e, 0x44,
+	0x5f, 0x42, 0x59, 0x5f, 0x41, 0x55, 0x54, 0x48, 0x4f, 0x52, 0x10, 0x02, 0x12, 0x10, 0x0a, 0x0c,
+	0x45, 0x4e, 0x44, 0x5f, 0x42, 0x59, 0x5f, 0x47, 0x55, 0x45, 0x53, 0x54, 0x10, 0x03, 0x12, 0x10,
+	0x0a, 0x0c, 0x47, 0x55, 0x45, 0x53, 0x54, 0x5f, 0x52, 0x45, 0x4a, 0x45, 0x43, 0x54, 0x10, 0x04,
+	0x12, 0x11, 0x0a, 0x0d, 0x47, 0x55, 0x45, 0x53, 0x54, 0x5f, 0x54, 0x49, 0x4d, 0x45, 0x4f, 0x55,
+	0x54, 0x10, 0x05, 0x12, 0x1b, 0x0a, 0x17, 0x47, 0x55, 0x45, 0x53, 0x54, 0x5f, 0x48, 0x45, 0x41,
+	0x52, 0x54, 0x42, 0x45, 0x41, 0x54, 0x5f, 0x54, 0x49, 0x4d, 0x45, 0x4f, 0x55, 0x54, 0x10, 0x06,
+	0x12, 0x1c, 0x0a, 0x18, 0x41, 0x55, 0x54, 0x48, 0x4f, 0x52, 0x5f, 0x48, 0x45, 0x41, 0x52, 0x54,
+	0x42, 0x45, 0x41, 0x54, 0x5f, 0x54, 0x49, 0x4d, 0x45, 0x4f, 0x55, 0x54, 0x10, 0x07, 0x2a, 0x32,
+	0x0a, 0x0d, 0x43, 0x68, 0x61, 0x74, 0x4d, 0x65, 0x64, 0x69, 0x61, 0x54, 0x79, 0x70, 0x65, 0x12,
+	0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05,
+	0x41, 0x55, 0x44, 0x49, 0x4f, 0x10, 0x01, 0x12, 0x09, 0x0a, 0x05, 0x56, 0x49, 0x44, 0x45, 0x4f,
+	0x10, 0x02, 0x2a, 0xc5, 0x01, 0x0a, 0x0e, 0x43, 0x73, 0x41, 0x63, 0x6b, 0x45, 0x72, 0x72, 0x6f,
+	0x72, 0x43, 0x6f, 0x64, 0x65, 0x12, 0x12, 0x0a, 0x0e, 0x53, 0x55, 0x43, 0x43, 0x45, 0x53, 0x53,
+	0x5f, 0x43, 0x53, 0x5f, 0x41, 0x43, 0x4b, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b, 0x4c, 0x49, 0x56,
+	0x45, 0x5f, 0x43, 0x4c, 0x4f, 0x53, 0x45, 0x44, 0x10, 0x01, 0x12, 0x12, 0x0a, 0x0e, 0x54, 0x49,
+	0x43, 0x4b, 0x45, 0x54, 0x5f, 0x49, 0x4c, 0x4c, 0x45, 0x47, 0x41, 0x4c, 0x10, 0x02, 0x12, 0x12,
+	0x0a, 0x0e, 0x41, 0x54, 0x54, 0x41, 0x43, 0x48, 0x5f, 0x49, 0x4c, 0x4c, 0x45, 0x47, 0x41, 0x4c,
+	0x10, 0x03, 0x12, 0x14, 0x0a, 0x10, 0x55, 0x53, 0x45, 0x52, 0x5f, 0x4e, 0x4f, 0x54, 0x5f, 0x49,
+	0x4e, 0x5f, 0x52, 0x4f, 0x4f, 0x4d, 0x10, 0x04, 0x12, 0x10, 0x0a, 0x0c, 0x53, 0x45, 0x52, 0x56,
+	0x45, 0x52, 0x5f, 0x45, 0x52, 0x52, 0x4f, 0x52, 0x10, 0x05, 0x12, 0x19, 0x0a, 0x15, 0x52, 0x45,
+	0x51, 0x55, 0x45, 0x53, 0x54, 0x5f, 0x50, 0x41, 0x52, 0x41, 0x4d, 0x5f, 0x49, 0x4e, 0x56, 0x41,
+	0x4c, 0x49, 0x44, 0x10, 0x06, 0x12, 0x23, 0x0a, 0x1f, 0x52, 0x4f, 0x4f, 0x4d, 0x5f, 0x4e, 0x4f,
+	0x54, 0x5f, 0x45, 0x58, 0x49, 0x53, 0x54, 0x5f, 0x49, 0x4e, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x45,
+	0x5f, 0x4d, 0x41, 0x4e, 0x41, 0x47, 0x45, 0x52, 0x10, 0x07, 0x2a, 0x97, 0x01, 0x0a, 0x20, 0x5a,
+	0x74, 0x4c, 0x69, 0x76, 0x65, 0x44, 0x6f, 0x77, 0x6e, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x50,
+	0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64, 0x65, 0x12,
+	0x1e, 0x0a, 0x1a, 0x53, 0x55, 0x43, 0x43, 0x45, 0x53, 0x53, 0x5f, 0x44, 0x4f, 0x57, 0x4e, 0x53,
+	0x54, 0x52, 0x45, 0x41, 0x4d, 0x5f, 0x50, 0x41, 0x59, 0x4c, 0x4f, 0x41, 0x44, 0x10, 0x00, 0x12,
+	0x18, 0x0a, 0x12, 0x43, 0x53, 0x5f, 0x43, 0x4d, 0x44, 0x5f, 0x50, 0x41, 0x52, 0x53, 0x45, 0x5f,
+	0x45, 0x52, 0x52, 0x4f, 0x52, 0x10, 0xa1, 0x8d, 0x06, 0x12, 0x1c, 0x0a, 0x16, 0x43, 0x53, 0x5f,
+	0x43, 0x4d, 0x44, 0x5f, 0x43, 0x4d, 0x44, 0x5f, 0x4e, 0x4f, 0x54, 0x5f, 0x53, 0x55, 0x50, 0x50,
+	0x4f, 0x52, 0x54, 0x10, 0xa2, 0x8d, 0x06, 0x12, 0x1b, 0x0a, 0x15, 0x43, 0x53, 0x5f, 0x43, 0x4d,
+	0x44, 0x5f, 0x54, 0x49, 0x43, 0x4b, 0x45, 0x54, 0x5f, 0x49, 0x4c, 0x4c, 0x45, 0x47, 0x41, 0x4c,
+	0x10, 0xa3, 0x8d, 0x06, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2340,67 +2695,75 @@ func file_zt_live_interactive_proto_rawDescGZIP() []byte {
 	return file_zt_live_interactive_proto_rawDescData
 }
 
-var file_zt_live_interactive_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_zt_live_interactive_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
+var file_zt_live_interactive_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
+var file_zt_live_interactive_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
 var file_zt_live_interactive_proto_goTypes = []interface{}{
-	(CsAckErrorCode)(0),                        // 0: AcFunDanmu.CsAckErrorCode
-	(ZtLiveDownstreamPayloadErrorCode)(0),      // 1: AcFunDanmu.ZtLiveDownstreamPayloadErrorCode
-	(ZtLiveScMessage_CompressionType)(0),       // 2: AcFunDanmu.ZtLiveScMessage.CompressionType
-	(ZtLiveScStatusChanged_Type)(0),            // 3: AcFunDanmu.ZtLiveScStatusChanged.Type
-	(*ZtLiveCsCmd)(nil),                        // 4: AcFunDanmu.ZtLiveCsCmd
-	(*ZtLiveCsCmdAck)(nil),                     // 5: AcFunDanmu.ZtLiveCsCmdAck
-	(*ZtLiveCsEnterRoom)(nil),                  // 6: AcFunDanmu.ZtLiveCsEnterRoom
-	(*ZtLiveCsEnterRoomAck)(nil),               // 7: AcFunDanmu.ZtLiveCsEnterRoomAck
-	(*ZtLiveCsUserExit)(nil),                   // 8: AcFunDanmu.ZtLiveCsUserExit
-	(*ZtLiveCsUserExitAck)(nil),                // 9: AcFunDanmu.ZtLiveCsUserExitAck
-	(*ZtLiveCsHeartbeat)(nil),                  // 10: AcFunDanmu.ZtLiveCsHeartbeat
-	(*ZtLiveCsHeartbeatAck)(nil),               // 11: AcFunDanmu.ZtLiveCsHeartbeatAck
-	(*ZtLiveScMessage)(nil),                    // 12: AcFunDanmu.ZtLiveScMessage
-	(*ZtLiveActionSignalItem)(nil),             // 13: AcFunDanmu.ZtLiveActionSignalItem
-	(*ZtLiveScActionSignal)(nil),               // 14: AcFunDanmu.ZtLiveScActionSignal
-	(*ZtLiveStateSignalItem)(nil),              // 15: AcFunDanmu.ZtLiveStateSignalItem
-	(*ZtLiveScStateSignal)(nil),                // 16: AcFunDanmu.ZtLiveScStateSignal
-	(*ZtLiveNotifySignalItem)(nil),             // 17: AcFunDanmu.ZtLiveNotifySignalItem
-	(*ZtLiveScNotifySignal)(nil),               // 18: AcFunDanmu.ZtLiveScNotifySignal
-	(*ZtLiveScStatusChanged)(nil),              // 19: AcFunDanmu.ZtLiveScStatusChanged
-	(*ZtLiveScTicketInvalid)(nil),              // 20: AcFunDanmu.ZtLiveScTicketInvalid
-	(*ZtUserInfo)(nil),                         // 21: AcFunDanmu.ZtUserInfo
-	(*CommonActionSignalComment)(nil),          // 22: AcFunDanmu.CommonActionSignalComment
-	(*CommonActionSignalLike)(nil),             // 23: AcFunDanmu.CommonActionSignalLike
-	(*CommonActionSignalUserEnterRoom)(nil),    // 24: AcFunDanmu.CommonActionSignalUserEnterRoom
-	(*CommonActionSignalUserFollowAuthor)(nil), // 25: AcFunDanmu.CommonActionSignalUserFollowAuthor
-	(*CommonNotifySignalKickedOut)(nil),        // 26: AcFunDanmu.CommonNotifySignalKickedOut
-	(*CommonNotifySignalViolationAlert)(nil),   // 27: AcFunDanmu.CommonNotifySignalViolationAlert
-	(*CommonStateSignalDisplayInfo)(nil),       // 28: AcFunDanmu.CommonStateSignalDisplayInfo
-	(*AcUserInfo)(nil),                         // 29: AcFunDanmu.AcUserInfo
-	(*CommonStateSignalTopUsers)(nil),          // 30: AcFunDanmu.CommonStateSignalTopUsers
-	(*CommonStateSignalRecentComment)(nil),     // 31: AcFunDanmu.CommonStateSignalRecentComment
-	(*CommonActionSignalGift)(nil),             // 32: AcFunDanmu.CommonActionSignalGift
-	(*ZtLiveScStatusChanged_BannedInfo)(nil),   // 33: AcFunDanmu.ZtLiveScStatusChanged.BannedInfo
-	(*AcUserInfo_Detail)(nil),                  // 34: AcFunDanmu.AcUserInfo.Detail
-	(*AcUserInfo_Detail_Avatar)(nil),           // 35: AcFunDanmu.AcUserInfo.Detail.Avatar
+	(ChatMediaType)(0),                         // 0: AcFunDanmu.ChatMediaType
+	(CsAckErrorCode)(0),                        // 1: AcFunDanmu.CsAckErrorCode
+	(ZtLiveDownstreamPayloadErrorCode)(0),      // 2: AcFunDanmu.ZtLiveDownstreamPayloadErrorCode
+	(ZtLiveScMessage_CompressionType)(0),       // 3: AcFunDanmu.ZtLiveScMessage.CompressionType
+	(ZtLiveScStatusChanged_Type)(0),            // 4: AcFunDanmu.ZtLiveScStatusChanged.Type
+	(CommonStateSignalChatEnd_EndType)(0),      // 5: AcFunDanmu.CommonStateSignalChatEnd.EndType
+	(*ZtLiveCsCmd)(nil),                        // 6: AcFunDanmu.ZtLiveCsCmd
+	(*ZtLiveCsCmdAck)(nil),                     // 7: AcFunDanmu.ZtLiveCsCmdAck
+	(*ZtLiveCsEnterRoom)(nil),                  // 8: AcFunDanmu.ZtLiveCsEnterRoom
+	(*ZtLiveCsEnterRoomAck)(nil),               // 9: AcFunDanmu.ZtLiveCsEnterRoomAck
+	(*ZtLiveCsUserExit)(nil),                   // 10: AcFunDanmu.ZtLiveCsUserExit
+	(*ZtLiveCsUserExitAck)(nil),                // 11: AcFunDanmu.ZtLiveCsUserExitAck
+	(*ZtLiveCsHeartbeat)(nil),                  // 12: AcFunDanmu.ZtLiveCsHeartbeat
+	(*ZtLiveCsHeartbeatAck)(nil),               // 13: AcFunDanmu.ZtLiveCsHeartbeatAck
+	(*ZtLiveScMessage)(nil),                    // 14: AcFunDanmu.ZtLiveScMessage
+	(*ZtLiveActionSignalItem)(nil),             // 15: AcFunDanmu.ZtLiveActionSignalItem
+	(*ZtLiveScActionSignal)(nil),               // 16: AcFunDanmu.ZtLiveScActionSignal
+	(*ZtLiveStateSignalItem)(nil),              // 17: AcFunDanmu.ZtLiveStateSignalItem
+	(*ZtLiveScStateSignal)(nil),                // 18: AcFunDanmu.ZtLiveScStateSignal
+	(*ZtLiveNotifySignalItem)(nil),             // 19: AcFunDanmu.ZtLiveNotifySignalItem
+	(*ZtLiveScNotifySignal)(nil),               // 20: AcFunDanmu.ZtLiveScNotifySignal
+	(*ZtLiveScStatusChanged)(nil),              // 21: AcFunDanmu.ZtLiveScStatusChanged
+	(*ZtLiveScTicketInvalid)(nil),              // 22: AcFunDanmu.ZtLiveScTicketInvalid
+	(*ZtLiveUserInfo)(nil),                     // 23: AcFunDanmu.ZtLiveUserInfo
+	(*ImageCdnNode)(nil),                       // 24: AcFunDanmu.ImageCdnNode
+	(*CommonActionSignalComment)(nil),          // 25: AcFunDanmu.CommonActionSignalComment
+	(*CommonActionSignalLike)(nil),             // 26: AcFunDanmu.CommonActionSignalLike
+	(*CommonActionSignalUserEnterRoom)(nil),    // 27: AcFunDanmu.CommonActionSignalUserEnterRoom
+	(*CommonActionSignalUserFollowAuthor)(nil), // 28: AcFunDanmu.CommonActionSignalUserFollowAuthor
+	(*CommonActionSignalGift)(nil),             // 29: AcFunDanmu.CommonActionSignalGift
+	(*CommonNotifySignalKickedOut)(nil),        // 30: AcFunDanmu.CommonNotifySignalKickedOut
+	(*CommonNotifySignalViolationAlert)(nil),   // 31: AcFunDanmu.CommonNotifySignalViolationAlert
+	(*CommonStateSignalDisplayInfo)(nil),       // 32: AcFunDanmu.CommonStateSignalDisplayInfo
+	(*CommonStateSignalTopUsers)(nil),          // 33: AcFunDanmu.CommonStateSignalTopUsers
+	(*CommonStateSignalRecentComment)(nil),     // 34: AcFunDanmu.CommonStateSignalRecentComment
+	(*CommonStateSignalChatCall)(nil),          // 35: AcFunDanmu.CommonStateSignalChatCall
+	(*CommonStateSignalChatAccept)(nil),        // 36: AcFunDanmu.CommonStateSignalChatAccept
+	(*CommonStateSignalChatReady)(nil),         // 37: AcFunDanmu.CommonStateSignalChatReady
+	(*CommonStateSignalChatEnd)(nil),           // 38: AcFunDanmu.CommonStateSignalChatEnd
+	(*ZtLiveScStatusChanged_BannedInfo)(nil),   // 39: AcFunDanmu.ZtLiveScStatusChanged.BannedInfo
+	(*CommonStateSignalTopUsers_TopUser)(nil),  // 40: AcFunDanmu.CommonStateSignalTopUsers.TopUser
 }
 var file_zt_live_interactive_proto_depIdxs = []int32{
-	2,  // 0: AcFunDanmu.ZtLiveScMessage.compressionType:type_name -> AcFunDanmu.ZtLiveScMessage.CompressionType
-	13, // 1: AcFunDanmu.ZtLiveScActionSignal.item:type_name -> AcFunDanmu.ZtLiveActionSignalItem
-	15, // 2: AcFunDanmu.ZtLiveScStateSignal.item:type_name -> AcFunDanmu.ZtLiveStateSignalItem
-	17, // 3: AcFunDanmu.ZtLiveScNotifySignal.item:type_name -> AcFunDanmu.ZtLiveNotifySignalItem
-	3,  // 4: AcFunDanmu.ZtLiveScStatusChanged.type:type_name -> AcFunDanmu.ZtLiveScStatusChanged.Type
-	33, // 5: AcFunDanmu.ZtLiveScStatusChanged.bannedInfo:type_name -> AcFunDanmu.ZtLiveScStatusChanged.BannedInfo
-	21, // 6: AcFunDanmu.CommonActionSignalComment.userInfo:type_name -> AcFunDanmu.ZtUserInfo
-	21, // 7: AcFunDanmu.CommonActionSignalLike.userInfo:type_name -> AcFunDanmu.ZtUserInfo
-	21, // 8: AcFunDanmu.CommonActionSignalUserEnterRoom.userInfo:type_name -> AcFunDanmu.ZtUserInfo
-	21, // 9: AcFunDanmu.CommonActionSignalUserFollowAuthor.userInfo:type_name -> AcFunDanmu.ZtUserInfo
-	34, // 10: AcFunDanmu.AcUserInfo.detail:type_name -> AcFunDanmu.AcUserInfo.Detail
-	29, // 11: AcFunDanmu.CommonStateSignalTopUsers.user:type_name -> AcFunDanmu.AcUserInfo
-	22, // 12: AcFunDanmu.CommonStateSignalRecentComment.comment:type_name -> AcFunDanmu.CommonActionSignalComment
-	34, // 13: AcFunDanmu.CommonActionSignalGift.user:type_name -> AcFunDanmu.AcUserInfo.Detail
-	35, // 14: AcFunDanmu.AcUserInfo.Detail.avator:type_name -> AcFunDanmu.AcUserInfo.Detail.Avatar
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	3,  // 0: AcFunDanmu.ZtLiveScMessage.compressionType:type_name -> AcFunDanmu.ZtLiveScMessage.CompressionType
+	15, // 1: AcFunDanmu.ZtLiveScActionSignal.item:type_name -> AcFunDanmu.ZtLiveActionSignalItem
+	17, // 2: AcFunDanmu.ZtLiveScStateSignal.item:type_name -> AcFunDanmu.ZtLiveStateSignalItem
+	19, // 3: AcFunDanmu.ZtLiveScNotifySignal.item:type_name -> AcFunDanmu.ZtLiveNotifySignalItem
+	4,  // 4: AcFunDanmu.ZtLiveScStatusChanged.type:type_name -> AcFunDanmu.ZtLiveScStatusChanged.Type
+	39, // 5: AcFunDanmu.ZtLiveScStatusChanged.bannedInfo:type_name -> AcFunDanmu.ZtLiveScStatusChanged.BannedInfo
+	24, // 6: AcFunDanmu.ZtLiveUserInfo.avatar:type_name -> AcFunDanmu.ImageCdnNode
+	23, // 7: AcFunDanmu.CommonActionSignalComment.userInfo:type_name -> AcFunDanmu.ZtLiveUserInfo
+	23, // 8: AcFunDanmu.CommonActionSignalLike.userInfo:type_name -> AcFunDanmu.ZtLiveUserInfo
+	23, // 9: AcFunDanmu.CommonActionSignalUserEnterRoom.userInfo:type_name -> AcFunDanmu.ZtLiveUserInfo
+	23, // 10: AcFunDanmu.CommonActionSignalUserFollowAuthor.userInfo:type_name -> AcFunDanmu.ZtLiveUserInfo
+	23, // 11: AcFunDanmu.CommonActionSignalGift.user:type_name -> AcFunDanmu.ZtLiveUserInfo
+	40, // 12: AcFunDanmu.CommonStateSignalTopUsers.user:type_name -> AcFunDanmu.CommonStateSignalTopUsers.TopUser
+	25, // 13: AcFunDanmu.CommonStateSignalRecentComment.comment:type_name -> AcFunDanmu.CommonActionSignalComment
+	0,  // 14: AcFunDanmu.CommonStateSignalChatAccept.mediaType:type_name -> AcFunDanmu.ChatMediaType
+	23, // 15: AcFunDanmu.CommonStateSignalChatReady.guestUserInfo:type_name -> AcFunDanmu.ZtLiveUserInfo
+	5,  // 16: AcFunDanmu.CommonStateSignalChatEnd.endType:type_name -> AcFunDanmu.CommonStateSignalChatEnd.EndType
+	23, // 17: AcFunDanmu.CommonStateSignalTopUsers.TopUser.userInfo:type_name -> AcFunDanmu.ZtLiveUserInfo
+	18, // [18:18] is the sub-list for method output_type
+	18, // [18:18] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_zt_live_interactive_proto_init() }
@@ -2614,7 +2977,7 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ZtUserInfo); i {
+			switch v := v.(*ZtLiveUserInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2626,7 +2989,7 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonActionSignalComment); i {
+			switch v := v.(*ImageCdnNode); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2638,7 +3001,7 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonActionSignalLike); i {
+			switch v := v.(*CommonActionSignalComment); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2650,7 +3013,7 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonActionSignalUserEnterRoom); i {
+			switch v := v.(*CommonActionSignalLike); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2662,7 +3025,7 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonActionSignalUserFollowAuthor); i {
+			switch v := v.(*CommonActionSignalUserEnterRoom); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2674,7 +3037,7 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonNotifySignalKickedOut); i {
+			switch v := v.(*CommonActionSignalUserFollowAuthor); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2686,66 +3049,6 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonNotifySignalViolationAlert); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_zt_live_interactive_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonStateSignalDisplayInfo); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_zt_live_interactive_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AcUserInfo); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_zt_live_interactive_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonStateSignalTopUsers); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_zt_live_interactive_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonStateSignalRecentComment); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_zt_live_interactive_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CommonActionSignalGift); i {
 			case 0:
 				return &v.state
@@ -2757,8 +3060,68 @@ func file_zt_live_interactive_proto_init() {
 				return nil
 			}
 		}
+		file_zt_live_interactive_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonNotifySignalKickedOut); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_zt_live_interactive_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonNotifySignalViolationAlert); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_zt_live_interactive_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonStateSignalDisplayInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_zt_live_interactive_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonStateSignalTopUsers); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_zt_live_interactive_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonStateSignalRecentComment); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 		file_zt_live_interactive_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ZtLiveScStatusChanged_BannedInfo); i {
+			switch v := v.(*CommonStateSignalChatCall); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2770,7 +3133,7 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AcUserInfo_Detail); i {
+			switch v := v.(*CommonStateSignalChatAccept); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2782,7 +3145,43 @@ func file_zt_live_interactive_proto_init() {
 			}
 		}
 		file_zt_live_interactive_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AcUserInfo_Detail_Avatar); i {
+			switch v := v.(*CommonStateSignalChatReady); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_zt_live_interactive_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonStateSignalChatEnd); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_zt_live_interactive_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ZtLiveScStatusChanged_BannedInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_zt_live_interactive_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonStateSignalTopUsers_TopUser); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2799,8 +3198,8 @@ func file_zt_live_interactive_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_zt_live_interactive_proto_rawDesc,
-			NumEnums:      4,
-			NumMessages:   32,
+			NumEnums:      6,
+			NumMessages:   35,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
