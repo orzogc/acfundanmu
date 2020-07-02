@@ -12,7 +12,7 @@ const queueLen = 1000
 
 // Comment 就是弹幕的数据
 type Comment struct {
-	SendTime int64  // 弹幕发送时间，单位为纳秒
+	SendTime int64  // 弹幕发送时间，是以纳秒为单位的Unix时间
 	UserID   int64  // 用户uid
 	Nickname string // 用户名字
 	Content  string // 弹幕内容
@@ -38,8 +38,9 @@ func (q *Queue) GetDanmu() (comments []Comment) {
 		return nil
 	}
 
-	for _, c := range coms {
-		comments = append(comments, c.(Comment))
+	comments = make([]Comment, len(coms))
+	for i, c := range coms {
+		comments[i] = c.(Comment)
 	}
 	// 按SendTime大小排序
 	sort.Slice(comments, func(i, j int) bool {

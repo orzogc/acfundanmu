@@ -1,7 +1,6 @@
 package acfundanmu
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -36,7 +35,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 const dialogue = `Dialogue: 0,%s,%s,Danmu,%s(%d),20,20,2,,{\move(%d,%d,%d,%d)}%s
 `
 
-// ass文件里弹幕的出现和消失时间
+// ass文件里弹幕出现或消失的时间格式
 const startEnd = `%d:%02d:%02d.%02d`
 
 // 弹幕持续时间，单位为纳秒
@@ -51,7 +50,7 @@ type SubConfig struct {
 	PlayResX  int    // 视频分辨率
 	PlayResY  int    // 视频分辨率
 	FontSize  int    // 字体大小
-	StartTime int64  // 直播录播开始的时间，单位为纳秒
+	StartTime int64  // 直播录播开始的时间，是以纳秒为单位的Unix时间
 }
 
 // dTime就是计算弹幕碰撞需要的数据
@@ -81,67 +80,70 @@ func convert(name string) string {
 	return strings.ReplaceAll(name, ",", " ")
 }
 
-// WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕
-func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string) {
+// WriteASS 将ass字幕写入到file里，s为字幕的设置，newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕
+func (q *Queue) WriteASS(s SubConfig, file string, newFile bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in WriteASS(), the error is:", err)
 		}
 	}()
 
-	info := fmt.Sprintf(scriptInfo, s.Title, s.PlayResX, s.PlayResY)
-	style := fmt.Sprintf(sytles, s.FontSize)
+	var f *os.File
+	var err error
+	if newFile {
+		f, err = os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		checkErr(err)
+		defer f.Close()
 
-	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	checkErr(err)
-	defer f.Close()
+		info := fmt.Sprintf(scriptInfo, s.Title, s.PlayResX, s.PlayResY)
+		style := fmt.Sprintf(sytles, s.FontSize)
 
-	_, err = f.WriteString(info)
-	checkErr(err)
-	_, err = f.WriteString(style)
-	checkErr(err)
-	_, err = f.WriteString(events)
-	checkErr(err)
+		_, err = f.WriteString(info)
+		checkErr(err)
+		_, err = f.WriteString(style)
+		checkErr(err)
+		_, err = f.WriteString(events)
+		checkErr(err)
+	} else {
+		f, err = os.OpenFile(file, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+		checkErr(err)
+		defer f.Close()
+	}
 
 	// lastTime存放每一行最后的弹幕的dTime
 	lastTime := make([]dTime, queueLen)
 	for {
-		select {
-		case <-ctx.Done():
+		comments := q.GetDanmu()
+		if comments == nil {
 			return
-		default:
-			comments := q.GetDanmu()
-			if comments == nil {
-				return
-			}
+		}
 
-			for _, c := range comments {
-				length := utf8.RuneCountInString(c.Content) * s.FontSize
-				// leftTime就是弹幕运动到视频左边的时间
-				leftTime := c.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
-				dt := dTime{
-					appear:    c.SendTime - s.StartTime,
-					emerge:    c.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
-					disappear: c.SendTime - s.StartTime + duration}
-				for i, t := range lastTime {
-					// 防止弹幕发生碰撞重叠
-					if dt.appear > t.emerge && leftTime > t.disappear {
-						lastTime[i] = dt
-						s := fmt.Sprintf(dialogue,
-							danmuTime(dt.appear),
-							danmuTime(dt.disappear),
-							convert(c.Nickname),
-							c.UserID,
-							s.PlayResX+length/2,
-							s.FontSize*(i+1),
-							-length/2,
-							s.FontSize*(i+1),
-							c.Content,
-						)
-						_, err = f.WriteString(s)
-						checkErr(err)
-						break
-					}
+		for _, c := range comments {
+			length := utf8.RuneCountInString(c.Content) * s.FontSize
+			// leftTime就是弹幕运动到视频左边的时间
+			leftTime := c.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
+			dt := dTime{
+				appear:    c.SendTime - s.StartTime,
+				emerge:    c.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
+				disappear: c.SendTime - s.StartTime + duration}
+			for i, t := range lastTime {
+				// 防止弹幕发生碰撞重叠
+				if dt.appear > t.emerge && leftTime > t.disappear {
+					lastTime[i] = dt
+					s := fmt.Sprintf(dialogue,
+						danmuTime(dt.appear),
+						danmuTime(dt.disappear),
+						convert(c.Nickname),
+						c.UserID,
+						s.PlayResX+length/2,
+						s.FontSize*(i+1),
+						-length/2,
+						s.FontSize*(i+1),
+						c.Content,
+					)
+					_, err = f.WriteString(s)
+					checkErr(err)
+					break
 				}
 			}
 		}
