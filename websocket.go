@@ -16,25 +16,23 @@ import (
 )
 
 // 定时发送heartbeat和keepalive数据
-func (t *token) wsHeartbeat(hbctx context.Context, c *websocket.Conn, hb chan int64) {
+func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int64) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in wsHeartbeat(), the error is:", err)
 			// 重新启动wsHeartbeat()
 			time.Sleep(2 * time.Second)
 			hb <- 10000
-			t.wsHeartbeat(hbctx, c, hb)
+			t.wsHeartbeat(ctx, c, hb)
 		}
 	}()
 
 	b := <-hb
 	ticker := time.NewTicker(time.Duration(b) * time.Millisecond)
 	defer ticker.Stop()
-	ctx, cancel := context.WithCancel(hbctx)
-	defer cancel()
 	for {
 		select {
-		case <-hbctx.Done():
+		case <-ctx.Done():
 			return
 		case <-ticker.C:
 			err := c.Write(ctx, websocket.MessageBinary, *t.heartbeat())
@@ -94,9 +92,7 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 	checkErr(err)
 
 	hb := make(chan int64, 20)
-	hbCtx, hbCancel := context.WithCancel(ctx)
-	defer hbCancel()
-	go t.wsHeartbeat(hbCtx, c, hb)
+	go t.wsHeartbeat(ctx, c, hb)
 
 	for {
 		_, buffer, err := c.Read(ctx)

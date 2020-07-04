@@ -1,6 +1,7 @@
 package acfundanmu
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -80,8 +81,9 @@ func convert(name string) string {
 	return strings.ReplaceAll(name, ",", " ")
 }
 
-// WriteASS 将ass字幕写入到file里，s为字幕的设置，newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕
-func (q *Queue) WriteASS(s SubConfig, file string, newFile bool) {
+// WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕
+// newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕
+func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in WriteASS(), the error is:", err)
@@ -113,37 +115,42 @@ func (q *Queue) WriteASS(s SubConfig, file string, newFile bool) {
 	// lastTime存放每一行最后的弹幕的dTime
 	lastTime := make([]dTime, queueLen)
 	for {
-		comments := q.GetDanmu()
-		if comments == nil {
+		select {
+		case <-ctx.Done():
 			return
-		}
+		default:
+			comments := q.GetDanmu()
+			if comments == nil {
+				return
+			}
 
-		for _, c := range comments {
-			length := utf8.RuneCountInString(c.Content) * s.FontSize
-			// leftTime就是弹幕运动到视频左边的时间
-			leftTime := c.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
-			dt := dTime{
-				appear:    c.SendTime - s.StartTime,
-				emerge:    c.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
-				disappear: c.SendTime - s.StartTime + duration}
-			for i, t := range lastTime {
-				// 防止弹幕发生碰撞重叠
-				if dt.appear > t.emerge && leftTime > t.disappear {
-					lastTime[i] = dt
-					s := fmt.Sprintf(dialogue,
-						danmuTime(dt.appear),
-						danmuTime(dt.disappear),
-						convert(c.Nickname),
-						c.UserID,
-						s.PlayResX+length/2,
-						s.FontSize*(i+1),
-						-length/2,
-						s.FontSize*(i+1),
-						c.Content,
-					)
-					_, err = f.WriteString(s)
-					checkErr(err)
-					break
+			for _, c := range comments {
+				length := utf8.RuneCountInString(c.Content) * s.FontSize
+				// leftTime就是弹幕运动到视频左边的时间
+				leftTime := c.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
+				dt := dTime{
+					appear:    c.SendTime - s.StartTime,
+					emerge:    c.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
+					disappear: c.SendTime - s.StartTime + duration}
+				for i, t := range lastTime {
+					// 防止弹幕发生碰撞重叠
+					if dt.appear > t.emerge && leftTime > t.disappear {
+						lastTime[i] = dt
+						s := fmt.Sprintf(dialogue,
+							danmuTime(dt.appear),
+							danmuTime(dt.disappear),
+							convert(c.Nickname),
+							c.UserID,
+							s.PlayResX+length/2,
+							s.FontSize*(i+1),
+							-length/2,
+							s.FontSize*(i+1),
+							c.Content,
+						)
+						_, err = f.WriteString(s)
+						checkErr(err)
+						break
+					}
 				}
 			}
 		}

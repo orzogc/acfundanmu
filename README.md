@@ -23,12 +23,11 @@ ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
 q := acfundanmu.Start(ctx, uid)
-q.WriteASS(acfundanmu.SubConfig{
+q.WriteASS(ctx, acfundanmu.SubConfig{
     Title:     "foo",
     PlayResX:  1280, // 直播录播视频的分辨率
     PlayResY:  720,
     FontSize:  40,
     StartTime: time.Now().UnixNano()}, // 这里应该是开始录播的时间
-    "foo.ass",
-    true)
+    "foo.ass", true)
 ```
