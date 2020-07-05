@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -49,7 +50,7 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in wsStart(), the error is:", err)
 			q.Dispose()
-			e = errors.New(err.(string))
+			e = errors.New(fmt.Sprint(err))
 		}
 	}()
 
@@ -91,8 +92,11 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 	err = c.Write(ctx, websocket.MessageBinary, *t.enterRoom())
 	checkErr(err)
 
+	// 让websocket关闭时能马上结束wsHeartbeat()
+	hbCtx, hbCancel := context.WithCancel(ctx)
+	defer hbCancel()
 	hb := make(chan int64, 20)
-	go t.wsHeartbeat(ctx, c, hb)
+	go t.wsHeartbeat(hbCtx, c, hb)
 
 	for {
 		_, buffer, err := c.Read(ctx)
