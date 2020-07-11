@@ -47,7 +47,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 			err = proto.Unmarshal(cmd.Payload, heartbeat)
 			checkErr(err)
 		default:
-			log.Printf("未知的cmd.CmdAckType：%s, payload string: %s, payload base64: %s\n",
+			log.Printf("未知的cmd.CmdAckType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				cmd.CmdAckType,
 				string(cmd.Payload),
 				base64.StdEncoding.EncodeToString(cmd.Payload))
@@ -99,7 +99,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 			err = c.Write(ctx, websocket.MessageBinary, *t.enterRoom())
 			checkErr(err)
 		default:
-			log.Printf("未知的message.MessageType：%s, payload string: %s, payload base64: %s\n",
+			log.Printf("未知的message.MessageType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				message.MessageType,
 				string(payload),
 				base64.StdEncoding.EncodeToString(payload))
@@ -123,7 +123,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 			}
 			log.Println(string(stream.ErrorData))
 		} else {
-			log.Printf("未知的stream.Command：%s, payload string: %s, payload base64: %s\n",
+			log.Printf("未知的stream.Command：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				stream.Command,
 				string(stream.PayloadData),
 				base64.StdEncoding.EncodeToString(stream.PayloadData))
@@ -188,7 +188,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				checkErr(err)
 				//fmt.Println(gift.User.Name, "送出礼物：", gifts[int(gift.ItemId)], "数量：", gift.Count, "连击总数：", gift.Combo, "单个价值：", gift.Value)
 			default:
-				log.Printf("未知的Action Signal item.SingalType：%s, payload string: %s, payload base64: %s\n",
+				log.Printf("未知的Action Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 					item.SingalType,
 					string(pl),
 					base64.StdEncoding.EncodeToString(pl))
@@ -230,7 +230,7 @@ func handleMsgState(payload *[]byte) {
 			//	fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
 			//}
 		default:
-			log.Printf("未知的State Signal item.SingalType：%s, payload string: %s, payload base64: %s\n",
+			log.Printf("未知的State Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				item.SingalType,
 				string(item.Payload),
 				base64.StdEncoding.EncodeToString(item.Payload))
