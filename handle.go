@@ -229,6 +229,22 @@ func handleMsgState(payload *[]byte) {
 			//for _, comment := range comments.Comment {
 			//	fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
 			//}
+		case "CommonStateSignalChatCall":
+			//chatCall := &acproto.CommonStateSignalChatCall{}
+			//err = proto.Unmarshal(item.Payload, chatCall)
+			//checkErr(err)
+		case "CommonStateSignalChatAccept":
+			//chatAccept := &acproto.CommonStateSignalChatAccept{}
+			//err = proto.Unmarshal(item.Payload, chatAccept)
+			//checkErr(err)
+		case "CommonStateSignalChatReady":
+			//chatReady := &acproto.CommonStateSignalChatReady{}
+			//err = proto.Unmarshal(item.Payload, chatReady)
+			//checkErr(err)
+		case "CommonStateSignalChatEnd":
+			//chatEnd := &acproto.CommonStateSignalChatEnd{}
+			//err = proto.Unmarshal(item.Payload, chatEnd)
+			//checkErr(err)
 		default:
 			log.Printf("未知的State Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				item.SingalType,
