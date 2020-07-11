@@ -19,21 +19,26 @@ type Comment struct {
 }
 
 // Queue 就是弹幕的队列
-type Queue queue.Queue
+type Queue struct {
+	q  *queue.Queue // 弹幕的队列
+	ch chan bool    // 用来通知websocket启动
+}
 
 // Start 启动websocket获取弹幕，uid是主播的uid，ctx用来结束websocket
-func Start(ctx context.Context, uid int) *Queue {
+func Start(ctx context.Context, uid int) Queue {
 	q := queue.New(queueLen)
-	go wsStart(ctx, uid, q, "", "")
-	return (*Queue)(q)
+	ch := make(chan bool, 1)
+	qs := Queue{q: q, ch: ch}
+	go wsStart(ctx, uid, q, "", "", ch)
+	return qs
 }
 
 // GetDanmu 返回弹幕数据，返回nil时说明弹幕获取结束（出现错误或者主播可能下播）
-func (q *Queue) GetDanmu() (comments []Comment) {
-	if (*queue.Queue)(q).Disposed() {
+func (q Queue) GetDanmu() (comments []Comment) {
+	if (*queue.Queue)(q.q).Disposed() {
 		return nil
 	}
-	coms, err := (*queue.Queue)(q).Get(queueLen)
+	coms, err := (*queue.Queue)(q.q).Get(queueLen)
 	if err != nil {
 		return nil
 	}

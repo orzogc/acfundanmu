@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/Workiva/go-datastructures/queue"
 )
 
 // ass文件的Script Info
@@ -83,12 +85,22 @@ func convert(name string) string {
 
 // WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕
 // newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕
-func (q *Queue) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
+func (q Queue) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in WriteASS(), the error is:", err)
 		}
 	}()
+
+	if (*queue.Queue)(q.q).Disposed() {
+		return
+	}
+
+	// 等待websocket启动
+	start := <-q.ch
+	if !start {
+		return
+	}
 
 	var f *os.File
 	var err error

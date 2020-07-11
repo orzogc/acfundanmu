@@ -45,7 +45,7 @@ func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int6
 }
 
 // 启动websocket，username（邮箱）和password用来登陆AcFun，其为空串时启动访客模式，目前登陆模式和访客模式并没有区别
-func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password string) (e error) {
+func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password string, startCh chan bool) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in wsStart(), the error is:", err)
@@ -53,11 +53,13 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 			e = errors.New(fmt.Sprint(err))
 		}
 	}()
+	defer q.Dispose()
 
 	var cookieContainer []*http.Cookie = nil
 
 	if username != "" && password != "" {
 		if cookieContainer = login(username, password); cookieContainer == nil {
+			startCh <- false
 			return errors.New("登陆AcFun失败")
 		}
 	}
@@ -65,14 +67,17 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 
 	if t == nil {
 		log.Println("获取token失败，主播可能不在直播")
+		startCh <- false
 		return errors.New("获取token失败，主播可能不在直播")
 	}
 
 	t.gifts = t.updateGiftList(cookieContainer, deviceID)
 
+	startCh <- true
+
 	c, _, err := websocket.Dial(ctx, host, nil)
 	checkErr(err)
-	defer c.Close(websocket.StatusInternalError, "出现错误")
+	defer c.Close(websocket.StatusInternalError, "可能出现错误")
 
 	err = c.Write(ctx, websocket.MessageBinary, *t.register())
 	checkErr(err)
@@ -107,8 +112,6 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 		stream := t.decode(&buffer)
 		t.handleCommand(ctx, c, stream, q, hb)
 	}
-
-	q.Dispose()
 
 	return nil
 }
