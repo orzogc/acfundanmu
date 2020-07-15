@@ -29,7 +29,7 @@ func Start(ctx context.Context, uid int) Queue {
 	q := queue.New(queueLen)
 	ch := make(chan bool, 1)
 	qs := Queue{q: q, ch: ch}
-	go wsStart(ctx, uid, q, "", "", ch)
+	go qs.wsStart(ctx, uid, "", "")
 	return qs
 }
 

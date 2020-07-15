@@ -11,7 +11,6 @@ import (
 
 	"github.com/orzogc/acfundanmu/acproto"
 
-	"github.com/Workiva/go-datastructures/queue"
 	"github.com/golang/protobuf/proto"
 	"nhooyr.io/websocket"
 )
@@ -45,21 +44,20 @@ func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int6
 }
 
 // 启动websocket，username（邮箱）和password用来登陆AcFun，其为空串时启动访客模式，目前登陆模式和访客模式并没有区别
-func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password string, startCh chan bool) (e error) {
+func (q Queue) wsStart(ctx context.Context, uid int, username, password string) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in wsStart(), the error is:", err)
-			q.Dispose()
 			e = errors.New(fmt.Sprint(err))
 		}
 	}()
-	defer q.Dispose()
+	defer q.q.Dispose()
 
 	var cookieContainer []*http.Cookie = nil
 
 	if username != "" && password != "" {
 		if cookieContainer = login(username, password); cookieContainer == nil {
-			startCh <- false
+			q.ch <- false
 			return errors.New("登陆AcFun失败")
 		}
 	}
@@ -67,13 +65,13 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 
 	if t == nil {
 		log.Println("获取token失败，主播可能不在直播")
-		startCh <- false
+		q.ch <- false
 		return errors.New("获取token失败，主播可能不在直播")
 	}
 
 	t.gifts = t.updateGiftList(cookieContainer, deviceID)
 
-	startCh <- true
+	q.ch <- true
 
 	c, _, err := websocket.Dial(ctx, host, nil)
 	checkErr(err)
@@ -110,7 +108,7 @@ func wsStart(ctx context.Context, uid int, q *queue.Queue, username, password st
 		}
 
 		stream := t.decode(&buffer)
-		t.handleCommand(ctx, c, stream, q, hb)
+		t.handleCommand(ctx, c, stream, q.q, hb)
 	}
 
 	return nil
