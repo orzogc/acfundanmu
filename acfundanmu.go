@@ -98,7 +98,7 @@ func Start(ctx context.Context, uid int) (dq DanmuQueue) {
 	return dq
 }
 
-// GetDanmu 返回弹幕数据，返回danmu为nil时说明弹幕获取结束（出现错误或者主播可能下播）
+// GetDanmu 返回弹幕数据danmu和直播间状态info，danmu为nil时说明弹幕获取结束（出现错误或者主播下播）
 func (dq DanmuQueue) GetDanmu() (danmu []DanmuMessage, info LiveInfo) {
 	if (*queue.Queue)(dq.q).Disposed() {
 		return nil, info
