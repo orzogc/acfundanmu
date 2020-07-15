@@ -31,7 +31,7 @@ const (
 type Giftdetail struct {
 	ID          int    // 礼物ID
 	Name        string // 礼物名字
-	Price       int    // 礼物价格，单位是AC币
+	Price       int    // 礼物价格，非免费礼物时单位为AC币，免费礼物（香蕉）时为1
 	WebpPic     string // 礼物的webp格式图片（动图）
 	PngPic      string // 礼物的png格式图片（大）
 	SmallPngPic string // 礼物的png格式图片（小）
@@ -43,13 +43,18 @@ type GiftInfo struct {
 	Gift                  *Giftdetail // 礼物详细信息
 	Count                 int         // 礼物数量
 	Combo                 int         // 礼物连击数量
-	Value                 int         // 礼物价值，单位是AC币*1000
+	Value                 int         // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID               string      // 礼物连击ID
 	SlotDisplayDurationMs int
 	ExpireDurationMs      int
 }
 
 // DanmuMessage 就是websocket接受到的弹幕相关信息
+// 不论是哪种Type都会有SendTime、UserID、Nickname
+// Type为Comment时，Comment就是弹幕文字
+// Type为Gift时，GiftInfo就是礼物信息
+// Type为Like、EnterRoom和FollowAuthor时没有多余的数据
+// Type为ThrowBanana时，BananaCount就是投蕉数量，不过现在好像都是用Gift代替
 type DanmuMessage struct {
 	Type        DanmuType // 弹幕类型
 	SendTime    int64     // 弹幕发送时间，是以纳秒为单位的Unix时间
