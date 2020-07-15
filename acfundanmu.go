@@ -29,22 +29,22 @@ const (
 
 // Giftdetail 就是礼物的详细信息
 type Giftdetail struct {
-	ID          int
-	Name        string
-	Price       int
-	WebpPic     string
-	PngPic      string
-	SmallPngPic string
-	Description string
+	ID          int    // 礼物ID
+	Name        string // 礼物名字
+	Price       int    // 礼物价格，单位是AC币
+	WebpPic     string // 礼物的webp格式图片（动图）
+	PngPic      string // 礼物的png格式图片（大）
+	SmallPngPic string // 礼物的png格式图片（小）
+	Description string // 礼物的描述
 }
 
 // GiftInfo 就是礼物信息
 type GiftInfo struct {
 	Gift                  *Giftdetail // 礼物详细信息
 	Count                 int         // 礼物数量
-	Combo                 int         // 礼物连击数量？
-	Value                 int         // 礼物价值
-	ComboID               string      // 礼物连击ID？
+	Combo                 int         // 礼物连击数量
+	Value                 int         // 礼物价值，单位是AC币*1000
+	ComboID               string      // 礼物连击ID
 	SlotDisplayDurationMs int
 	ExpireDurationMs      int
 }
@@ -65,7 +65,7 @@ type TopUser struct {
 	UserID                 int64  // 用户uid
 	Nickname               string // 用户名字
 	CustomWatchingListData string
-	DisplaySendAmount      string // 送的礼物价值总数？
+	DisplaySendAmount      string
 	AnonymousUser          bool
 }
 
@@ -74,8 +74,8 @@ type LiveInfo struct {
 	KickedOut      string         // 被踢理由？
 	ViolationAlert string         // 直播间警告？
 	AllBananaCount string         // 直播间香蕉总数
-	WatchingCount  string         // 观众数量
-	LikeCount      string         // 点赞数量
+	WatchingCount  string         // 直播间在线观众数量
+	LikeCount      string         // 直播间点赞总数
 	LikeDelta      int            // 点赞增加数量？
 	TopUsers       []TopUser      // 礼物榜在线前三
 	RecentComment  []DanmuMessage // 进直播间时显示的最近发的弹幕
