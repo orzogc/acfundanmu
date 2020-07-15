@@ -61,10 +61,9 @@ func (q Queue) wsStart(ctx context.Context, uid int, username, password string) 
 		}
 	}
 
-	//deviceID, t := initialize(uid, cookieContainer)
 	var t *token
 	for retry := 0; retry < 3; retry++ {
-		_, t, err = initialize(uid, cookieContainer)
+		t, err = initialize(uid, cookieContainer)
 		if err != nil {
 			if retry == 2 {
 				q.ch <- false
@@ -78,8 +77,6 @@ func (q Queue) wsStart(ctx context.Context, uid int, username, password string) 
 			break
 		}
 	}
-
-	//t.gifts = t.updateGiftList(cookieContainer, deviceID)
 
 	q.ch <- true
 

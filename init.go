@@ -77,7 +77,7 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 }
 
 // 初始化，获取相应的token，cookieContainer为nil时为游客模式
-func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *token, e error) {
+func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("initialize() error: %w", err)
@@ -99,7 +99,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *to
 			didCookie = cookie
 		}
 	}
-	deviceID = didCookie.Value
+	deviceID := didCookie.Value
 
 	form := url.Values{}
 	if cookieContainer != nil {
@@ -186,11 +186,14 @@ func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *to
 		ticketIndex:     0,
 	}
 
-	return deviceID, t, nil
+	err = t.updateGiftList(cookieContainer, deviceID)
+	checkErr(err)
+
+	return t, nil
 }
 
 // 更新礼物列表
-func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) (gifts map[int]string, e error) {
+func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("updateGiftList() error: %w", err)
@@ -230,12 +233,12 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) 
 		log.Panicf("获取礼物列表失败，响应为 %s", string(body))
 	}
 
-	gifts = make(map[int]string)
+	t.gifts = make(map[int]string)
 	for _, gift := range v.GetArray("data", "giftList") {
-		gifts[gift.GetInt("giftId")] = string(gift.GetStringBytes("giftName"))
+		t.gifts[gift.GetInt("giftId")] = string(gift.GetStringBytes("giftName"))
 	}
 
-	return gifts, nil
+	return nil
 }
 
 // 获取在线观众列表

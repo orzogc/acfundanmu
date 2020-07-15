@@ -148,6 +148,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				err = proto.Unmarshal(pl, comment)
 				checkErr(err)
 				//fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
+				//fmt.Printf("%+v\n", comment)
 				c := Comment{
 					SendTime: comment.SendTimeMs * 1e6,
 					UserID:   comment.UserInfo.UserId,
@@ -160,6 +161,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				err = proto.Unmarshal(pl, like)
 				checkErr(err)
 				//fmt.Println(like.UserInfo.Nickname, "点赞")
+				//fmt.Printf("%+v\n", like)
 			case "CommonActionSignalUserEnterRoom":
 				enter := &acproto.CommonActionSignalUserEnterRoom{}
 				err = proto.Unmarshal(pl, enter)
