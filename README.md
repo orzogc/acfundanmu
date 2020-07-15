@@ -7,10 +7,10 @@ AcFun直播弹幕下载，实现参照 [AcFunDanmaku](https://github.com/wpscott
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-q := acfundanmu.Start(ctx, uid)
+dq := acfundanmu.Start(ctx, uid)
 for {
-    if d := q.GetDanmu(); d != nil {
-        fmt.Println(d)
+    if danmu := dq.GetDanmu(); danmu != nil {
+        fmt.Printf("%+v", danmu)
     } else {
         fmt.Println("直播结束")
         break
@@ -22,8 +22,8 @@ for {
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-q := acfundanmu.Start(ctx, uid)
-q.WriteASS(ctx, acfundanmu.SubConfig{
+dq := acfundanmu.Start(ctx, uid)
+dq.WriteASS(ctx, acfundanmu.SubConfig{
     Title:     "foo",
     PlayResX:  1280, // 直播录播视频的分辨率
     PlayResY:  720,

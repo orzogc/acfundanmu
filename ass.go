@@ -85,19 +85,19 @@ func convert(name string) string {
 
 // WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕
 // newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕
-func (q Queue) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
+func (dq DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Recovering from panic in WriteASS(), the error is:", err)
 		}
 	}()
 
-	if (*queue.Queue)(q.q).Disposed() {
+	if (*queue.Queue)(dq.q).Disposed() {
 		return
 	}
 
 	// 等待websocket启动
-	start := <-q.ch
+	start := <-dq.ch
 	if !start {
 		return
 	}
@@ -131,19 +131,23 @@ func (q Queue) WriteASS(ctx context.Context, s SubConfig, file string, newFile b
 		case <-ctx.Done():
 			return
 		default:
-			comments := q.GetDanmu()
-			if comments == nil {
+			danmu := dq.GetDanmu()
+			if danmu == nil {
 				return
 			}
 
-			for _, c := range comments {
-				length := utf8.RuneCountInString(c.Content) * s.FontSize
+			for _, d := range danmu {
+				if d.Type != Comment {
+					continue
+				}
+
+				length := utf8.RuneCountInString(d.Comment) * s.FontSize
 				// leftTime就是弹幕运动到视频左边的时间
-				leftTime := c.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
+				leftTime := d.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
 				dt := dTime{
-					appear:    c.SendTime - s.StartTime,
-					emerge:    c.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
-					disappear: c.SendTime - s.StartTime + duration}
+					appear:    d.SendTime - s.StartTime,
+					emerge:    d.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
+					disappear: d.SendTime - s.StartTime + duration}
 				for i, t := range lastTime {
 					// 防止弹幕发生碰撞重叠
 					if dt.appear > t.emerge && leftTime > t.disappear {
@@ -151,13 +155,13 @@ func (q Queue) WriteASS(ctx context.Context, s SubConfig, file string, newFile b
 						s := fmt.Sprintf(dialogue,
 							danmuTime(dt.appear),
 							danmuTime(dt.disappear),
-							convert(c.Nickname),
-							c.UserID,
+							convert(d.Nickname),
+							d.UserID,
 							s.PlayResX+length/2,
 							s.FontSize*(i+1),
 							-length/2,
 							s.FontSize*(i+1),
-							c.Content,
+							d.Comment,
 						)
 						_, err = f.WriteString(s)
 						checkErr(err)

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"sort"
 
 	"github.com/orzogc/acfundanmu/acproto"
 
@@ -140,6 +141,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 	err := proto.Unmarshal(*payload, actionSignal)
 	checkErr(err)
 
+	var danmu []DanmuMessage
 	for _, item := range actionSignal.Item {
 		for _, pl := range item.Payload {
 			switch item.SingalType {
@@ -149,29 +151,52 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				checkErr(err)
 				//fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
 				//fmt.Printf("%+v\n", comment)
-				c := Comment{
+				d := DanmuMessage{
+					Type:     Comment,
 					SendTime: comment.SendTimeMs * 1e6,
 					UserID:   comment.UserInfo.UserId,
 					Nickname: comment.UserInfo.Nickname,
-					Content:  comment.Content}
-				err = q.Put(c)
-				checkErr(err)
+					Comment:  comment.Content}
+				danmu = append(danmu, d)
+				//err = q.Put(c)
+				//checkErr(err)
 			case "CommonActionSignalLike":
 				like := &acproto.CommonActionSignalLike{}
 				err = proto.Unmarshal(pl, like)
 				checkErr(err)
 				//fmt.Println(like.UserInfo.Nickname, "点赞")
 				//fmt.Printf("%+v\n", like)
+				d := DanmuMessage{
+					Type:     Like,
+					SendTime: like.SendTimeMs * 1e6,
+					UserID:   like.UserInfo.UserId,
+					Nickname: like.UserInfo.Nickname,
+				}
+				danmu = append(danmu, d)
 			case "CommonActionSignalUserEnterRoom":
 				enter := &acproto.CommonActionSignalUserEnterRoom{}
 				err = proto.Unmarshal(pl, enter)
 				checkErr(err)
 				//fmt.Println(enter.UserInfo.Nickname, "进入房间")
+				d := DanmuMessage{
+					Type:     EnterRoom,
+					SendTime: enter.SendTimeMs * 1e6,
+					UserID:   enter.UserInfo.UserId,
+					Nickname: enter.UserInfo.Nickname,
+				}
+				danmu = append(danmu, d)
 			case "CommonActionSignalUserFollowAuthor":
-				follower := &acproto.CommonActionSignalUserFollowAuthor{}
-				err = proto.Unmarshal(pl, follower)
+				follow := &acproto.CommonActionSignalUserFollowAuthor{}
+				err = proto.Unmarshal(pl, follow)
 				checkErr(err)
-				//fmt.Println(follower.UserInfo.Nickname, "关注了主播")
+				//fmt.Println(follow.UserInfo.Nickname, "关注了主播")
+				d := DanmuMessage{
+					Type:     FollowAuthor,
+					SendTime: follow.SendTimeMs * 1e6,
+					UserID:   follow.UserInfo.UserId,
+					Nickname: follow.UserInfo.Nickname,
+				}
+				danmu = append(danmu, d)
 			case "CommonNotifySignalKickedOut":
 				kickedOut := &acproto.CommonNotifySignalKickedOut{}
 				err = proto.Unmarshal(pl, kickedOut)
@@ -187,11 +212,35 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				err = proto.Unmarshal(pl, banana)
 				checkErr(err)
 				//fmt.Println(banana.Visitor.Name, "送香蕉")
+				d := DanmuMessage{
+					Type:        ThrowBanana,
+					SendTime:    banana.SendTimeMs * 1e6,
+					UserID:      banana.Visitor.UserId,
+					Nickname:    banana.Visitor.Name,
+					BananaCount: int(banana.Count),
+				}
+				danmu = append(danmu, d)
 			case "CommonActionSignalGift":
 				gift := &acproto.CommonActionSignalGift{}
 				err = proto.Unmarshal(pl, gift)
 				checkErr(err)
 				//fmt.Println(gift.User.Name, "送出礼物：", gifts[int(gift.ItemId)], "数量：", gift.Count, "连击总数：", gift.Combo, "单个价值：", gift.Value)
+				d := DanmuMessage{
+					Type:     Gift,
+					SendTime: gift.SendTimeMs * 1e6,
+					UserID:   gift.User.UserId,
+					Nickname: gift.User.Nickname,
+					Gift: GiftInfo{
+						GiftID:                int(gift.GiftId),
+						Count:                 int(gift.Count),
+						Combo:                 int(gift.Combo),
+						Value:                 int(gift.Value),
+						ComboID:               gift.ComboId,
+						SlotDisplayDurationMs: int(gift.SlotDisplayDurationMs),
+						ExpireDurationMs:      int(gift.ExpireDurationMs),
+					},
+				}
+				danmu = append(danmu, d)
 			default:
 				log.Printf("未知的Action Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 					item.SingalType,
@@ -199,6 +248,16 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 					base64.StdEncoding.EncodeToString(pl))
 			}
 		}
+	}
+
+	// 按SendTime大小排序
+	sort.Slice(danmu, func(i, j int) bool {
+		return danmu[i].SendTime < danmu[j].SendTime
+	})
+
+	for _, d := range danmu {
+		err = q.Put(d)
+		checkErr(err)
 	}
 }
 

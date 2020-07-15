@@ -42,21 +42,21 @@ func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int6
 }
 
 // 启动websocket，username（邮箱）和password用来登陆AcFun，其为空串时启动访客模式，目前登陆模式和访客模式并没有区别
-func (q Queue) wsStart(ctx context.Context, uid int, username, password string) {
+func (dq DanmuQueue) wsStart(ctx context.Context, uid int, username, password string) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("wsStart() error: %v", err)
 			log.Println("websocket停止运行，如果要获取弹幕请重新启动websocket")
 		}
 	}()
-	defer q.q.Dispose()
+	defer dq.q.Dispose()
 
 	var cookieContainer []*http.Cookie = nil
 	var err error
 	if username != "" && password != "" {
 		cookieContainer, err = login(username, password)
 		if err != nil {
-			q.ch <- false
+			dq.ch <- false
 			log.Panicln(err)
 		}
 	}
@@ -66,7 +66,7 @@ func (q Queue) wsStart(ctx context.Context, uid int, username, password string) 
 		t, err = initialize(uid, cookieContainer)
 		if err != nil {
 			if retry == 2 {
-				q.ch <- false
+				dq.ch <- false
 				log.Println("获取token失败，主播可能不在直播")
 				log.Panicln(err)
 			} else {
@@ -78,7 +78,7 @@ func (q Queue) wsStart(ctx context.Context, uid int, username, password string) 
 		}
 	}
 
-	q.ch <- true
+	dq.ch <- true
 
 	c, _, err := websocket.Dial(ctx, host, nil)
 	checkErr(err)
@@ -121,7 +121,7 @@ func (q Queue) wsStart(ctx context.Context, uid int, username, password string) 
 			continue
 		}
 
-		err = t.handleCommand(ctx, c, stream, q.q, hb)
+		err = t.handleCommand(ctx, c, stream, dq.q, hb)
 		if err != nil {
 			log.Printf("处理接受到的数据出现错误：%v", err)
 		}
