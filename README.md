@@ -9,8 +9,9 @@ defer cancel()
 // uid为主播的uid
 dq := acfundanmu.Start(ctx, uid)
 for {
-    if danmu := dq.GetDanmu(); danmu != nil {
-        fmt.Printf("%+v", danmu)
+    if danmu, info := dq.GetDanmu(); danmu != nil {
+        fmt.Printf("%+v\n", danmu)
+        fmt.Printf("%+v\n", info)
     } else {
         fmt.Println("直播结束")
         break

@@ -18,7 +18,7 @@ import (
 )
 
 // 处理接受到的数据里的命令
-func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *acproto.DownstreamPayload, q *queue.Queue, hb chan<- int64) (e error) {
+func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *acproto.DownstreamPayload, q *queue.Queue, info *LiveInfo, hb chan<- int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("handleCommand() error: %w", err)
@@ -48,6 +48,10 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 			heartbeat := &acproto.ZtLiveCsHeartbeatAck{}
 			err = proto.Unmarshal(cmd.Payload, heartbeat)
 			checkErr(err)
+		case "ZtLiveCsUserExitAck":
+			//userExit := &acproto.ZtLiveCsUserExitAck{}
+			//err = proto.Unmarshal(cmd.Payload, userExit)
+			//checkErr(err)
 		default:
 			log.Printf("未知的cmd.CmdAckType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				cmd.CmdAckType,
@@ -83,9 +87,9 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 		}
 		switch message.MessageType {
 		case "ZtLiveScActionSignal":
-			handleMsgAct(&payload, q)
+			handleMsgAct(&payload, q, info, t.gifts)
 		case "ZtLiveScStateSignal":
-			handleMsgState(&payload)
+			handleMsgState(&payload, info)
 		case "ZtLiveScStatusChanged":
 			statusChanged := &acproto.ZtLiveScStatusChanged{}
 			err := proto.Unmarshal(payload, statusChanged)
@@ -136,7 +140,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 }
 
 // 处理action signal数据
-func handleMsgAct(payload *[]byte, q *queue.Queue) {
+func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int]*Giftdetail) {
 	actionSignal := &acproto.ZtLiveScActionSignal{}
 	err := proto.Unmarshal(*payload, actionSignal)
 	checkErr(err)
@@ -149,8 +153,6 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				comment := &acproto.CommonActionSignalComment{}
 				err = proto.Unmarshal(pl, comment)
 				checkErr(err)
-				//fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
-				//fmt.Printf("%+v\n", comment)
 				d := DanmuMessage{
 					Type:     Comment,
 					SendTime: comment.SendTimeMs * 1e6,
@@ -158,14 +160,10 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 					Nickname: comment.UserInfo.Nickname,
 					Comment:  comment.Content}
 				danmu = append(danmu, d)
-				//err = q.Put(c)
-				//checkErr(err)
 			case "CommonActionSignalLike":
 				like := &acproto.CommonActionSignalLike{}
 				err = proto.Unmarshal(pl, like)
 				checkErr(err)
-				//fmt.Println(like.UserInfo.Nickname, "点赞")
-				//fmt.Printf("%+v\n", like)
 				d := DanmuMessage{
 					Type:     Like,
 					SendTime: like.SendTimeMs * 1e6,
@@ -177,7 +175,6 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				enter := &acproto.CommonActionSignalUserEnterRoom{}
 				err = proto.Unmarshal(pl, enter)
 				checkErr(err)
-				//fmt.Println(enter.UserInfo.Nickname, "进入房间")
 				d := DanmuMessage{
 					Type:     EnterRoom,
 					SendTime: enter.SendTimeMs * 1e6,
@@ -189,7 +186,6 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				follow := &acproto.CommonActionSignalUserFollowAuthor{}
 				err = proto.Unmarshal(pl, follow)
 				checkErr(err)
-				//fmt.Println(follow.UserInfo.Nickname, "关注了主播")
 				d := DanmuMessage{
 					Type:     FollowAuthor,
 					SendTime: follow.SendTimeMs * 1e6,
@@ -201,17 +197,16 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				kickedOut := &acproto.CommonNotifySignalKickedOut{}
 				err = proto.Unmarshal(pl, kickedOut)
 				checkErr(err)
-				//fmt.Println("被踢信息：", kickedOut.Reason)
+				info.KickedOut = kickedOut.Reason
 			case "CommonNotifySignalViolationAlert":
 				violationAlert := &acproto.CommonNotifySignalViolationAlert{}
 				err = proto.Unmarshal(pl, violationAlert)
 				checkErr(err)
-				//fmt.Println("警告信息：", violationAlert.ViolationContent)
+				info.ViolationAlert = violationAlert.ViolationContent
 			case "AcfunActionSignalThrowBanana":
 				banana := &acproto.AcfunActionSignalThrowBanana{}
 				err = proto.Unmarshal(pl, banana)
 				checkErr(err)
-				//fmt.Println(banana.Visitor.Name, "送香蕉")
 				d := DanmuMessage{
 					Type:        ThrowBanana,
 					SendTime:    banana.SendTimeMs * 1e6,
@@ -224,14 +219,13 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 				gift := &acproto.CommonActionSignalGift{}
 				err = proto.Unmarshal(pl, gift)
 				checkErr(err)
-				//fmt.Println(gift.User.Name, "送出礼物：", gifts[int(gift.ItemId)], "数量：", gift.Count, "连击总数：", gift.Combo, "单个价值：", gift.Value)
 				d := DanmuMessage{
 					Type:     Gift,
 					SendTime: gift.SendTimeMs * 1e6,
 					UserID:   gift.User.UserId,
 					Nickname: gift.User.Nickname,
-					Gift: GiftInfo{
-						GiftID:                int(gift.GiftId),
+					GiftInfo: GiftInfo{
+						Gift:                  gifts[int(gift.GiftId)],
 						Count:                 int(gift.Count),
 						Combo:                 int(gift.Combo),
 						Value:                 int(gift.Value),
@@ -262,7 +256,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue) {
 }
 
 // 处理state signal数据
-func handleMsgState(payload *[]byte) {
+func handleMsgState(payload *[]byte, info *LiveInfo) {
 	signal := &acproto.ZtLiveScStateSignal{}
 	err := proto.Unmarshal(*payload, signal)
 	checkErr(err)
@@ -273,26 +267,49 @@ func handleMsgState(payload *[]byte) {
 			bananaInfo := &acproto.AcfunStateSignalDisplayInfo{}
 			err = proto.Unmarshal(item.Payload, bananaInfo)
 			checkErr(err)
-			//fmt.Println("香蕉总数：", bananaInfo.BananaCount)
+			info.AllBananaCount = bananaInfo.BananaCount
 		case "CommonStateSignalDisplayInfo":
 			stateInfo := &acproto.CommonStateSignalDisplayInfo{}
 			err = proto.Unmarshal(item.Payload, stateInfo)
 			checkErr(err)
-			//fmt.Println("观看人数和点赞总数：", stateInfo.WatchingCount, stateInfo.LikeCount)
+			info.WatchingCount = stateInfo.WatchingCount
+			info.LikeCount = stateInfo.LikeCount
+			info.LikeDelta = int(stateInfo.LikeDelta)
 		case "CommonStateSignalTopUsers":
 			topUsers := &acproto.CommonStateSignalTopUsers{}
 			err = proto.Unmarshal(item.Payload, topUsers)
 			checkErr(err)
-			//for _, user := range topUsers.User {
-			//	fmt.Println("老板", user.Detail.Name)
-			//}
+			var users []TopUser
+			for _, user := range topUsers.User {
+				u := TopUser{UserID: user.UserInfo.UserId,
+					Nickname:               user.UserInfo.Nickname,
+					CustomWatchingListData: user.CustomWatchingListData,
+					DisplaySendAmount:      user.DisplaySendAmount,
+					AnonymousUser:          user.AnonymousUser,
+				}
+				users = append(users, u)
+			}
+			info.TopUsers = users
 		case "CommonStateSignalRecentComment":
 			comments := &acproto.CommonStateSignalRecentComment{}
 			err = proto.Unmarshal(item.Payload, comments)
 			checkErr(err)
-			//for _, comment := range comments.Comment {
-			//	fmt.Println(comment.UserInfo.Nickname, "：", comment.Content)
-			//}
+			var danmu []DanmuMessage
+			for _, comment := range comments.Comment {
+				d := DanmuMessage{
+					Type:     Comment,
+					SendTime: comment.SendTimeMs * 1e6,
+					UserID:   comment.UserInfo.UserId,
+					Nickname: comment.UserInfo.Nickname,
+					Comment:  comment.Content,
+				}
+				danmu = append(danmu, d)
+			}
+			// 按SendTime大小排序
+			sort.Slice(danmu, func(i, j int) bool {
+				return danmu[i].SendTime < danmu[j].SendTime
+			})
+			info.RecentComment = danmu
 		case "CommonStateSignalChatCall":
 			//chatCall := &acproto.CommonStateSignalChatCall{}
 			//err = proto.Unmarshal(item.Payload, chatCall)

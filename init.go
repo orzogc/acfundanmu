@@ -233,9 +233,18 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) 
 		log.Panicf("获取礼物列表失败，响应为 %s", string(body))
 	}
 
-	t.gifts = make(map[int]string)
+	t.gifts = make(map[int]*Giftdetail)
 	for _, gift := range v.GetArray("data", "giftList") {
-		t.gifts[gift.GetInt("giftId")] = string(gift.GetStringBytes("giftName"))
+		g := Giftdetail{
+			ID:          gift.GetInt("giftId"),
+			Name:        string(gift.GetStringBytes("giftName")),
+			Price:       gift.GetInt("giftPrice"),
+			WebpPic:     string(gift.GetArray("webpPicList")[0].GetStringBytes("url")),
+			PngPic:      string(gift.GetArray("pngPicList")[0].GetStringBytes("url")),
+			SmallPngPic: string(gift.GetArray("smallPngPicList")[0].GetStringBytes("url")),
+			Description: string(gift.GetStringBytes("description")),
+		}
+		t.gifts[g.ID] = &g
 	}
 
 	return nil

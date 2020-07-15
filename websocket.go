@@ -121,7 +121,7 @@ func (dq DanmuQueue) wsStart(ctx context.Context, uid int, username, password st
 			continue
 		}
 
-		err = t.handleCommand(ctx, c, stream, dq.q, hb)
+		err = t.handleCommand(ctx, c, stream, dq.q, dq.info, hb)
 		if err != nil {
 			log.Printf("处理接受到的数据出现错误：%v", err)
 		}
