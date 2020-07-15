@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"log"
 	"time"
@@ -266,7 +267,13 @@ func padding(cipherText *[]byte, blockSize int) *[]byte {
 }
 
 // 将body/payload从数据中分离出来
-func (t *token) decode(byt *[]byte) *acproto.DownstreamPayload {
+func (t *token) decode(byt *[]byte) (downstream *acproto.DownstreamPayload, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("decode() error: %w", err)
+		}
+	}()
+
 	header, payloadBytes := decodeResponse(byt)
 	t.headerSeqID = header.SeqId
 
@@ -285,11 +292,11 @@ func (t *token) decode(byt *[]byte) *acproto.DownstreamPayload {
 
 	//payload = payload[:header.DecodedPayloadLen]
 
-	downstream := &acproto.DownstreamPayload{}
+	downstream = &acproto.DownstreamPayload{}
 	err := proto.Unmarshal(*payload, downstream)
 	checkErr(err)
 
-	return downstream
+	return downstream, nil
 }
 
 // 分离header和body/payload

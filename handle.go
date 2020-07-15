@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/base64"
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -16,10 +17,10 @@ import (
 )
 
 // 处理接受到的数据里的命令
-func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *acproto.DownstreamPayload, q *queue.Queue, hb chan<- int64) {
+func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *acproto.DownstreamPayload, q *queue.Queue, hb chan<- int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("Recovering from panic in handleCommand(), the error is:", err)
+			e = fmt.Errorf("handleCommand() error: %w", err)
 		}
 	}()
 
@@ -129,6 +130,8 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 				base64.StdEncoding.EncodeToString(stream.PayloadData))
 		}
 	}
+
+	return nil
 }
 
 // 处理action signal数据

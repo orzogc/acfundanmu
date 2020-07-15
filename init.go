@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/valyala/fastjson"
 )
@@ -21,11 +20,10 @@ func checkErr(err error) {
 }
 
 // 登陆acfun账号
-func login(username string, password string) (cookieContainer []*http.Cookie) {
+func login(username string, password string) (cookieContainer []*http.Cookie, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("Recovering from panic in login(), the error is:", err)
-			cookieContainer = nil
+			e = fmt.Errorf("login() error: %w", err)
 		}
 	}()
 
@@ -49,7 +47,7 @@ func login(username string, password string) (cookieContainer []*http.Cookie) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 0 {
-		return nil
+		log.Panicf("以注册用户的身份登陆AcFun失败，响应为 %s", string(body))
 	}
 
 	userID := v.GetInt("userId")
@@ -69,23 +67,20 @@ func login(username string, password string) (cookieContainer []*http.Cookie) {
 	v, err = p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("code") != 0 {
-		return nil
+		log.Panicf("获取safetyid失败，响应为 %s", string(body))
 	}
 
 	cookie := &http.Cookie{Name: "safety_id", Value: string(v.GetStringBytes("safety_id")), Domain: ".acfun.cn"}
 	cookieContainer = append(cookieContainer, cookie)
 
-	return cookieContainer
+	return cookieContainer, nil
 }
 
 // 初始化，获取相应的token，cookieContainer为nil时为游客模式
-func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *token) {
+func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *token, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("Recovering from panic in initialize(), the error is:", err)
-			// 重新初始化
-			time.Sleep(2 * time.Second)
-			deviceID, t = initialize(uid, cookieContainer)
+			e = fmt.Errorf("initialize() error: %w", err)
 		}
 	}()
 
@@ -132,7 +127,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *to
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 0 {
-		return "", nil
+		log.Panicf("获取AcFun token失败，响应为 %s", string(body))
 	}
 
 	// 获取userId和对应的令牌
@@ -165,7 +160,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *to
 	v, err = p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		return "", nil
+		log.Panicf("获取直播详细信息失败，响应为 %s", string(body))
 	}
 
 	liveID := string(v.GetStringBytes("data", "liveId"))
@@ -191,23 +186,19 @@ func initialize(uid int, cookieContainer []*http.Cookie) (deviceID string, t *to
 		ticketIndex:     0,
 	}
 
-	return deviceID, t
+	return deviceID, t, nil
 }
 
 // 更新礼物列表
-func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) (gifts map[int]string) {
+func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) (gifts map[int]string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("Recovering from panic in updateGiftList(), the error is:", err)
-			// 重新获取礼物列表
-			time.Sleep(2 * time.Second)
-			gifts = t.updateGiftList(cookieContainer, deviceID)
+			e = fmt.Errorf("updateGiftList() error: %w", err)
 		}
 	}()
 
 	if t == nil {
-		log.Println("获取token失败，可能主播不在直播")
-		return nil
+		log.Panicln("获取token失败，可能主播不在直播")
 	}
 
 	var giftList string
@@ -236,7 +227,7 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) 
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		return nil
+		log.Panicf("获取礼物列表失败，响应为 %s", string(body))
 	}
 
 	gifts = make(map[int]string)
@@ -244,23 +235,19 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) 
 		gifts[gift.GetInt("giftId")] = string(gift.GetStringBytes("giftName"))
 	}
 
-	return gifts
+	return gifts, nil
 }
 
 // 获取在线观众列表
-func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (watchList map[int]string) {
+func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (watchList map[int]string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("Recovering from panic in watchingList(), the error is:", err)
-			// 重新获取礼物列表
-			time.Sleep(2 * time.Second)
-			watchList = t.watchingList(cookieContainer, deviceID)
+			e = fmt.Errorf("watchingList() error: %w", err)
 		}
 	}()
 
 	if t == nil {
-		log.Println("获取token失败，可能主播不在直播")
-		return nil
+		log.Panicln("获取token失败，可能主播不在直播")
 	}
 
 	var watchURL string
@@ -289,7 +276,7 @@ func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (w
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		return nil
+		log.Panicf("获取在线观众列表失败，响应为 %s", string(body))
 	}
 
 	watchList = make(map[int]string)
@@ -297,5 +284,5 @@ func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (w
 		watchList[watch.GetInt("userId")] = string(watch.GetStringBytes("nickname"))
 	}
 
-	return watchList
+	return watchList, nil
 }

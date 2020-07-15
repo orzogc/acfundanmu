@@ -3,8 +3,6 @@ package acfundanmu
 import (
 	"context"
 	"encoding/base64"
-	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -19,7 +17,7 @@ import (
 func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int64) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("Recovering from panic in wsHeartbeat(), the error is:", err)
+			log.Printf("Recovering from panic in wsHeartbeat(), the error is: %v", err)
 			// 重新启动wsHeartbeat()
 			time.Sleep(2 * time.Second)
 			hb <- 10000
@@ -44,32 +42,44 @@ func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int6
 }
 
 // 启动websocket，username（邮箱）和password用来登陆AcFun，其为空串时启动访客模式，目前登陆模式和访客模式并没有区别
-func (q Queue) wsStart(ctx context.Context, uid int, username, password string) (e error) {
+func (q Queue) wsStart(ctx context.Context, uid int, username, password string) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("Recovering from panic in wsStart(), the error is:", err)
-			e = errors.New(fmt.Sprint(err))
+			log.Printf("wsStart() error: %v", err)
+			log.Println("websocket停止运行，如果要获取弹幕请重新启动websocket")
 		}
 	}()
 	defer q.q.Dispose()
 
 	var cookieContainer []*http.Cookie = nil
-
+	var err error
 	if username != "" && password != "" {
-		if cookieContainer = login(username, password); cookieContainer == nil {
+		cookieContainer, err = login(username, password)
+		if err != nil {
 			q.ch <- false
-			return errors.New("登陆AcFun失败")
+			log.Panicln(err)
 		}
 	}
-	deviceID, t := initialize(uid, cookieContainer)
 
-	if t == nil {
-		log.Println("获取token失败，主播可能不在直播")
-		q.ch <- false
-		return errors.New("获取token失败，主播可能不在直播")
+	//deviceID, t := initialize(uid, cookieContainer)
+	var t *token
+	for retry := 0; retry < 3; retry++ {
+		_, t, err = initialize(uid, cookieContainer)
+		if err != nil {
+			if retry == 2 {
+				q.ch <- false
+				log.Println("获取token失败，主播可能不在直播")
+				log.Panicln(err)
+			} else {
+				log.Printf("初始化出现错误：%v", err)
+				log.Println("尝试重新初始化")
+			}
+		} else {
+			break
+		}
 	}
 
-	t.gifts = t.updateGiftList(cookieContainer, deviceID)
+	//t.gifts = t.updateGiftList(cookieContainer, deviceID)
 
 	q.ch <- true
 
@@ -81,7 +91,8 @@ func (q Queue) wsStart(ctx context.Context, uid int, username, password string) 
 	checkErr(err)
 	_, resp, err := c.Read(ctx)
 	checkErr(err)
-	registerDown := t.decode(&resp)
+	registerDown, err := t.decode(&resp)
+	checkErr(err)
 	regResp := &acproto.RegisterResponse{}
 	err = proto.Unmarshal(registerDown.PayloadData, regResp)
 	checkErr(err)
@@ -107,11 +118,19 @@ func (q Queue) wsStart(ctx context.Context, uid int, username, password string) 
 			break
 		}
 
-		stream := t.decode(&buffer)
-		t.handleCommand(ctx, c, stream, q.q, hb)
+		stream, err := t.decode(&buffer)
+		if err != nil {
+			log.Printf("解码接受到的数据出现错误：%v", err)
+			continue
+		}
+
+		err = t.handleCommand(ctx, c, stream, q.q, hb)
+		if err != nil {
+			log.Printf("处理接受到的数据出现错误：%v", err)
+		}
 	}
 
-	return nil
+	return
 }
 
 // 停止websocket
