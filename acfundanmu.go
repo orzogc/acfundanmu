@@ -74,7 +74,7 @@ type TopUser struct {
 	AnonymousUser          bool
 }
 
-// LiveInfo 就是直播间的相关信息状态
+// LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
 	KickedOut      string         // 被踢理由？
 	ViolationAlert string         // 直播间警告？
