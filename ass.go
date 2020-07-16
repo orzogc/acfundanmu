@@ -131,7 +131,7 @@ func (dq DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, new
 		case <-ctx.Done():
 			return
 		default:
-			danmu, _ := dq.GetDanmu()
+			danmu := dq.GetDanmu()
 			if danmu == nil {
 				return
 			}

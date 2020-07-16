@@ -103,14 +103,14 @@ func Start(ctx context.Context, uid int) (dq DanmuQueue) {
 	return dq
 }
 
-// GetDanmu 返回弹幕数据danmu和直播间状态info，danmu为nil时说明弹幕获取结束（出现错误或者主播下播）
-func (dq DanmuQueue) GetDanmu() (danmu []DanmuMessage, info LiveInfo) {
+// GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播）
+func (dq DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	if (*queue.Queue)(dq.q).Disposed() {
-		return nil, info
+		return nil
 	}
 	ds, err := (*queue.Queue)(dq.q).Get(queueLen)
 	if err != nil {
-		return nil, info
+		return nil
 	}
 
 	danmu = make([]DanmuMessage, len(ds))
@@ -118,5 +118,10 @@ func (dq DanmuQueue) GetDanmu() (danmu []DanmuMessage, info LiveInfo) {
 		danmu[i] = d.(DanmuMessage)
 	}
 
-	return danmu, *dq.info
+	return danmu
+}
+
+// GetInfo 返回直播间的状态信息info
+func (dq DanmuQueue) GetInfo() (info LiveInfo) {
+	return *dq.info
 }

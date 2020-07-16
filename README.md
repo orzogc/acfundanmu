@@ -8,10 +8,21 @@ ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
 dq := acfundanmu.Start(ctx, uid)
+go func() {
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        default:
+            time.Sleep(5 * time.Second)
+            info := q.GetInfo()
+            fmt.Printf("%+v\n", info)
+        }
+    }
+}()
 for {
-    if danmu, info := dq.GetDanmu(); danmu != nil {
+    if danmu := dq.GetDanmu(); danmu != nil {
         fmt.Printf("%+v\n", danmu)
-        fmt.Printf("%+v\n", info)
     } else {
         fmt.Println("直播结束")
         break
