@@ -22,7 +22,9 @@ go func() {
 }()
 for {
     if danmu := dq.GetDanmu(); danmu != nil {
-        fmt.Printf("%+v\n", danmu)
+        for _, d := range danmu {
+            fmt.Printf("%+v\n", d)
+        }
     } else {
         fmt.Println("直播结束")
         break
