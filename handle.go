@@ -224,8 +224,8 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int
 					SendTime: gift.SendTimeMs * 1e6,
 					UserID:   gift.User.UserId,
 					Nickname: gift.User.Nickname,
-					GiftInfo: GiftInfo{
-						Gift:                  gifts[int(gift.GiftId)],
+					Gift: GiftInfo{
+						Giftdetail:            gifts[int(gift.GiftId)],
 						Count:                 int(gift.Count),
 						Combo:                 int(gift.Combo),
 						Value:                 int(gift.Value),

@@ -38,13 +38,13 @@ type Giftdetail struct {
 	Description string // 礼物的描述
 }
 
-// GiftInfo 就是礼物信息
+// GiftInfo 就是弹幕里的礼物信息
 type GiftInfo struct {
-	Gift                  Giftdetail // 礼物详细信息
-	Count                 int        // 礼物数量
-	Combo                 int        // 礼物连击数量
-	Value                 int        // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
-	ComboID               string     // 礼物连击ID
+	Giftdetail                   // 礼物详细信息
+	Count                 int    // 礼物数量
+	Combo                 int    // 礼物连击数量
+	Value                 int    // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
+	ComboID               string // 礼物连击ID
 	SlotDisplayDurationMs int
 	ExpireDurationMs      int
 }
@@ -52,7 +52,7 @@ type GiftInfo struct {
 // DanmuMessage 就是websocket接受到的弹幕相关信息。
 // 不论是哪种Type都会有SendTime、UserID、Nickname。
 // Type为Comment时，Comment就是弹幕文字。
-// Type为Gift时，GiftInfo就是礼物信息。
+// Type为Gift时，Gift就是礼物信息。
 // Type为Like、EnterRoom和FollowAuthor时没有多余的数据。
 // Type为ThrowBanana时，BananaCount就是投蕉数量，不过现在好像都是用Gift代替。
 type DanmuMessage struct {
@@ -62,7 +62,7 @@ type DanmuMessage struct {
 	Nickname    string    // 用户名字
 	Comment     string    // 弹幕内容
 	BananaCount int       // 投蕉数量
-	GiftInfo    GiftInfo  // 礼物信息
+	Gift        GiftInfo  // 礼物信息
 }
 
 //TopUser 就是礼物榜在线前三
