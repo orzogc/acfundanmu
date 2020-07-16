@@ -140,7 +140,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 }
 
 // 处理action signal数据
-func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int]*Giftdetail) {
+func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int]Giftdetail) {
 	actionSignal := &acproto.ZtLiveScActionSignal{}
 	err := proto.Unmarshal(*payload, actionSignal)
 	checkErr(err)

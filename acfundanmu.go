@@ -40,11 +40,11 @@ type Giftdetail struct {
 
 // GiftInfo 就是礼物信息
 type GiftInfo struct {
-	Gift                  *Giftdetail // 礼物详细信息
-	Count                 int         // 礼物数量
-	Combo                 int         // 礼物连击数量
-	Value                 int         // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
-	ComboID               string      // 礼物连击ID
+	Gift                  Giftdetail // 礼物详细信息
+	Count                 int        // 礼物数量
+	Combo                 int        // 礼物连击数量
+	Value                 int        // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
+	ComboID               string     // 礼物连击ID
 	SlotDisplayDurationMs int
 	ExpireDurationMs      int
 }
