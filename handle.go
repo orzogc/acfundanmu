@@ -158,7 +158,8 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int
 					SendTime: comment.SendTimeMs * 1e6,
 					UserID:   comment.UserInfo.UserId,
 					Nickname: comment.UserInfo.Nickname,
-					Comment:  comment.Content}
+					//Avatar:   comment.UserInfo.Avatar[0].Url,
+					Comment: comment.Content}
 				danmu = append(danmu, d)
 			case "CommonActionSignalLike":
 				like := &acproto.CommonActionSignalLike{}
@@ -169,6 +170,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int
 					SendTime: like.SendTimeMs * 1e6,
 					UserID:   like.UserInfo.UserId,
 					Nickname: like.UserInfo.Nickname,
+					//Avatar:   like.UserInfo.Avatar[0].Url,
 				}
 				danmu = append(danmu, d)
 			case "CommonActionSignalUserEnterRoom":
@@ -180,6 +182,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int
 					SendTime: enter.SendTimeMs * 1e6,
 					UserID:   enter.UserInfo.UserId,
 					Nickname: enter.UserInfo.Nickname,
+					//Avatar:   enter.UserInfo.Avatar[0].Url,
 				}
 				danmu = append(danmu, d)
 			case "CommonActionSignalUserFollowAuthor":
@@ -191,6 +194,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int
 					SendTime: follow.SendTimeMs * 1e6,
 					UserID:   follow.UserInfo.UserId,
 					Nickname: follow.UserInfo.Nickname,
+					//Avatar:   follow.UserInfo.Avatar[0].Url,
 				}
 				danmu = append(danmu, d)
 			case "CommonNotifySignalKickedOut":
@@ -224,6 +228,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int
 					SendTime: gift.SendTimeMs * 1e6,
 					UserID:   gift.User.UserId,
 					Nickname: gift.User.Nickname,
+					Avatar:   gift.User.Avatar[0].Url,
 					Gift: GiftInfo{
 						Giftdetail:            gifts[int(gift.GiftId)],
 						Count:                 int(gift.Count),
@@ -281,8 +286,10 @@ func handleMsgState(payload *[]byte, info *LiveInfo) {
 			checkErr(err)
 			var users []TopUser
 			for _, user := range topUsers.User {
-				u := TopUser{UserID: user.UserInfo.UserId,
+				u := TopUser{
+					UserID:                 user.UserInfo.UserId,
 					Nickname:               user.UserInfo.Nickname,
+					Avatar:                 user.UserInfo.Avatar[0].Url,
 					CustomWatchingListData: user.CustomWatchingListData,
 					DisplaySendAmount:      user.DisplaySendAmount,
 					AnonymousUser:          user.AnonymousUser,
@@ -301,7 +308,8 @@ func handleMsgState(payload *[]byte, info *LiveInfo) {
 					SendTime: comment.SendTimeMs * 1e6,
 					UserID:   comment.UserInfo.UserId,
 					Nickname: comment.UserInfo.Nickname,
-					Comment:  comment.Content,
+					//Avatar:   comment.UserInfo.Avatar[0].Url,
+					Comment: comment.Content,
 				}
 				danmu = append(danmu, d)
 			}
