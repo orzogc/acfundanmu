@@ -18,7 +18,7 @@ import (
 )
 
 // 处理接受到的数据里的命令
-func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *acproto.DownstreamPayload, q *queue.Queue, info *LiveInfo, hb chan<- int64) (e error) {
+func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *acproto.DownstreamPayload, q *queue.Queue, info *liveInfo, hb chan<- int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("handleCommand() error: %w", err)
@@ -140,7 +140,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 }
 
 // 处理action signal数据
-func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int]Giftdetail) {
+func handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo, gifts map[int]Giftdetail) {
 	actionSignal := &acproto.ZtLiveScActionSignal{}
 	err := proto.Unmarshal(*payload, actionSignal)
 	checkErr(err)
@@ -201,16 +201,16 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int
 				kickedOut := &acproto.CommonNotifySignalKickedOut{}
 				err = proto.Unmarshal(pl, kickedOut)
 				checkErr(err)
-				infoMutex.Lock()
+				info.Lock()
 				info.KickedOut = kickedOut.Reason
-				infoMutex.Unlock()
+				info.Unlock()
 			case "CommonNotifySignalViolationAlert":
 				violationAlert := &acproto.CommonNotifySignalViolationAlert{}
 				err = proto.Unmarshal(pl, violationAlert)
 				checkErr(err)
-				infoMutex.Lock()
+				info.Lock()
 				info.ViolationAlert = violationAlert.ViolationContent
-				infoMutex.Unlock()
+				info.Unlock()
 			case "AcfunActionSignalThrowBanana":
 				banana := &acproto.AcfunActionSignalThrowBanana{}
 				err = proto.Unmarshal(pl, banana)
@@ -265,7 +265,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *LiveInfo, gifts map[int
 }
 
 // 处理state signal数据
-func handleMsgState(payload *[]byte, info *LiveInfo) {
+func handleMsgState(payload *[]byte, info *liveInfo) {
 	signal := &acproto.ZtLiveScStateSignal{}
 	err := proto.Unmarshal(*payload, signal)
 	checkErr(err)
@@ -276,18 +276,18 @@ func handleMsgState(payload *[]byte, info *LiveInfo) {
 			bananaInfo := &acproto.AcfunStateSignalDisplayInfo{}
 			err = proto.Unmarshal(item.Payload, bananaInfo)
 			checkErr(err)
-			infoMutex.Lock()
+			info.Lock()
 			info.AllBananaCount = bananaInfo.BananaCount
-			infoMutex.Unlock()
+			info.Unlock()
 		case "CommonStateSignalDisplayInfo":
 			stateInfo := &acproto.CommonStateSignalDisplayInfo{}
 			err = proto.Unmarshal(item.Payload, stateInfo)
 			checkErr(err)
-			infoMutex.Lock()
+			info.Lock()
 			info.WatchingCount = stateInfo.WatchingCount
 			info.LikeCount = stateInfo.LikeCount
 			info.LikeDelta = int(stateInfo.LikeDelta)
-			infoMutex.Unlock()
+			info.Unlock()
 		case "CommonStateSignalTopUsers":
 			topUsers := &acproto.CommonStateSignalTopUsers{}
 			err = proto.Unmarshal(item.Payload, topUsers)
@@ -304,9 +304,9 @@ func handleMsgState(payload *[]byte, info *LiveInfo) {
 				}
 				users = append(users, u)
 			}
-			infoMutex.Lock()
+			info.Lock()
 			info.TopUsers = users
-			infoMutex.Unlock()
+			info.Unlock()
 		case "CommonStateSignalRecentComment":
 			comments := &acproto.CommonStateSignalRecentComment{}
 			err = proto.Unmarshal(item.Payload, comments)
@@ -327,9 +327,9 @@ func handleMsgState(payload *[]byte, info *LiveInfo) {
 			//sort.Slice(danmu, func(i, j int) bool {
 			//	return danmu[i].SendTime < danmu[j].SendTime
 			//})
-			infoMutex.Lock()
+			info.Lock()
 			info.RecentComment = danmu
-			infoMutex.Unlock()
+			info.Unlock()
 		case "CommonStateSignalChatCall":
 			//chatCall := &acproto.CommonStateSignalChatCall{}
 			//err = proto.Unmarshal(item.Payload, chatCall)

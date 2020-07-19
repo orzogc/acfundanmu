@@ -89,20 +89,23 @@ type LiveInfo struct {
 	RecentComment  []DanmuMessage // 进直播间时显示的最近发的弹幕
 }
 
-// *LiveInfo的锁
-var infoMutex sync.Mutex
+// 带锁的LiveInfo
+type liveInfo struct {
+	sync.Mutex // LiveInfo的锁
+	LiveInfo
+}
 
 // DanmuQueue 就是弹幕的队列
 type DanmuQueue struct {
 	q    *queue.Queue // DanmuMessage的队列
-	info *LiveInfo    // 直播间的相关信息状态
+	info *liveInfo    // 直播间的相关信息状态
 	ch   chan bool    // 用来通知websocket启动
 }
 
 // Start 启动websocket获取弹幕，uid是主播的uid，ctx用来结束websocket
 func Start(ctx context.Context, uid int) (dq DanmuQueue) {
 	q := queue.New(queueLen)
-	info := new(LiveInfo)
+	info := new(liveInfo)
 	ch := make(chan bool, 1)
 	dq = DanmuQueue{q: q, info: info, ch: ch}
 	go dq.wsStart(ctx, uid, "", "")
@@ -129,8 +132,8 @@ func (dq DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 
 // GetInfo 返回直播间的状态信息info
 func (dq DanmuQueue) GetInfo() (info LiveInfo) {
-	infoMutex.Lock()
-	defer infoMutex.Unlock()
-	info = *dq.info
+	dq.info.Lock()
+	defer dq.info.Unlock()
+	info = dq.info.LiveInfo
 	return info
 }
