@@ -36,12 +36,14 @@ func (t *token) genCommand(command string, msg *[]byte) *[]byte {
 
 // 生成UpstreamPayload
 func (t *token) genPayload(cmd string, msg *[]byte) *[]byte {
+	t.Lock()
 	payload := &acproto.UpstreamPayload{
 		Command:    cmd,
 		SeqId:      t.seqID,
 		RetryCount: retryCount,
 		SubBiz:     subBiz,
 	}
+	t.Unlock()
 	if msg != nil {
 		payload.PayloadData = *msg
 	}
@@ -54,6 +56,7 @@ func (t *token) genPayload(cmd string, msg *[]byte) *[]byte {
 
 // 生成PacketHeader
 func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
+	t.Lock()
 	header = &acproto.PacketHeader{
 		AppId:             appID,
 		Uid:               t.userID,
@@ -63,6 +66,7 @@ func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 		SeqId:             t.seqID,
 		Kpn:               kpn,
 	}
+	t.Unlock()
 	return header
 }
 
@@ -145,7 +149,9 @@ func (t *token) enterRoom() *[]byte {
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
 
 	header := t.genHeader(len(*body))
+	t.Lock()
 	t.seqID++
+	t.Unlock()
 
 	return t.encode(header, body)
 }
@@ -195,7 +201,9 @@ func (t *token) heartbeat() *[]byte {
 
 	header := t.genHeader(len(*body))
 	t.heartbeatSeqID++
+	t.Lock()
 	t.seqID++
+	t.Unlock()
 
 	return t.encode(header, body)
 }
@@ -207,7 +215,9 @@ func (t *token) userExit() *[]byte {
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
 
 	header := t.genHeader(len(*body))
+	t.Lock()
 	t.seqID++
+	t.Unlock()
 
 	return t.encode(header, body)
 }

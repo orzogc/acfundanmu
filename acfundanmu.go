@@ -2,6 +2,7 @@ package acfundanmu
 
 import (
 	"context"
+	"sync"
 
 	"github.com/Workiva/go-datastructures/queue"
 )
@@ -88,6 +89,9 @@ type LiveInfo struct {
 	RecentComment  []DanmuMessage // 进直播间时显示的最近发的弹幕
 }
 
+// *LiveInfo的锁
+var infoMutex sync.Mutex
+
 // DanmuQueue 就是弹幕的队列
 type DanmuQueue struct {
 	q    *queue.Queue // DanmuMessage的队列
@@ -125,5 +129,8 @@ func (dq DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 
 // GetInfo 返回直播间的状态信息info
 func (dq DanmuQueue) GetInfo() (info LiveInfo) {
-	return *dq.info
+	infoMutex.Lock()
+	defer infoMutex.Unlock()
+	info = *dq.info
+	return info
 }
