@@ -34,11 +34,7 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 	form.Set("password", password)
 	form.Set("key", "")
 	form.Set("captcha", "")
-	req, err := http.NewRequest("POST", acfunSignInURL, strings.NewReader(form.Encode()))
-	checkErr(err)
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	resp, err := client.Do(req)
+	resp, err := http.PostForm(acfunSignInURL, form)
 	checkErr(err)
 	defer resp.Body.Close()
 
@@ -53,7 +49,7 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 
 	userID := v.GetInt("userId")
 	content := fmt.Sprintf(safetyIDContent, userID)
-	req, err = http.NewRequest("POST", acfunSafetyIDURL, strings.NewReader(content))
+	req, err := http.NewRequest("POST", acfunSafetyIDURL, strings.NewReader(content))
 	checkErr(err)
 
 	for _, cookie := range resp.Cookies() {
@@ -87,9 +83,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", liveURL+strconv.Itoa(uid), nil)
-	checkErr(err)
-	resp, err := client.Do(req)
+	resp, err := http.Get(liveURL + strconv.Itoa(uid))
 	checkErr(err)
 	defer resp.Body.Close()
 
@@ -102,6 +96,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	}
 	deviceID := didCookie.Value
 
+	var req *http.Request
 	form := url.Values{}
 	if cookieContainer != nil {
 		form.Set(sid, midground)
@@ -148,11 +143,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	form = url.Values{}
 	// authorId就是主播的uid
 	form.Set("authorId", strconv.Itoa(uid))
-	req, err = http.NewRequest("POST", play, strings.NewReader(form.Encode()))
-	checkErr(err)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err = client.Do(req)
+	resp, err = http.PostForm(play, form)
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
@@ -212,16 +203,10 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) 
 		giftList = fmt.Sprintf(giftURL, t.userID, deviceID, visitorSt, t.serviceToken)
 	}
 
-	client := &http.Client{}
-
 	form := url.Values{}
 	form.Set("visitorId", strconv.Itoa(int(t.userID)))
 	form.Set("liveId", t.liveID)
-	req, err := http.NewRequest("POST", giftList, strings.NewReader(form.Encode()))
-	checkErr(err)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := client.Do(req)
+	resp, err := http.PostForm(giftList, form)
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -270,16 +255,10 @@ func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (w
 		watchURL = fmt.Sprintf(watchingURL, t.userID, deviceID, visitorSt, t.serviceToken)
 	}
 
-	client := &http.Client{}
-
 	form := url.Values{}
 	form.Set("visitorId", strconv.Itoa(int(t.userID)))
 	form.Set("liveId", t.liveID)
-	req, err := http.NewRequest("POST", watchURL, strings.NewReader(form.Encode()))
-	checkErr(err)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := client.Do(req)
+	resp, err := http.PostForm(watchURL, form)
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
