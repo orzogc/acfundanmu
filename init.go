@@ -27,8 +27,6 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 		}
 	}()
 
-	client := &http.Client{}
-
 	form := url.Values{}
 	form.Set("username", username)
 	form.Set("password", password)
@@ -47,15 +45,13 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 		log.Panicf("以注册用户的身份登陆AcFun失败，响应为 %s", string(body))
 	}
 
-	userID := v.GetInt("userId")
-	content := fmt.Sprintf(safetyIDContent, userID)
-	req, err := http.NewRequest("POST", acfunSafetyIDURL, strings.NewReader(content))
-	checkErr(err)
-
 	for _, cookie := range resp.Cookies() {
 		cookieContainer = append(cookieContainer, cookie)
 	}
-	resp, err = client.Do(req)
+
+	userID := v.GetInt("userId")
+	content := fmt.Sprintf(safetyIDContent, userID)
+	resp, err = http.Post(acfunSafetyIDURL, "", strings.NewReader(content))
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
