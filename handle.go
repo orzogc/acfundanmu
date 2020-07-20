@@ -81,6 +81,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 		if message.CompressionType == acproto.ZtLiveScMessage_GZIP {
 			r, err := gzip.NewReader(bytes.NewReader(message.Payload))
 			checkErr(err)
+			defer r.Close()
 			result, err := ioutil.ReadAll(r)
 			checkErr(err)
 			payload = result

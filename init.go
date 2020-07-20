@@ -43,6 +43,7 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
+	checkErr(err)
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
 	checkErr(err)
