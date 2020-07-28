@@ -359,6 +359,7 @@ func handleMsgState(payload *[]byte, info *liveInfo) {
 			//chatEnd := &acproto.CommonStateSignalChatEnd{}
 			//err = proto.Unmarshal(item.Payload, chatEnd)
 			//checkErr(err)
+		case "CommonStateSignalCurrentRedpackList":
 		default:
 			log.Printf("未知的State Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				item.SingalType,
