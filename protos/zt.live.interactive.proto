@@ -235,3 +235,52 @@ message CommonStateSignalChatEnd {
 		AUTHOR_HEARTBEAT_TIMEOUT = 7;
 	}
 }
+
+message CommonActionSignalRichText {
+	repeated RichTextSegment segments = 1;
+	int64 b = 2;
+
+	message ImageSegment {
+		repeated ImageCdnNode pictures = 1;
+		string color = 2;	// unconfirmed
+		string alterText = 3;	// unconfirmed
+	}
+	message PlainSegment {
+		string text = 1;
+		string color = 2;
+	}
+	message RichTextSegment {
+		oneof segment {
+			UserInfoSegment userInfo = 1;
+			PlainSegment plain = 2;
+			ImageSegment image = 3;
+		}
+	}
+	message UserInfoSegment {
+		ZtLiveUserInfo user = 1;
+		string color = 2;
+	}
+}
+
+message CommonStateSignalCurrentRedpackList {
+	repeated Redpack redpacks = 1;
+
+	message Redpack {
+		ZtLiveUserInfo sender = 1;
+		int32 displayStatus = 2;
+		int64 amount = 3;	// unconfirmed
+		int64 grabBeginTimeInMs = 4;	// unconfirmed
+		string redPackId = 5;	// unconfirmed
+		string bizUnit = 6;	// unconfirmed
+		int64 getTokenLatestTimeInMs = 7;	// unconfirmed
+	}
+}
+
+message CommonStateSignalFeatureStateSync {
+	repeated LiveFeatureState a = 1;
+}
+
+message LiveFeatureState {
+	int32 a = 1;
+	int32 b = 2;
+}

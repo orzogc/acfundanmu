@@ -255,6 +255,12 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo, gifts map[int
 					d.Avatar = gift.User.Avatar[0].Url
 				}
 				danmu = append(danmu, d)
+			case "CommonActionSignalRichText":
+				richText := &acproto.CommonActionSignalRichText{}
+				err = proto.Unmarshal(pl, richText)
+				checkErr(err)
+				log.Printf("CommonActionSignalRichText: \n%+v\n", richText)
+				log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(pl))
 			default:
 				log.Printf("未知的Action Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 					item.SingalType,
@@ -360,6 +366,9 @@ func handleMsgState(payload *[]byte, info *liveInfo) {
 			//err = proto.Unmarshal(item.Payload, chatEnd)
 			//checkErr(err)
 		case "CommonStateSignalCurrentRedpackList":
+			//redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
+			//err = proto.Unmarshal(item.Payload, redpackList)
+			//checkErr(err)
 		default:
 			log.Printf("未知的State Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				item.SingalType,

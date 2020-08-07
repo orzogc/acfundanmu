@@ -139,6 +139,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	form = url.Values{}
 	// authorId就是主播的uid
 	form.Set("authorId", strconv.Itoa(uid))
+	form.Set("pullStreamType", "FLV")
 	resp, err = http.PostForm(play, form)
 	checkErr(err)
 	defer resp.Body.Close()
