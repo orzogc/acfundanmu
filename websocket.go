@@ -76,6 +76,7 @@ func (dq DanmuQueue) wsStart(ctx context.Context, uid int, username, password st
 		} else {
 			break
 		}
+		time.Sleep(10 * time.Second)
 	}
 
 	dq.ch <- true
