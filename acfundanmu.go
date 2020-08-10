@@ -51,19 +51,19 @@ type GiftInfo struct {
 }
 
 // DanmuMessage 就是websocket接受到的弹幕相关信息。
-// 不论是哪种Type都会有SendTime、UserID、Nickname。
+// 不论是哪种Type都会有SendTime、UserID、Nickname和Avatar。
 // Type为Comment时，Comment就是弹幕文字。
-// Type为Gift时，Gift就是礼物信息，Avatar就是送礼物的用户的头像。
+// Type为Gift时，Gift就是礼物信息。
 // Type为Like、EnterRoom和FollowAuthor时没有多余的数据。
-// Type为ThrowBanana时，BananaCount就是投蕉数量，不过现在好像都是用Gift代替。
+// Type为ThrowBanana时，BananaCount就是投蕉数量，不过现在基本是用Gift代替。
 type DanmuMessage struct {
 	Type        DanmuType // 弹幕类型
 	SendTime    int64     // 弹幕发送时间，是以纳秒为单位的Unix时间
 	UserID      int64     // 用户uid
 	Nickname    string    // 用户名字
-	Avatar      string    // 用户头像，好像只有Type为Gift时才不为空
+	Avatar      string    // 用户头像
 	Comment     string    // 弹幕内容
-	BananaCount int       // 投蕉数量，现在基本上不用这个了
+	BananaCount int       // 投蕉数量，现在基本上不用这个
 	Gift        GiftInfo  // 礼物信息
 }
 

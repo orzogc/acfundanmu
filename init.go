@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/valyala/fastjson"
 )
@@ -77,7 +78,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 		}
 	}()
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 10 * time.Second}
 
 	resp, err := http.Get(liveURL + strconv.Itoa(uid))
 	checkErr(err)
@@ -96,14 +97,14 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	form := url.Values{}
 	if cookieContainer != nil {
 		form.Set(sid, midground)
-		req, err = http.NewRequest("POST", getTokenURL, strings.NewReader(form.Encode()))
+		req, err = http.NewRequest(http.MethodPost, getTokenURL, strings.NewReader(form.Encode()))
 		checkErr(err)
 		for _, cookie := range cookieContainer {
 			req.AddCookie(cookie)
 		}
 	} else {
 		form.Set(sid, visitor)
-		req, err = http.NewRequest("POST", loginURL, strings.NewReader(form.Encode()))
+		req, err = http.NewRequest(http.MethodPost, loginURL, strings.NewReader(form.Encode()))
 		checkErr(err)
 		req.AddCookie(didCookie)
 	}
@@ -140,7 +141,11 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	// authorId就是主播的uid
 	form.Set("authorId", strconv.Itoa(uid))
 	form.Set("pullStreamType", "FLV")
-	resp, err = http.PostForm(play, form)
+	req, err = http.NewRequest(http.MethodPost, play, strings.NewReader(form.Encode()))
+	checkErr(err)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Referer", liveURL+strconv.Itoa(uid))
+	resp, err = client.Do(req)
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
@@ -200,10 +205,16 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) 
 		giftList = fmt.Sprintf(giftURL, t.userID, deviceID, visitorSt, t.serviceToken)
 	}
 
+	client := &http.Client{Timeout: 10 * time.Second}
+
 	form := url.Values{}
 	form.Set("visitorId", strconv.Itoa(int(t.userID)))
 	form.Set("liveId", t.liveID)
-	resp, err := http.PostForm(giftList, form)
+	req, err := http.NewRequest(http.MethodPost, giftList, strings.NewReader(form.Encode()))
+	checkErr(err)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Referer", liveURL)
+	resp, err := client.Do(req)
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -252,10 +263,16 @@ func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (w
 		watchURL = fmt.Sprintf(watchingURL, t.userID, deviceID, visitorSt, t.serviceToken)
 	}
 
+	client := &http.Client{Timeout: 10 * time.Second}
+
 	form := url.Values{}
 	form.Set("visitorId", strconv.Itoa(int(t.userID)))
 	form.Set("liveId", t.liveID)
-	resp, err := http.PostForm(watchURL, form)
+	req, err := http.NewRequest(http.MethodPost, watchURL, strings.NewReader(form.Encode()))
+	checkErr(err)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Referer", liveURL)
+	resp, err := client.Do(req)
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
