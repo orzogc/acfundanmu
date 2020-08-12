@@ -237,25 +237,17 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				err = proto.Unmarshal(pl, gift)
 				checkErr(err)
 				g, ok := t.gifts[int(gift.GiftId)]
-				for retry := 0; retry < 3; retry++ {
-					if !ok {
-						err = t.updateGiftList(nil)
-						if err != nil {
-							log.Printf("更新礼物列表出现错误：%v", err)
-							if retry == 2 {
-								log.Println("更新礼物列表失败")
-							} else {
-								log.Println("尝试重新更新礼物列表")
-							}
-						}
-						g, ok = t.gifts[int(gift.GiftId)]
-						if retry == 2 {
-							if !ok {
-								log.Printf("无法获取ID为%d的礼物的详细信息", gift.GiftId)
-							}
-						}
+				if !ok {
+					err = t.updateGiftList(nil)
+					if err != nil {
+						log.Printf("更新礼物列表出现错误：%v", err)
+						g = Giftdetail{}
 					} else {
-						break
+						g, ok = t.gifts[int(gift.GiftId)]
+						if !ok {
+							log.Printf("无法获取ID为%d的礼物的详细信息", gift.GiftId)
+							g = Giftdetail{}
+						}
 					}
 				}
 				d := DanmuMessage{
