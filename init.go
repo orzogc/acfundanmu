@@ -178,16 +178,17 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 		headerSeqID:     1,
 		heartbeatSeqID:  1,
 		ticketIndex:     0,
+		deviceID:        deviceID,
 	}
 
-	err = t.updateGiftList(cookieContainer, deviceID)
+	err = t.updateGiftList(cookieContainer)
 	checkErr(err)
 
 	return t, nil
 }
 
 // 更新礼物列表
-func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) (e error) {
+func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("updateGiftList() error: %w", err)
@@ -200,9 +201,9 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) 
 
 	var giftList string
 	if cookieContainer != nil {
-		giftList = fmt.Sprintf(giftURL, t.userID, deviceID, midgroundSt, t.serviceToken)
+		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
 	} else {
-		giftList = fmt.Sprintf(giftURL, t.userID, deviceID, visitorSt, t.serviceToken)
+		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
 	}
 
 	client := &http.Client{Timeout: 10 * time.Second}
@@ -245,7 +246,7 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie, deviceID string) 
 }
 
 // 获取在线观众列表
-func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (watchList map[int]string, e error) {
+func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList map[int]string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
@@ -258,9 +259,9 @@ func (t *token) watchingList(cookieContainer []*http.Cookie, deviceID string) (w
 
 	var watchURL string
 	if cookieContainer != nil {
-		watchURL = fmt.Sprintf(watchingURL, t.userID, deviceID, midgroundSt, t.serviceToken)
+		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
 	} else {
-		watchURL = fmt.Sprintf(watchingURL, t.userID, deviceID, visitorSt, t.serviceToken)
+		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
 	}
 
 	client := &http.Client{Timeout: 10 * time.Second}

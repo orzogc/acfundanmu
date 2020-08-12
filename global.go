@@ -45,5 +45,6 @@ type token struct {
 	headerSeqID     int64
 	heartbeatSeqID  int64
 	ticketIndex     int
+	deviceID        string
 	gifts           map[int]Giftdetail
 }

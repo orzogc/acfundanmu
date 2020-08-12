@@ -88,9 +88,9 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 		}
 		switch message.MessageType {
 		case "ZtLiveScActionSignal":
-			handleMsgAct(&payload, q, info, t.gifts)
+			t.handleMsgAct(&payload, q, info)
 		case "ZtLiveScStateSignal":
-			handleMsgState(&payload, info)
+			t.handleMsgState(&payload, info)
 		case "ZtLiveScStatusChanged":
 			statusChanged := &acproto.ZtLiveScStatusChanged{}
 			err := proto.Unmarshal(payload, statusChanged)
@@ -141,7 +141,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 }
 
 // 处理action signal数据
-func handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo, gifts map[int]Giftdetail) {
+func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 	actionSignal := &acproto.ZtLiveScActionSignal{}
 	err := proto.Unmarshal(*payload, actionSignal)
 	checkErr(err)
@@ -236,13 +236,35 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo, gifts map[int
 				gift := &acproto.CommonActionSignalGift{}
 				err = proto.Unmarshal(pl, gift)
 				checkErr(err)
+				g, ok := t.gifts[int(gift.GiftId)]
+				for retry := 0; retry < 3; retry++ {
+					if !ok {
+						err = t.updateGiftList(nil)
+						if err != nil {
+							log.Printf("更新礼物列表出现错误：%v", err)
+							if retry == 2 {
+								log.Println("更新礼物列表失败")
+							} else {
+								log.Println("尝试重新更新礼物列表")
+							}
+						}
+						g, ok = t.gifts[int(gift.GiftId)]
+						if retry == 2 {
+							if !ok {
+								log.Printf("无法获取ID为%d的礼物的详细信息", gift.GiftId)
+							}
+						}
+					} else {
+						break
+					}
+				}
 				d := DanmuMessage{
 					Type:     Gift,
 					SendTime: gift.SendTimeMs * 1e6,
 					UserID:   gift.User.UserId,
 					Nickname: gift.User.Nickname,
 					Gift: GiftInfo{
-						Giftdetail:            gifts[int(gift.GiftId)],
+						Giftdetail:            g,
 						Count:                 int(gift.Count),
 						Combo:                 int(gift.Combo),
 						Value:                 int(gift.Value),
@@ -282,7 +304,7 @@ func handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo, gifts map[int
 }
 
 // 处理state signal数据
-func handleMsgState(payload *[]byte, info *liveInfo) {
+func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 	signal := &acproto.ZtLiveScStateSignal{}
 	err := proto.Unmarshal(*payload, signal)
 	checkErr(err)

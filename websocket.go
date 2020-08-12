@@ -67,12 +67,12 @@ func (dq DanmuQueue) wsStart(ctx context.Context, uid int, username, password st
 		if err != nil {
 			if retry == 2 {
 				dq.ch <- false
-				log.Println("获取token失败，主播可能不在直播")
-				log.Panicln(err)
-			} else {
-				log.Printf("初始化出现错误：%v", err)
-				log.Println("尝试重新初始化")
+				log.Printf("获取token失败，主播可能不在直播：%v", err)
+				log.Println("停止获取弹幕")
+				return
 			}
+			log.Printf("初始化出现错误：%v", err)
+			log.Println("尝试重新初始化")
 		} else {
 			break
 		}
