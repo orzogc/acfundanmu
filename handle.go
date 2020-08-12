@@ -270,11 +270,13 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				}
 				danmu = append(danmu, d)
 			case "CommonActionSignalRichText":
-				richText := &acproto.CommonActionSignalRichText{}
-				err = proto.Unmarshal(pl, richText)
-				checkErr(err)
-				log.Printf("CommonActionSignalRichText: \n%+v\n", richText)
-				log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(pl))
+				/*
+					richText := &acproto.CommonActionSignalRichText{}
+					err = proto.Unmarshal(pl, richText)
+					checkErr(err)
+					log.Printf("CommonActionSignalRichText: \n%+v\n", richText)
+					log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(pl))
+				*/
 			default:
 				log.Printf("未知的Action Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 					item.SingalType,
@@ -356,10 +358,6 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 				}
 				danmu = append(danmu, d)
 			}
-			// 按SendTime大小排序
-			//sort.Slice(danmu, func(i, j int) bool {
-			//	return danmu[i].SendTime < danmu[j].SendTime
-			//})
 			info.Lock()
 			info.RecentComment = danmu
 			info.Unlock()
