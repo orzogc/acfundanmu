@@ -144,6 +144,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	req, err = http.NewRequest(http.MethodPost, play, strings.NewReader(form.Encode()))
 	checkErr(err)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	// 会验证Referer
 	req.Header.Set("Referer", liveURL+strconv.Itoa(uid))
 	resp, err = client.Do(req)
 	checkErr(err)

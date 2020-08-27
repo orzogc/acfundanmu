@@ -236,18 +236,12 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				gift := &acproto.CommonActionSignalGift{}
 				err = proto.Unmarshal(pl, gift)
 				checkErr(err)
+				// 礼物列表应该不会在直播中途改变，但以防万一
 				g, ok := t.gifts[int(gift.GiftId)]
 				if !ok {
-					err = t.updateGiftList(nil)
-					if err != nil {
-						log.Printf("更新礼物列表出现错误：%v", err)
-						g = Giftdetail{}
-					} else {
-						g, ok = t.gifts[int(gift.GiftId)]
-						if !ok {
-							log.Printf("无法获取ID为%d的礼物的详细信息", gift.GiftId)
-							g = Giftdetail{}
-						}
+					g = Giftdetail{
+						ID:   int(gift.GiftId),
+						Name: "未知礼物",
 					}
 				}
 				d := DanmuMessage{
