@@ -157,9 +157,12 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				d := DanmuMessage{
 					Type:     Comment,
 					SendTime: comment.SendTimeMs * 1e6,
-					UserID:   comment.UserInfo.UserId,
-					Nickname: comment.UserInfo.Nickname,
-					Comment:  comment.Content}
+					UserInfo: UserInfo{
+						UserID:   comment.UserInfo.UserId,
+						Nickname: comment.UserInfo.Nickname,
+					},
+					Comment: comment.Content,
+				}
 				if len(comment.UserInfo.Avatar) != 0 {
 					d.Avatar = comment.UserInfo.Avatar[0].Url
 				}
@@ -171,8 +174,10 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				d := DanmuMessage{
 					Type:     Like,
 					SendTime: like.SendTimeMs * 1e6,
-					UserID:   like.UserInfo.UserId,
-					Nickname: like.UserInfo.Nickname,
+					UserInfo: UserInfo{
+						UserID:   like.UserInfo.UserId,
+						Nickname: like.UserInfo.Nickname,
+					},
 				}
 				if len(like.UserInfo.Avatar) != 0 {
 					d.Avatar = like.UserInfo.Avatar[0].Url
@@ -185,8 +190,10 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				d := DanmuMessage{
 					Type:     EnterRoom,
 					SendTime: enter.SendTimeMs * 1e6,
-					UserID:   enter.UserInfo.UserId,
-					Nickname: enter.UserInfo.Nickname,
+					UserInfo: UserInfo{
+						UserID:   enter.UserInfo.UserId,
+						Nickname: enter.UserInfo.Nickname,
+					},
 				}
 				if len(enter.UserInfo.Avatar) != 0 {
 					d.Avatar = enter.UserInfo.Avatar[0].Url
@@ -199,8 +206,10 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				d := DanmuMessage{
 					Type:     FollowAuthor,
 					SendTime: follow.SendTimeMs * 1e6,
-					UserID:   follow.UserInfo.UserId,
-					Nickname: follow.UserInfo.Nickname,
+					UserInfo: UserInfo{
+						UserID:   follow.UserInfo.UserId,
+						Nickname: follow.UserInfo.Nickname,
+					},
 				}
 				if len(follow.UserInfo.Avatar) != 0 {
 					d.Avatar = follow.UserInfo.Avatar[0].Url
@@ -225,10 +234,12 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				err = proto.Unmarshal(pl, banana)
 				checkErr(err)
 				d := DanmuMessage{
-					Type:        ThrowBanana,
-					SendTime:    banana.SendTimeMs * 1e6,
-					UserID:      banana.Visitor.UserId,
-					Nickname:    banana.Visitor.Name,
+					Type:     ThrowBanana,
+					SendTime: banana.SendTimeMs * 1e6,
+					UserInfo: UserInfo{
+						UserID:   banana.Visitor.UserId,
+						Nickname: banana.Visitor.Name,
+					},
 					BananaCount: int(banana.Count),
 				}
 				danmu = append(danmu, d)
@@ -247,8 +258,10 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 				d := DanmuMessage{
 					Type:     Gift,
 					SendTime: gift.SendTimeMs * 1e6,
-					UserID:   gift.User.UserId,
-					Nickname: gift.User.Nickname,
+					UserInfo: UserInfo{
+						UserID:   gift.User.UserId,
+						Nickname: gift.User.Nickname,
+					},
 					Gift: GiftInfo{
 						Giftdetail:            g,
 						Count:                 int(gift.Count),
@@ -322,12 +335,16 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 			var users []TopUser
 			for _, user := range topUsers.User {
 				u := TopUser{
-					UserID:                 user.UserInfo.UserId,
-					Nickname:               user.UserInfo.Nickname,
-					Avatar:                 user.UserInfo.Avatar[0].Url,
+					UserInfo: UserInfo{
+						UserID:   user.UserInfo.UserId,
+						Nickname: user.UserInfo.Nickname,
+					},
 					CustomWatchingListData: user.CustomWatchingListData,
 					DisplaySendAmount:      user.DisplaySendAmount,
 					AnonymousUser:          user.AnonymousUser,
+				}
+				if len(user.UserInfo.Avatar) != 0 {
+					u.Avatar = user.UserInfo.Avatar[0].Url
 				}
 				users = append(users, u)
 			}
@@ -343,9 +360,11 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 				d := DanmuMessage{
 					Type:     Comment,
 					SendTime: comment.SendTimeMs * 1e6,
-					UserID:   comment.UserInfo.UserId,
-					Nickname: comment.UserInfo.Nickname,
-					Comment:  comment.Content,
+					UserInfo: UserInfo{
+						UserID:   comment.UserInfo.UserId,
+						Nickname: comment.UserInfo.Nickname,
+					},
+					Comment: comment.Content,
 				}
 				if len(comment.UserInfo.Avatar) != 0 {
 					d.Avatar = comment.UserInfo.Avatar[0].Url

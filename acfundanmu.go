@@ -50,8 +50,15 @@ type GiftInfo struct {
 	ExpireDurationMs      int
 }
 
+// UserInfo 就是用户信息
+type UserInfo struct {
+	UserID   int64  // 用户uid
+	Nickname string // 用户名字
+	Avatar   string // 用户头像
+}
+
 // DanmuMessage 就是websocket接受到的弹幕相关信息。
-// 不论是哪种Type都会有SendTime、UserID、Nickname，除了ThrowBanana没有Avatar，其他Type都有Avatar。
+// 不论是哪种Type都会有SendTime、UserInfo里的UserID和Nickname，除了ThrowBanana没有UserInfo里的Avatar，其他Type都有Avatar。
 // Type为Comment时，Comment就是弹幕文字。
 // Type为Gift时，Gift就是礼物信息。
 // Type为Like、EnterRoom和FollowAuthor时没有多余的数据。
@@ -59,19 +66,15 @@ type GiftInfo struct {
 type DanmuMessage struct {
 	Type        DanmuType // 弹幕类型
 	SendTime    int64     // 弹幕发送时间，是以纳秒为单位的Unix时间
-	UserID      int64     // 用户uid
-	Nickname    string    // 用户名字
-	Avatar      string    // 用户头像
+	UserInfo              // 用户信息
 	Comment     string    // 弹幕内容
 	BananaCount int       // 投蕉数量，现在基本上不用这个
 	Gift        GiftInfo  // 礼物信息
 }
 
-//TopUser 就是礼物榜在线前三
+// TopUser 就是礼物榜在线前三
 type TopUser struct {
-	UserID                 int64  // 用户uid
-	Nickname               string // 用户名字
-	Avatar                 string // 用户头像
+	UserInfo                      // 用户信息
 	CustomWatchingListData string // 好像通常为空
 	DisplaySendAmount      string // 用户的一些信息，格式为json
 	AnonymousUser          bool   // 好像通常为false，是否匿名用户需要根据UserID的大小来判断
