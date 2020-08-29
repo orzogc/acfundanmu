@@ -69,9 +69,20 @@ dq, err := acfundanmu.Start(ctx, uid)
 if err != nil {
 	log.Panicln(err)
 }
+go func() {
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        default:
+            // 循环获取watchingList并处理
+            watchingList := dq.GetWatchingList()
+            fmt.Printf("%+v\n", *watchingList)
+            time.Sleep(30 * time.Second)
+        }
+    }
+}()
 // 做其他事情
-// 需要获取直播间观众时
-watchingList := dq.GetWatchingList()
 ```
 #### 将弹幕转换成ass字幕文件
 ```go
