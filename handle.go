@@ -339,9 +339,9 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 						UserID:   user.UserInfo.UserId,
 						Nickname: user.UserInfo.Nickname,
 					},
-					CustomWatchingListData: user.CustomWatchingListData,
-					DisplaySendAmount:      user.DisplaySendAmount,
 					AnonymousUser:          user.AnonymousUser,
+					DisplaySendAmount:      user.CustomWatchingListData, // proto里应该是写反了
+					CustomWatchingListData: user.DisplaySendAmount,
 				}
 				if len(user.UserInfo.Avatar) != 0 {
 					u.Avatar = user.UserInfo.Avatar[0].Url

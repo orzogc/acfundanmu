@@ -85,20 +85,15 @@ func convert(name string) string {
 
 // WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕。
 // newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕。
-func (dq DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
+func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("Recovering from panic in WriteASS(), the error is:", err)
+			log.Printf("Recovering from panic in WriteASS(), the error is: %v", err)
+			log.Println("停止写入ass字幕")
 		}
 	}()
 
 	if (*queue.Queue)(dq.q).Disposed() {
-		return
-	}
-
-	// 等待websocket启动
-	start := <-dq.ch
-	if !start {
 		return
 	}
 

@@ -7,7 +7,10 @@ AcFun直播弹幕下载，实现参照 [AcFunDanmaku](https://github.com/wpscott
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-dq := acfundanmu.Start(ctx, uid)
+dq, err := acfundanmu.Start(ctx, uid)
+if err != nil {
+	log.Panicln(err)
+}
 for {
     if danmu := dq.GetDanmu(); danmu != nil {
         for _, d := range danmu {
@@ -38,7 +41,10 @@ for {
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-dq := acfundanmu.Start(ctx, uid)
+dq, err := acfundanmu.Start(ctx, uid)
+if err != nil {
+	log.Panicln(err)
+}
 go func() {
     for {
         select {
@@ -54,12 +60,28 @@ go func() {
 }()
 // 做其他事情
 ```
+#### 获取直播间排名前50的观众信息
+```go
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+// uid为主播的uid
+dq, err := acfundanmu.Start(ctx, uid)
+if err != nil {
+	log.Panicln(err)
+}
+// 做其他事情
+// 需要获取直播间观众时
+watchingList := dq.GetWatchingList()
+```
 #### 将弹幕转换成ass字幕文件
 ```go
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-dq := acfundanmu.Start(ctx, uid)
+dq, err := acfundanmu.Start(ctx, uid)
+if err != nil {
+	log.Panicln(err)
+}
 dq.WriteASS(ctx, acfundanmu.SubConfig{
     Title:     "foo",
     PlayResX:  1280, // 直播录播视频的分辨率

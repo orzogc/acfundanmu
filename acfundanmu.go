@@ -10,6 +10,9 @@ import (
 // 队列长度
 const queueLen = 1000
 
+// ErrInitialize 就是初始化错误
+//var ErrInitialize = errors.New("获取token失败，主播可能不在直播")
+
 // DanmuType 就是弹幕信息的类型
 type DanmuType int
 
@@ -32,7 +35,7 @@ const (
 type Giftdetail struct {
 	ID          int    // 礼物ID
 	Name        string // 礼物名字
-	Price       int    // 礼物价格，非免费礼物时单位为AC币，免费礼物（香蕉）时为1
+	Price       int    // 礼物价格，非免费礼物时单位为ac币，免费礼物（香蕉）时为1
 	WebpPic     string // 礼物的webp格式图片（动图）
 	PngPic      string // 礼物的png格式图片（大）
 	SmallPngPic string // 礼物的png格式图片（小）
@@ -44,7 +47,7 @@ type GiftInfo struct {
 	Giftdetail                   // 礼物详细信息
 	Count                 int    // 礼物数量
 	Combo                 int    // 礼物连击数量
-	Value                 int    // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
+	Value                 int    // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID               string // 礼物连击ID
 	SlotDisplayDurationMs int
 	ExpireDurationMs      int
@@ -72,13 +75,18 @@ type DanmuMessage struct {
 	Gift        GiftInfo  // 礼物信息
 }
 
-// TopUser 就是礼物榜在线前三
-type TopUser struct {
+// WatchingUser 就是观看直播的用户的信息
+type WatchingUser struct {
 	UserInfo                      // 用户信息
-	CustomWatchingListData string // 好像通常为空
-	DisplaySendAmount      string // 用户的一些信息，格式为json
-	AnonymousUser          bool   // 好像通常为false，是否匿名用户需要根据UserID的大小来判断
+	AnonymousUser          bool   // 是否匿名用户
+	DisplaySendAmount      string // 赠送的全部礼物的价值，单位是ac币
+	CustomWatchingListData string // 用户的一些额外信息，格式为json
 }
+
+// TopUser 就是礼物榜在线前三。
+// AnonymousUser好像通常为false，是否匿名用户需要根据UserID的大小来判断。
+// DisplaySendAmount好像通常为空。
+type TopUser WatchingUser
 
 // LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
@@ -102,21 +110,25 @@ type liveInfo struct {
 type DanmuQueue struct {
 	q    *queue.Queue // DanmuMessage的队列
 	info *liveInfo    // 直播间的相关信息状态
-	ch   chan bool    // 用来通知websocket启动
+	t    *token       // 令牌相关信息
+	ch   chan error   // 用来传递初始化的错误
 }
 
 // Start 启动websocket获取弹幕，uid是主播的uid，ctx用来结束websocket
-func Start(ctx context.Context, uid int) (dq DanmuQueue) {
-	q := queue.New(queueLen)
-	info := new(liveInfo)
-	ch := make(chan bool, 1)
-	dq = DanmuQueue{q: q, info: info, ch: ch}
+func Start(ctx context.Context, uid int) (dq *DanmuQueue, e error) {
+	dq = new(DanmuQueue)
+	dq.q = queue.New(queueLen)
+	dq.info = new(liveInfo)
+	dq.ch = make(chan error, 1)
 	go dq.wsStart(ctx, uid, "", "")
-	return dq
+	if e = <-dq.ch; e != nil {
+		return nil, e
+	}
+	return dq, nil
 }
 
 // GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播）
-func (dq DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
+func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	if (*queue.Queue)(dq.q).Disposed() {
 		return nil
 	}
@@ -134,9 +146,16 @@ func (dq DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 }
 
 // GetInfo 返回直播间的状态信息info
-func (dq DanmuQueue) GetInfo() (info LiveInfo) {
+func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
 	dq.info.Lock()
 	defer dq.info.Unlock()
 	info = dq.info.LiveInfo
 	return info
+}
+
+// GetWatchingList 返回直播间排名前50的观众信息
+func (dq *DanmuQueue) GetWatchingList() []WatchingUser {
+	watchList, err := dq.t.watchingList(nil)
+	checkErr(err)
+	return watchList
 }

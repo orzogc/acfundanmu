@@ -16,8 +16,14 @@ import (
 // 检查错误
 func checkErr(err error) {
 	if err != nil {
-		log.Panicln(err)
+		panicln(err)
 	}
+}
+
+// 打印错误然后panic
+func panicln(err error) {
+	log.Println(err)
+	panic(err)
 }
 
 // 登陆acfun账号
@@ -42,8 +48,8 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
 	checkErr(err)
-	if v.GetInt("result") != 0 {
-		log.Panicf("以注册用户的身份登陆AcFun失败，响应为 %s", string(body))
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panicln(fmt.Errorf("以注册用户的身份登陆AcFun失败，响应为 %s", string(body)))
 	}
 
 	for _, cookie := range resp.Cookies() {
@@ -61,7 +67,7 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 	v, err = p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("code") != 0 {
-		log.Panicf("获取safetyid失败，响应为 %s", string(body))
+		panicln(fmt.Errorf("获取safetyid失败，响应为 %s", string(body)))
 	}
 
 	cookie := &http.Cookie{Name: "safety_id", Value: string(v.GetStringBytes("safety_id")), Domain: ".acfun.cn"}
@@ -119,8 +125,8 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
 	checkErr(err)
-	if v.GetInt("result") != 0 {
-		log.Panicf("获取AcFun token失败，响应为 %s", string(body))
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panicln(fmt.Errorf("获取AcFun token失败，响应为 %s", string(body)))
 	}
 
 	// 获取userId和对应的令牌
@@ -155,7 +161,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	v, err = p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		log.Panicf("获取直播详细信息失败，响应为 %s", string(body))
+		panicln(fmt.Errorf("获取直播详细信息失败，响应为 %s", string(body)))
 	}
 
 	liveID := string(v.GetStringBytes("data", "liveId"))
@@ -197,7 +203,7 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 	}()
 
 	if t == nil {
-		log.Panicln("获取token失败，可能主播不在直播")
+		panicln(fmt.Errorf("获取token失败，可能主播不在直播"))
 	}
 
 	var giftList string
@@ -215,7 +221,7 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 	req, err := http.NewRequest(http.MethodPost, giftList, strings.NewReader(form.Encode()))
 	checkErr(err)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Referer", liveURL)
+	req.Header.Set("Referer", liveMainPage)
 	resp, err := client.Do(req)
 	checkErr(err)
 	defer resp.Body.Close()
@@ -226,7 +232,7 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		log.Panicf("获取礼物列表失败，响应为 %s", string(body))
+		panicln(fmt.Errorf("获取礼物列表失败，响应为 %s", string(body)))
 	}
 
 	t.gifts = make(map[int]Giftdetail)
@@ -247,7 +253,7 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 }
 
 // 获取在线观众列表
-func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList map[int]string, e error) {
+func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList []WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
@@ -255,7 +261,7 @@ func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList map[int]
 	}()
 
 	if t == nil {
-		log.Panicln("获取token失败，可能主播不在直播")
+		panicln(fmt.Errorf("获取token失败，可能主播不在直播"))
 	}
 
 	var watchURL string
@@ -273,7 +279,7 @@ func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList map[int]
 	req, err := http.NewRequest(http.MethodPost, watchURL, strings.NewReader(form.Encode()))
 	checkErr(err)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Referer", liveURL)
+	req.Header.Set("Referer", liveMainPage)
 	resp, err := client.Do(req)
 	checkErr(err)
 	defer resp.Body.Close()
@@ -284,12 +290,21 @@ func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList map[int]
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		log.Panicf("获取在线观众列表失败，响应为 %s", string(body))
+		panicln(fmt.Errorf("获取在线观众列表失败，响应为 %s", string(body)))
 	}
 
-	watchList = make(map[int]string)
 	for _, watch := range v.GetArray("data", "list") {
-		watchList[watch.GetInt("userId")] = string(watch.GetStringBytes("nickname"))
+		w := WatchingUser{
+			UserInfo: UserInfo{
+				UserID:   watch.GetInt64("userId"),
+				Nickname: string(watch.GetStringBytes("nickname")),
+				Avatar:   string(watch.GetStringBytes("avatar", "0", "url")),
+			},
+			AnonymousUser:          watch.GetBool("anonymousUser"),
+			DisplaySendAmount:      string(watch.GetStringBytes("displaySendAmount")),
+			CustomWatchingListData: string(watch.GetStringBytes("customWatchingListData")),
+		}
+		watchList = append(watchList, w)
 	}
 
 	return watchList, nil

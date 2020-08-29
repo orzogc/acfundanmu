@@ -3,6 +3,7 @@ package acfundanmu
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -41,8 +42,8 @@ func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int6
 	}
 }
 
-// 启动websocket，username（邮箱）和password用来登陆AcFun，其为空串时启动访客模式，目前登陆模式和访客模式并没有区别
-func (dq DanmuQueue) wsStart(ctx context.Context, uid int, username, password string) {
+// 启动websocket，username（邮箱）和password用来登陆AcFun，其为空串时使用访客模式，目前登陆模式和访客模式并没有区别
+func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, username, password string) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("wsStart() error: %v", err)
@@ -56,18 +57,18 @@ func (dq DanmuQueue) wsStart(ctx context.Context, uid int, username, password st
 	if username != "" && password != "" {
 		cookieContainer, err = login(username, password)
 		if err != nil {
-			dq.ch <- false
-			log.Panicln(err)
+			dq.ch <- err
+			panicln(err)
 		}
 	}
 
-	var t *token
 	for retry := 0; retry < 3; retry++ {
-		t, err = initialize(uid, cookieContainer)
+		dq.t, err = initialize(uid, cookieContainer)
 		if err != nil {
 			if retry == 2 {
-				dq.ch <- false
-				log.Printf("获取token失败，主播可能不在直播：%v", err)
+				e := fmt.Errorf("获取token失败，主播可能不在直播：%w", err)
+				dq.ch <- e
+				log.Println(e)
 				log.Println("停止获取弹幕")
 				return
 			}
@@ -79,36 +80,36 @@ func (dq DanmuQueue) wsStart(ctx context.Context, uid int, username, password st
 		time.Sleep(10 * time.Second)
 	}
 
-	dq.ch <- true
+	dq.ch <- nil
 
 	c, _, err := websocket.Dial(ctx, host, nil)
 	checkErr(err)
 	defer c.Close(websocket.StatusInternalError, "可能出现错误")
 
-	err = c.Write(ctx, websocket.MessageBinary, *t.register())
+	err = c.Write(ctx, websocket.MessageBinary, *dq.t.register())
 	checkErr(err)
 	_, resp, err := c.Read(ctx)
 	checkErr(err)
-	registerDown, err := t.decode(&resp)
+	registerDown, err := dq.t.decode(&resp)
 	checkErr(err)
 	regResp := &acproto.RegisterResponse{}
 	err = proto.Unmarshal(registerDown.PayloadData, regResp)
 	checkErr(err)
-	t.instanceID = regResp.InstanceId
-	t.sessionKey = base64.StdEncoding.EncodeToString(regResp.SessKey)
+	dq.t.instanceID = regResp.InstanceId
+	dq.t.sessionKey = base64.StdEncoding.EncodeToString(regResp.SessKey)
 	//lz4CompressionThreshold = regResp.SdkOption.Lz4CompressionThresholdBytes
 
-	err = c.Write(ctx, websocket.MessageBinary, *t.keepAlive(true))
+	err = c.Write(ctx, websocket.MessageBinary, *dq.t.keepAlive(true))
 	checkErr(err)
 
-	err = c.Write(ctx, websocket.MessageBinary, *t.enterRoom())
+	err = c.Write(ctx, websocket.MessageBinary, *dq.t.enterRoom())
 	checkErr(err)
 
 	// 让websocket关闭时能马上结束wsHeartbeat()
 	hbCtx, hbCancel := context.WithCancel(ctx)
 	defer hbCancel()
 	hb := make(chan int64, 20)
-	go t.wsHeartbeat(hbCtx, c, hb)
+	go dq.t.wsHeartbeat(hbCtx, c, hb)
 
 	for {
 		_, buffer, err := c.Read(ctx)
@@ -116,13 +117,13 @@ func (dq DanmuQueue) wsStart(ctx context.Context, uid int, username, password st
 			break
 		}
 
-		stream, err := t.decode(&buffer)
+		stream, err := dq.t.decode(&buffer)
 		if err != nil {
 			log.Printf("解码接受到的数据出现错误：%v", err)
 			continue
 		}
 
-		err = t.handleCommand(ctx, c, stream, dq.q, dq.info, hb)
+		err = dq.t.handleCommand(ctx, c, stream, dq.q, dq.info, hb)
 		if err != nil {
 			log.Printf("处理接受到的数据出现错误：%v", err)
 		}
