@@ -332,8 +332,8 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 			topUsers := &acproto.CommonStateSignalTopUsers{}
 			err = proto.Unmarshal(item.Payload, topUsers)
 			checkErr(err)
-			var users []TopUser
-			for _, user := range topUsers.User {
+			users := make([]TopUser, len(topUsers.User))
+			for i, user := range topUsers.User {
 				u := TopUser{
 					UserInfo: UserInfo{
 						UserID:   user.UserInfo.UserId,
@@ -346,7 +346,7 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 				if len(user.UserInfo.Avatar) != 0 {
 					u.Avatar = user.UserInfo.Avatar[0].Url
 				}
-				users = append(users, u)
+				users[i] = u
 			}
 			info.Lock()
 			info.TopUsers = users
@@ -355,8 +355,8 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 			comments := &acproto.CommonStateSignalRecentComment{}
 			err = proto.Unmarshal(item.Payload, comments)
 			checkErr(err)
-			var danmu []DanmuMessage
-			for _, comment := range comments.Comment {
+			danmu := make([]DanmuMessage, len(comments.Comment))
+			for i, comment := range comments.Comment {
 				d := DanmuMessage{
 					Type:     Comment,
 					SendTime: comment.SendTimeMs * 1e6,
@@ -369,7 +369,7 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 				if len(comment.UserInfo.Avatar) != 0 {
 					d.Avatar = comment.UserInfo.Avatar[0].Url
 				}
-				danmu = append(danmu, d)
+				danmu[i] = d
 			}
 			info.Lock()
 			info.RecentComment = danmu

@@ -167,9 +167,9 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	liveID := string(v.GetStringBytes("data", "liveId"))
 	enterRoomAttach := string(v.GetStringBytes("data", "enterRoomAttach"))
 	availableTickets := v.GetArray("data", "availableTickets")
-	var tickets []string
-	for _, ticket := range availableTickets {
-		tickets = append(tickets, string(ticket.GetStringBytes()))
+	tickets := make([]string, len(availableTickets))
+	for i, ticket := range availableTickets {
+		tickets[i] = string(ticket.GetStringBytes())
 	}
 
 	t = &token{
@@ -293,9 +293,10 @@ func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList *[]Watch
 		panicln(fmt.Errorf("获取在线观众列表失败，响应为 %s", string(body)))
 	}
 
-	var watchingUserList []WatchingUser
-	for _, watch := range v.GetArray("data", "list") {
-		w := WatchingUser{
+	watchArray := v.GetArray("data", "list")
+	watchingUserList := make([]WatchingUser, len(watchArray))
+	for i, watch := range watchArray {
+		watchingUserList[i] = WatchingUser{
 			UserInfo: UserInfo{
 				UserID:   watch.GetInt64("userId"),
 				Nickname: string(watch.GetStringBytes("nickname")),
@@ -305,7 +306,6 @@ func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList *[]Watch
 			DisplaySendAmount:      string(watch.GetStringBytes("displaySendAmount")),
 			CustomWatchingListData: string(watch.GetStringBytes("customWatchingListData")),
 		}
-		watchingUserList = append(watchingUserList, w)
 	}
 
 	return &watchingUserList, nil
