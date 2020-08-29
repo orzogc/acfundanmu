@@ -60,7 +60,7 @@ go func() {
 }()
 // 做其他事情
 ```
-#### 获取直播间排名前50的观众信息
+#### 获取直播间排名前50的在线观众信息列表
 ```go
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()

@@ -252,8 +252,8 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 	return nil
 }
 
-// 获取在线观众列表
-func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList []WatchingUser, e error) {
+// 获取直播间排名前50的在线观众信息列表
+func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList *[]WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
@@ -293,6 +293,7 @@ func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList []Watchi
 		panicln(fmt.Errorf("获取在线观众列表失败，响应为 %s", string(body)))
 	}
 
+	var watchingUserList []WatchingUser
 	for _, watch := range v.GetArray("data", "list") {
 		w := WatchingUser{
 			UserInfo: UserInfo{
@@ -304,8 +305,8 @@ func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList []Watchi
 			DisplaySendAmount:      string(watch.GetStringBytes("displaySendAmount")),
 			CustomWatchingListData: string(watch.GetStringBytes("customWatchingListData")),
 		}
-		watchList = append(watchList, w)
+		watchingUserList = append(watchingUserList, w)
 	}
 
-	return watchList, nil
+	return &watchingUserList, nil
 }

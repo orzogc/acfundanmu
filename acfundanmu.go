@@ -153,8 +153,8 @@ func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
 	return info
 }
 
-// GetWatchingList 返回直播间排名前50的观众信息
-func (dq *DanmuQueue) GetWatchingList() []WatchingUser {
+// GetWatchingList 返回直播间排名前50的在线观众信息列表
+func (dq *DanmuQueue) GetWatchingList() *[]WatchingUser {
 	watchList, err := dq.t.watchingList(nil)
 	checkErr(err)
 	return watchList

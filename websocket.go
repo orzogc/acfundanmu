@@ -67,10 +67,9 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, username, password s
 		if err != nil {
 			if retry == 2 {
 				e := fmt.Errorf("获取token失败，主播可能不在直播：%w", err)
-				dq.ch <- e
-				log.Println(e)
 				log.Println("停止获取弹幕")
-				return
+				dq.ch <- e
+				panicln(e)
 			}
 			log.Printf("初始化出现错误：%v", err)
 			log.Println("尝试重新初始化")
@@ -128,8 +127,6 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, username, password s
 			log.Printf("处理接受到的数据出现错误：%v", err)
 		}
 	}
-
-	return
 }
 
 // 停止websocket
