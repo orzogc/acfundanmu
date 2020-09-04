@@ -49,19 +49,27 @@ type GiftInfo struct {
 	Combo                 int    // 礼物连击数量
 	Value                 int    // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID               string // 礼物连击ID
-	SlotDisplayDurationMs int
+	SlotDisplayDurationMs int    // 应该是礼物动画持续的时间
 	ExpireDurationMs      int
 }
 
 // UserInfo 就是用户信息
 type UserInfo struct {
-	UserID   int64  // 用户uid
-	Nickname string // 用户名字
-	Avatar   string // 用户头像
+	UserID   int64     // 用户uid
+	Nickname string    // 用户名字
+	Avatar   string    // 用户头像
+	Medal    MedalInfo // 粉丝牌
+}
+
+// MedalInfo 就是粉丝牌信息
+type MedalInfo struct {
+	UperID   int64  // UP主的UID
+	ClubName string // 粉丝牌名字
+	Level    int    // 粉丝牌等级
 }
 
 // DanmuMessage 就是websocket接受到的弹幕相关信息。
-// 不论是哪种Type都会有SendTime、UserInfo里的UserID和Nickname，除了ThrowBanana没有UserInfo里的Avatar，其他Type都有Avatar。
+// 不论是哪种Type都会有SendTime、UserInfo里的UserID和Nickname，除了ThrowBanana没有UserInfo里的Avatar，其他Type通常都有Avatar。
 // Type为Comment时，Comment就是弹幕文字。
 // Type为Gift时，Gift就是礼物信息。
 // Type为Like、EnterRoom和FollowAuthor时没有多余的数据。

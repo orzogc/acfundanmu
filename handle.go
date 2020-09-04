@@ -11,6 +11,7 @@ import (
 	"sort"
 
 	"github.com/orzogc/acfundanmu/acproto"
+	"github.com/valyala/fastjson"
 
 	"github.com/Workiva/go-datastructures/queue"
 	"google.golang.org/protobuf/proto"
@@ -163,9 +164,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 					},
 					Comment: comment.Content,
 				}
-				if len(comment.UserInfo.Avatar) != 0 {
-					d.Avatar = comment.UserInfo.Avatar[0].Url
-				}
+				d.Avatar, d.Medal = getMoreInfo(comment.UserInfo)
 				danmu = append(danmu, d)
 			case "CommonActionSignalLike":
 				like := &acproto.CommonActionSignalLike{}
@@ -179,9 +178,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 						Nickname: like.UserInfo.Nickname,
 					},
 				}
-				if len(like.UserInfo.Avatar) != 0 {
-					d.Avatar = like.UserInfo.Avatar[0].Url
-				}
+				d.Avatar, d.Medal = getMoreInfo(like.UserInfo)
 				danmu = append(danmu, d)
 			case "CommonActionSignalUserEnterRoom":
 				enter := &acproto.CommonActionSignalUserEnterRoom{}
@@ -195,9 +192,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 						Nickname: enter.UserInfo.Nickname,
 					},
 				}
-				if len(enter.UserInfo.Avatar) != 0 {
-					d.Avatar = enter.UserInfo.Avatar[0].Url
-				}
+				d.Avatar, d.Medal = getMoreInfo(enter.UserInfo)
 				danmu = append(danmu, d)
 			case "CommonActionSignalUserFollowAuthor":
 				follow := &acproto.CommonActionSignalUserFollowAuthor{}
@@ -211,9 +206,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 						Nickname: follow.UserInfo.Nickname,
 					},
 				}
-				if len(follow.UserInfo.Avatar) != 0 {
-					d.Avatar = follow.UserInfo.Avatar[0].Url
-				}
+				d.Avatar, d.Medal = getMoreInfo(follow.UserInfo)
 				danmu = append(danmu, d)
 			case "CommonNotifySignalKickedOut":
 				kickedOut := &acproto.CommonNotifySignalKickedOut{}
@@ -272,9 +265,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 						ExpireDurationMs:      int(gift.ExpireDurationMs),
 					},
 				}
-				if len(gift.User.Avatar) != 0 {
-					d.Avatar = gift.User.Avatar[0].Url
-				}
+				d.Avatar, d.Medal = getMoreInfo(gift.User)
 				danmu = append(danmu, d)
 			case "CommonActionSignalRichText":
 				/*
@@ -343,9 +334,7 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 					DisplaySendAmount:      user.CustomWatchingListData, // proto里应该是写反了
 					CustomWatchingListData: user.DisplaySendAmount,
 				}
-				if len(user.UserInfo.Avatar) != 0 {
-					u.Avatar = user.UserInfo.Avatar[0].Url
-				}
+				u.Avatar, u.Medal = getMoreInfo(user.UserInfo)
 				users[i] = u
 			}
 			info.Lock()
@@ -366,9 +355,7 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 					},
 					Comment: comment.Content,
 				}
-				if len(comment.UserInfo.Avatar) != 0 {
-					d.Avatar = comment.UserInfo.Avatar[0].Url
-				}
+				d.Avatar, d.Medal = getMoreInfo(comment.UserInfo)
 				danmu[i] = d
 			}
 			info.Lock()
@@ -401,4 +388,23 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 				base64.StdEncoding.EncodeToString(item.Payload))
 		}
 	}
+}
+
+// 获取用户头像和粉丝牌
+func getMoreInfo(userInfo *acproto.ZtLiveUserInfo) (avatar string, medal MedalInfo) {
+	if len(userInfo.Avatar) != 0 {
+		avatar = userInfo.Avatar[0].Url
+	}
+
+	if userInfo.Badge != "" {
+		var p fastjson.Parser
+		v, err := p.Parse(userInfo.Badge)
+		checkErr(err)
+		v = v.Get("medalInfo")
+		medal.UperID = v.GetInt64("uperId")
+		medal.ClubName = string(v.GetStringBytes("clubName"))
+		medal.Level = v.GetInt("level")
+	}
+
+	return avatar, medal
 }

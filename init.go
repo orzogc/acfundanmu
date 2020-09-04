@@ -241,9 +241,9 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 			ID:          gift.GetInt("giftId"),
 			Name:        string(gift.GetStringBytes("giftName")),
 			Price:       gift.GetInt("giftPrice"),
-			WebpPic:     string(gift.GetArray("webpPicList")[0].GetStringBytes("url")),
-			PngPic:      string(gift.GetArray("pngPicList")[0].GetStringBytes("url")),
-			SmallPngPic: string(gift.GetArray("smallPngPicList")[0].GetStringBytes("url")),
+			WebpPic:     string(gift.GetStringBytes("webpPicList", "0", "url")),
+			PngPic:      string(gift.GetStringBytes("pngPicList", "0", "url")),
+			SmallPngPic: string(gift.GetStringBytes("smallPngPicList", "0", "url")),
 			Description: string(gift.GetStringBytes("description")),
 		}
 		t.gifts[g.ID] = g

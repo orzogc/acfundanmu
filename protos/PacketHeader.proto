@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = ".;acproto";
+
 package AcFunDanmu;
 
 import "TokenInfo.proto";
