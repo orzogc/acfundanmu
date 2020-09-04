@@ -238,13 +238,18 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 	t.gifts = make(map[int]Giftdetail)
 	for _, gift := range v.GetArray("data", "giftList") {
 		g := Giftdetail{
-			ID:          gift.GetInt("giftId"),
-			Name:        string(gift.GetStringBytes("giftName")),
-			Price:       gift.GetInt("giftPrice"),
-			WebpPic:     string(gift.GetStringBytes("webpPicList", "0", "url")),
-			PngPic:      string(gift.GetStringBytes("pngPicList", "0", "url")),
-			SmallPngPic: string(gift.GetStringBytes("smallPngPicList", "0", "url")),
-			Description: string(gift.GetStringBytes("description")),
+			ID:            gift.GetInt("giftId"),
+			Name:          string(gift.GetStringBytes("giftName")),
+			ARLiveName:    string(gift.GetStringBytes("arLiveName")),
+			PayWalletType: gift.GetInt("payWalletType"),
+			Price:         gift.GetInt("giftPrice"),
+			WebpPic:       string(gift.GetStringBytes("webpPicList", "0", "url")),
+			PngPic:        string(gift.GetStringBytes("pngPicList", "0", "url")),
+			SmallPngPic:   string(gift.GetStringBytes("smallPngPicList", "0", "url")),
+			CanCombo:      gift.GetBool("canCombo"),
+			MagicFaceID:   gift.GetInt("magicFaceId"),
+			Description:   string(gift.GetStringBytes("description")),
+			RedpackPrice:  gift.GetInt("redpackPrice"),
 		}
 		t.gifts[g.ID] = g
 	}

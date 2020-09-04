@@ -33,13 +33,18 @@ const (
 
 // Giftdetail 就是礼物的详细信息
 type Giftdetail struct {
-	ID          int    // 礼物ID
-	Name        string // 礼物名字
-	Price       int    // 礼物价格，非免费礼物时单位为ac币，免费礼物（香蕉）时为1
-	WebpPic     string // 礼物的webp格式图片（动图）
-	PngPic      string // 礼物的png格式图片（大）
-	SmallPngPic string // 礼物的png格式图片（小）
-	Description string // 礼物的描述
+	ID            int    // 礼物ID
+	Name          string // 礼物名字
+	ARLiveName    string // 不为空时礼物属于虚拟偶像区的特殊礼物
+	PayWalletType int    // 1为非免费礼物，2为免费礼物
+	Price         int    // 礼物价格，非免费礼物时单位为ac币，免费礼物（香蕉）时为1
+	WebpPic       string // 礼物的webp格式图片（动图）
+	PngPic        string // 礼物的png格式图片（大）
+	SmallPngPic   string // 礼物的png格式图片（小）
+	CanCombo      bool   // 是否能连击，一般免费礼物（香蕉）不能连击，其余能连击
+	MagicFaceID   int
+	Description   string // 礼物的描述
+	RedpackPrice  int    // 礼物红包价格总额，单位为AC币
 }
 
 // GiftInfo 就是弹幕里的礼物信息
@@ -69,7 +74,7 @@ type MedalInfo struct {
 }
 
 // DanmuMessage 就是websocket接受到的弹幕相关信息。
-// 不论是哪种Type都会有SendTime、UserInfo里的UserID和Nickname，除了ThrowBanana没有UserInfo里的Avatar，其他Type通常都有Avatar。
+// 不论是哪种Type都会有SendTime、UserInfo里的UserID和Nickname，除了ThrowBanana没有UserInfo里的Avatar，其他Type通常都有Avatar，粉丝牌需要用户佩戴才有。
 // Type为Comment时，Comment就是弹幕文字。
 // Type为Gift时，Gift就是礼物信息。
 // Type为Like、EnterRoom和FollowAuthor时没有多余的数据。
@@ -83,7 +88,7 @@ type DanmuMessage struct {
 	Gift        GiftInfo  // 礼物信息
 }
 
-// WatchingUser 就是观看直播的用户的信息
+// WatchingUser 就是观看直播的用户的信息，目前没有粉丝牌信息
 type WatchingUser struct {
 	UserInfo                      // 用户信息
 	AnonymousUser          bool   // 是否匿名用户
@@ -91,7 +96,7 @@ type WatchingUser struct {
 	CustomWatchingListData string // 用户的一些额外信息，格式为json
 }
 
-// TopUser 就是礼物榜在线前三。
+// TopUser 就是礼物榜在线前三，目前没有粉丝牌信息。
 // AnonymousUser好像通常为false，是否匿名用户需要根据UserID的大小来判断。
 // DisplaySendAmount好像通常为空。
 type TopUser WatchingUser
