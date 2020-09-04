@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"sort"
+	"sync"
 
 	"github.com/orzogc/acfundanmu/acproto"
 	"github.com/valyala/fastjson"
@@ -148,141 +149,160 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 	checkErr(err)
 
 	var danmu []DanmuMessage
+	var mu sync.Mutex
+	var wg sync.WaitGroup
 	for _, item := range actionSignal.Item {
 		for _, pl := range item.Payload {
-			switch item.SingalType {
-			case "CommonActionSignalComment":
-				comment := &acproto.CommonActionSignalComment{}
-				err = proto.Unmarshal(pl, comment)
-				checkErr(err)
-				d := DanmuMessage{
-					Type:     Comment,
-					SendTime: comment.SendTimeMs * 1e6,
-					UserInfo: UserInfo{
-						UserID:   comment.UserInfo.UserId,
-						Nickname: comment.UserInfo.Nickname,
-					},
-					Comment: comment.Content,
-				}
-				d.Avatar, d.Medal = getMoreInfo(comment.UserInfo)
-				danmu = append(danmu, d)
-			case "CommonActionSignalLike":
-				like := &acproto.CommonActionSignalLike{}
-				err = proto.Unmarshal(pl, like)
-				checkErr(err)
-				d := DanmuMessage{
-					Type:     Like,
-					SendTime: like.SendTimeMs * 1e6,
-					UserInfo: UserInfo{
-						UserID:   like.UserInfo.UserId,
-						Nickname: like.UserInfo.Nickname,
-					},
-				}
-				d.Avatar, d.Medal = getMoreInfo(like.UserInfo)
-				danmu = append(danmu, d)
-			case "CommonActionSignalUserEnterRoom":
-				enter := &acproto.CommonActionSignalUserEnterRoom{}
-				err = proto.Unmarshal(pl, enter)
-				checkErr(err)
-				d := DanmuMessage{
-					Type:     EnterRoom,
-					SendTime: enter.SendTimeMs * 1e6,
-					UserInfo: UserInfo{
-						UserID:   enter.UserInfo.UserId,
-						Nickname: enter.UserInfo.Nickname,
-					},
-				}
-				d.Avatar, d.Medal = getMoreInfo(enter.UserInfo)
-				danmu = append(danmu, d)
-			case "CommonActionSignalUserFollowAuthor":
-				follow := &acproto.CommonActionSignalUserFollowAuthor{}
-				err = proto.Unmarshal(pl, follow)
-				checkErr(err)
-				d := DanmuMessage{
-					Type:     FollowAuthor,
-					SendTime: follow.SendTimeMs * 1e6,
-					UserInfo: UserInfo{
-						UserID:   follow.UserInfo.UserId,
-						Nickname: follow.UserInfo.Nickname,
-					},
-				}
-				d.Avatar, d.Medal = getMoreInfo(follow.UserInfo)
-				danmu = append(danmu, d)
-			case "CommonNotifySignalKickedOut":
-				kickedOut := &acproto.CommonNotifySignalKickedOut{}
-				err = proto.Unmarshal(pl, kickedOut)
-				checkErr(err)
-				info.Lock()
-				info.KickedOut = kickedOut.Reason
-				info.Unlock()
-			case "CommonNotifySignalViolationAlert":
-				violationAlert := &acproto.CommonNotifySignalViolationAlert{}
-				err = proto.Unmarshal(pl, violationAlert)
-				checkErr(err)
-				info.Lock()
-				info.ViolationAlert = violationAlert.ViolationContent
-				info.Unlock()
-			case "AcfunActionSignalThrowBanana":
-				banana := &acproto.AcfunActionSignalThrowBanana{}
-				err = proto.Unmarshal(pl, banana)
-				checkErr(err)
-				d := DanmuMessage{
-					Type:     ThrowBanana,
-					SendTime: banana.SendTimeMs * 1e6,
-					UserInfo: UserInfo{
-						UserID:   banana.Visitor.UserId,
-						Nickname: banana.Visitor.Name,
-					},
-					BananaCount: int(banana.Count),
-				}
-				danmu = append(danmu, d)
-			case "CommonActionSignalGift":
-				gift := &acproto.CommonActionSignalGift{}
-				err = proto.Unmarshal(pl, gift)
-				checkErr(err)
-				// 礼物列表应该不会在直播中途改变，但以防万一
-				g, ok := t.gifts[int(gift.GiftId)]
-				if !ok {
-					g = Giftdetail{
-						ID:   int(gift.GiftId),
-						Name: "未知礼物",
-					}
-				}
-				d := DanmuMessage{
-					Type:     Gift,
-					SendTime: gift.SendTimeMs * 1e6,
-					UserInfo: UserInfo{
-						UserID:   gift.User.UserId,
-						Nickname: gift.User.Nickname,
-					},
-					Gift: GiftInfo{
-						Giftdetail:            g,
-						Count:                 int(gift.Count),
-						Combo:                 int(gift.Combo),
-						Value:                 int(gift.Value),
-						ComboID:               gift.ComboId,
-						SlotDisplayDurationMs: int(gift.SlotDisplayDurationMs),
-						ExpireDurationMs:      int(gift.ExpireDurationMs),
-					},
-				}
-				d.Avatar, d.Medal = getMoreInfo(gift.User)
-				danmu = append(danmu, d)
-			case "CommonActionSignalRichText":
-				/*
-					richText := &acproto.CommonActionSignalRichText{}
-					err = proto.Unmarshal(pl, richText)
+			wg.Add(1)
+			go func(singalType string, pl []byte) {
+				switch singalType {
+				case "CommonActionSignalComment":
+					comment := &acproto.CommonActionSignalComment{}
+					err = proto.Unmarshal(pl, comment)
 					checkErr(err)
-					log.Printf("CommonActionSignalRichText: \n%+v\n", richText)
-					log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(pl))
-				*/
-			default:
-				log.Printf("未知的Action Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
-					item.SingalType,
-					string(pl),
-					base64.StdEncoding.EncodeToString(pl))
-			}
+					d := DanmuMessage{
+						Type:     Comment,
+						SendTime: comment.SendTimeMs * 1e6,
+						UserInfo: UserInfo{
+							UserID:   comment.UserInfo.UserId,
+							Nickname: comment.UserInfo.Nickname,
+						},
+						Comment: comment.Content,
+					}
+					d.Avatar, d.Medal = getMoreInfo(comment.UserInfo)
+					mu.Lock()
+					danmu = append(danmu, d)
+					mu.Unlock()
+				case "CommonActionSignalLike":
+					like := &acproto.CommonActionSignalLike{}
+					err = proto.Unmarshal(pl, like)
+					checkErr(err)
+					d := DanmuMessage{
+						Type:     Like,
+						SendTime: like.SendTimeMs * 1e6,
+						UserInfo: UserInfo{
+							UserID:   like.UserInfo.UserId,
+							Nickname: like.UserInfo.Nickname,
+						},
+					}
+					d.Avatar, d.Medal = getMoreInfo(like.UserInfo)
+					mu.Lock()
+					danmu = append(danmu, d)
+					mu.Unlock()
+				case "CommonActionSignalUserEnterRoom":
+					enter := &acproto.CommonActionSignalUserEnterRoom{}
+					err = proto.Unmarshal(pl, enter)
+					checkErr(err)
+					d := DanmuMessage{
+						Type:     EnterRoom,
+						SendTime: enter.SendTimeMs * 1e6,
+						UserInfo: UserInfo{
+							UserID:   enter.UserInfo.UserId,
+							Nickname: enter.UserInfo.Nickname,
+						},
+					}
+					d.Avatar, d.Medal = getMoreInfo(enter.UserInfo)
+					mu.Lock()
+					danmu = append(danmu, d)
+					mu.Unlock()
+				case "CommonActionSignalUserFollowAuthor":
+					follow := &acproto.CommonActionSignalUserFollowAuthor{}
+					err = proto.Unmarshal(pl, follow)
+					checkErr(err)
+					d := DanmuMessage{
+						Type:     FollowAuthor,
+						SendTime: follow.SendTimeMs * 1e6,
+						UserInfo: UserInfo{
+							UserID:   follow.UserInfo.UserId,
+							Nickname: follow.UserInfo.Nickname,
+						},
+					}
+					d.Avatar, d.Medal = getMoreInfo(follow.UserInfo)
+					mu.Lock()
+					danmu = append(danmu, d)
+					mu.Unlock()
+				case "CommonNotifySignalKickedOut":
+					kickedOut := &acproto.CommonNotifySignalKickedOut{}
+					err = proto.Unmarshal(pl, kickedOut)
+					checkErr(err)
+					info.Lock()
+					info.KickedOut = kickedOut.Reason
+					info.Unlock()
+				case "CommonNotifySignalViolationAlert":
+					violationAlert := &acproto.CommonNotifySignalViolationAlert{}
+					err = proto.Unmarshal(pl, violationAlert)
+					checkErr(err)
+					info.Lock()
+					info.ViolationAlert = violationAlert.ViolationContent
+					info.Unlock()
+				case "AcfunActionSignalThrowBanana":
+					banana := &acproto.AcfunActionSignalThrowBanana{}
+					err = proto.Unmarshal(pl, banana)
+					checkErr(err)
+					d := DanmuMessage{
+						Type:     ThrowBanana,
+						SendTime: banana.SendTimeMs * 1e6,
+						UserInfo: UserInfo{
+							UserID:   banana.Visitor.UserId,
+							Nickname: banana.Visitor.Name,
+						},
+						BananaCount: int(banana.Count),
+					}
+					mu.Lock()
+					danmu = append(danmu, d)
+					mu.Unlock()
+				case "CommonActionSignalGift":
+					gift := &acproto.CommonActionSignalGift{}
+					err = proto.Unmarshal(pl, gift)
+					checkErr(err)
+					// 礼物列表应该不会在直播中途改变，但以防万一
+					g, ok := t.gifts[int(gift.GiftId)]
+					if !ok {
+						g = Giftdetail{
+							ID:   int(gift.GiftId),
+							Name: "未知礼物",
+						}
+					}
+					d := DanmuMessage{
+						Type:     Gift,
+						SendTime: gift.SendTimeMs * 1e6,
+						UserInfo: UserInfo{
+							UserID:   gift.User.UserId,
+							Nickname: gift.User.Nickname,
+						},
+						Gift: GiftInfo{
+							Giftdetail:            g,
+							Count:                 int(gift.Count),
+							Combo:                 int(gift.Combo),
+							Value:                 int(gift.Value),
+							ComboID:               gift.ComboId,
+							SlotDisplayDurationMs: int(gift.SlotDisplayDurationMs),
+							ExpireDurationMs:      int(gift.ExpireDurationMs),
+						},
+					}
+					d.Avatar, d.Medal = getMoreInfo(gift.User)
+					mu.Lock()
+					danmu = append(danmu, d)
+					mu.Unlock()
+				case "CommonActionSignalRichText":
+					/*
+						richText := &acproto.CommonActionSignalRichText{}
+						err = proto.Unmarshal(pl, richText)
+						checkErr(err)
+						log.Printf("CommonActionSignalRichText: \n%+v\n", richText)
+						log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(pl))
+					*/
+				default:
+					log.Printf("未知的Action Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
+						singalType,
+						string(pl),
+						base64.StdEncoding.EncodeToString(pl))
+				}
+				wg.Done()
+			}(item.SingalType, pl)
 		}
 	}
+	wg.Wait()
 
 	// 按SendTime大小排序
 	sort.Slice(danmu, func(i, j int) bool {
@@ -301,93 +321,99 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 	err := proto.Unmarshal(*payload, signal)
 	checkErr(err)
 
+	var wg sync.WaitGroup
 	for _, item := range signal.Item {
-		switch item.SingalType {
-		case "AcfunStateSignalDisplayInfo":
-			bananaInfo := &acproto.AcfunStateSignalDisplayInfo{}
-			err = proto.Unmarshal(item.Payload, bananaInfo)
-			checkErr(err)
-			info.Lock()
-			info.AllBananaCount = bananaInfo.BananaCount
-			info.Unlock()
-		case "CommonStateSignalDisplayInfo":
-			stateInfo := &acproto.CommonStateSignalDisplayInfo{}
-			err = proto.Unmarshal(item.Payload, stateInfo)
-			checkErr(err)
-			info.Lock()
-			info.WatchingCount = stateInfo.WatchingCount
-			info.LikeCount = stateInfo.LikeCount
-			info.LikeDelta = int(stateInfo.LikeDelta)
-			info.Unlock()
-		case "CommonStateSignalTopUsers":
-			topUsers := &acproto.CommonStateSignalTopUsers{}
-			err = proto.Unmarshal(item.Payload, topUsers)
-			checkErr(err)
-			users := make([]TopUser, len(topUsers.User))
-			for i, user := range topUsers.User {
-				u := TopUser{
-					UserInfo: UserInfo{
-						UserID:   user.UserInfo.UserId,
-						Nickname: user.UserInfo.Nickname,
-					},
-					AnonymousUser:          user.AnonymousUser,
-					DisplaySendAmount:      user.CustomWatchingListData, // proto里应该是写反了
-					CustomWatchingListData: user.DisplaySendAmount,
+		wg.Add(1)
+		go func(item *acproto.ZtLiveStateSignalItem) {
+			switch item.SingalType {
+			case "AcfunStateSignalDisplayInfo":
+				bananaInfo := &acproto.AcfunStateSignalDisplayInfo{}
+				err = proto.Unmarshal(item.Payload, bananaInfo)
+				checkErr(err)
+				info.Lock()
+				info.AllBananaCount = bananaInfo.BananaCount
+				info.Unlock()
+			case "CommonStateSignalDisplayInfo":
+				stateInfo := &acproto.CommonStateSignalDisplayInfo{}
+				err = proto.Unmarshal(item.Payload, stateInfo)
+				checkErr(err)
+				info.Lock()
+				info.WatchingCount = stateInfo.WatchingCount
+				info.LikeCount = stateInfo.LikeCount
+				info.LikeDelta = int(stateInfo.LikeDelta)
+				info.Unlock()
+			case "CommonStateSignalTopUsers":
+				topUsers := &acproto.CommonStateSignalTopUsers{}
+				err = proto.Unmarshal(item.Payload, topUsers)
+				checkErr(err)
+				users := make([]TopUser, len(topUsers.User))
+				for i, user := range topUsers.User {
+					u := TopUser{
+						UserInfo: UserInfo{
+							UserID:   user.UserInfo.UserId,
+							Nickname: user.UserInfo.Nickname,
+						},
+						AnonymousUser:          user.AnonymousUser,
+						DisplaySendAmount:      user.CustomWatchingListData, // proto里应该是写反了
+						CustomWatchingListData: user.DisplaySendAmount,
+					}
+					u.Avatar, u.Medal = getMoreInfo(user.UserInfo)
+					users[i] = u
 				}
-				u.Avatar, u.Medal = getMoreInfo(user.UserInfo)
-				users[i] = u
-			}
-			info.Lock()
-			info.TopUsers = users
-			info.Unlock()
-		case "CommonStateSignalRecentComment":
-			comments := &acproto.CommonStateSignalRecentComment{}
-			err = proto.Unmarshal(item.Payload, comments)
-			checkErr(err)
-			danmu := make([]DanmuMessage, len(comments.Comment))
-			for i, comment := range comments.Comment {
-				d := DanmuMessage{
-					Type:     Comment,
-					SendTime: comment.SendTimeMs * 1e6,
-					UserInfo: UserInfo{
-						UserID:   comment.UserInfo.UserId,
-						Nickname: comment.UserInfo.Nickname,
-					},
-					Comment: comment.Content,
+				info.Lock()
+				info.TopUsers = users
+				info.Unlock()
+			case "CommonStateSignalRecentComment":
+				comments := &acproto.CommonStateSignalRecentComment{}
+				err = proto.Unmarshal(item.Payload, comments)
+				checkErr(err)
+				danmu := make([]DanmuMessage, len(comments.Comment))
+				for i, comment := range comments.Comment {
+					d := DanmuMessage{
+						Type:     Comment,
+						SendTime: comment.SendTimeMs * 1e6,
+						UserInfo: UserInfo{
+							UserID:   comment.UserInfo.UserId,
+							Nickname: comment.UserInfo.Nickname,
+						},
+						Comment: comment.Content,
+					}
+					d.Avatar, d.Medal = getMoreInfo(comment.UserInfo)
+					danmu[i] = d
 				}
-				d.Avatar, d.Medal = getMoreInfo(comment.UserInfo)
-				danmu[i] = d
+				info.Lock()
+				info.RecentComment = danmu
+				info.Unlock()
+			case "CommonStateSignalChatCall":
+				//chatCall := &acproto.CommonStateSignalChatCall{}
+				//err = proto.Unmarshal(item.Payload, chatCall)
+				//checkErr(err)
+			case "CommonStateSignalChatAccept":
+				//chatAccept := &acproto.CommonStateSignalChatAccept{}
+				//err = proto.Unmarshal(item.Payload, chatAccept)
+				//checkErr(err)
+			case "CommonStateSignalChatReady":
+				//chatReady := &acproto.CommonStateSignalChatReady{}
+				//err = proto.Unmarshal(item.Payload, chatReady)
+				//checkErr(err)
+			case "CommonStateSignalChatEnd":
+				//chatEnd := &acproto.CommonStateSignalChatEnd{}
+				//err = proto.Unmarshal(item.Payload, chatEnd)
+				//checkErr(err)
+			case "CommonStateSignalCurrentRedpackList":
+				//redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
+				//err = proto.Unmarshal(item.Payload, redpackList)
+				//checkErr(err)
+			default:
+				log.Printf("未知的State Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
+					item.SingalType,
+					string(item.Payload),
+					base64.StdEncoding.EncodeToString(item.Payload))
 			}
-			info.Lock()
-			info.RecentComment = danmu
-			info.Unlock()
-		case "CommonStateSignalChatCall":
-			//chatCall := &acproto.CommonStateSignalChatCall{}
-			//err = proto.Unmarshal(item.Payload, chatCall)
-			//checkErr(err)
-		case "CommonStateSignalChatAccept":
-			//chatAccept := &acproto.CommonStateSignalChatAccept{}
-			//err = proto.Unmarshal(item.Payload, chatAccept)
-			//checkErr(err)
-		case "CommonStateSignalChatReady":
-			//chatReady := &acproto.CommonStateSignalChatReady{}
-			//err = proto.Unmarshal(item.Payload, chatReady)
-			//checkErr(err)
-		case "CommonStateSignalChatEnd":
-			//chatEnd := &acproto.CommonStateSignalChatEnd{}
-			//err = proto.Unmarshal(item.Payload, chatEnd)
-			//checkErr(err)
-		case "CommonStateSignalCurrentRedpackList":
-			//redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
-			//err = proto.Unmarshal(item.Payload, redpackList)
-			//checkErr(err)
-		default:
-			log.Printf("未知的State Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
-				item.SingalType,
-				string(item.Payload),
-				base64.StdEncoding.EncodeToString(item.Payload))
-		}
+			wg.Done()
+		}(item)
 	}
+	wg.Wait()
 }
 
 // 获取用户头像和粉丝牌
