@@ -52,9 +52,7 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 		panicln(fmt.Errorf("以注册用户的身份登陆AcFun失败，响应为 %s", string(body)))
 	}
 
-	for _, cookie := range resp.Cookies() {
-		cookieContainer = append(cookieContainer, cookie)
-	}
+	cookieContainer = resp.Cookies()
 
 	userID := v.GetInt("userId")
 	content := fmt.Sprintf(safetyIDContent, userID)
