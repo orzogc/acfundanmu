@@ -127,13 +127,18 @@ type DanmuQueue struct {
 	ch   chan error   // 用来传递初始化的错误
 }
 
-// Start 启动websocket获取弹幕，uid是主播的uid，ctx用来结束websocket
-func Start(ctx context.Context, uid int) (dq *DanmuQueue, e error) {
+// Start 启动websocket获取弹幕，uid是主播的uid，ctx用来结束websocket。
+// usernameAndPassword依次传递注册用户的帐号名（邮箱）和密码，以这个注册用户登陆AcFun的弹幕系统，可忽略。
+func Start(ctx context.Context, uid int, usernameAndPassword ...string) (dq *DanmuQueue, e error) {
 	dq = new(DanmuQueue)
 	dq.q = queue.New(queueLen)
 	dq.info = new(liveInfo)
 	dq.ch = make(chan error, 1)
-	go dq.wsStart(ctx, uid, "", "")
+	if len(usernameAndPassword) == 2 {
+		go dq.wsStart(ctx, uid, usernameAndPassword[0], usernameAndPassword[1])
+	} else {
+		go dq.wsStart(ctx, uid, "", "")
+	}
 	if e = <-dq.ch; e != nil {
 		return nil, e
 	}
