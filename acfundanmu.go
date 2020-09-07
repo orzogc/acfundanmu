@@ -2,6 +2,8 @@ package acfundanmu
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/Workiva/go-datastructures/queue"
@@ -54,7 +56,7 @@ type GiftInfo struct {
 	Combo                 int    // 礼物连击数量
 	Value                 int    // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID               string // 礼物连击ID
-	SlotDisplayDurationMs int    // 应该是礼物动画持续的时间
+	SlotDisplayDurationMs int    // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
 	ExpireDurationMs      int
 }
 
@@ -68,7 +70,7 @@ type UserInfo struct {
 
 // MedalInfo 就是粉丝牌信息
 type MedalInfo struct {
-	UperID   int64  // UP主的UID
+	UperID   int64  // UP主的uid
 	ClubName string // 粉丝牌名字
 	Level    int    // 粉丝牌等级
 }
@@ -127,20 +129,24 @@ type DanmuQueue struct {
 	ch   chan error   // 用来传递初始化的错误
 }
 
+// Login 用帐号邮箱和密码登陆AcFun获取cookies
+func Login(username, password string) ([]*http.Cookie, error) {
+	if username != "" && password != "" {
+		return login(username, password)
+	}
+	return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
+}
+
 // Start 启动websocket获取弹幕，uid是主播的uid，ctx用来结束websocket。
-// usernameAndPassword依次传递注册用户的帐号名（邮箱）和密码，以这个注册用户登陆AcFun的弹幕系统，可忽略。
-func Start(ctx context.Context, uid int, usernameAndPassword ...string) (dq *DanmuQueue, e error) {
+// cookies可以利用Login()获取，为nil时使用访客模式登陆AcFun的弹幕系统，通常使用访客模式即可。
+func Start(ctx context.Context, uid int, cookies []*http.Cookie) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.q = queue.New(queueLen)
 	dq.info = new(liveInfo)
 	dq.ch = make(chan error, 1)
-	if len(usernameAndPassword) == 2 {
-		go dq.wsStart(ctx, uid, usernameAndPassword[0], usernameAndPassword[1])
-	} else {
-		go dq.wsStart(ctx, uid, "", "")
-	}
-	if e = <-dq.ch; e != nil {
-		return nil, e
+	go dq.wsStart(ctx, uid, cookies)
+	if err = <-dq.ch; err != nil {
+		return nil, err
 	}
 	return dq, nil
 }

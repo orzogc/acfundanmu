@@ -43,7 +43,7 @@ func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int6
 }
 
 // 启动websocket，username（邮箱）和password用来登陆AcFun，其为空串时使用访客模式，目前登陆模式和访客模式并没有区别
-func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, username, password string) {
+func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*http.Cookie) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("wsStart() error: %v", err)
@@ -52,18 +52,9 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, username, password s
 	}()
 	defer dq.q.Dispose()
 
-	var cookieContainer []*http.Cookie = nil
 	var err error
-	if username != "" && password != "" {
-		cookieContainer, err = login(username, password)
-		if err != nil {
-			dq.ch <- err
-			panicln(err)
-		}
-	}
-
 	for retry := 0; retry < 3; retry++ {
-		dq.t, err = initialize(uid, cookieContainer)
+		dq.t, err = initialize(uid, cookies)
 		if err != nil {
 			if retry == 2 {
 				e := fmt.Errorf("获取token失败，主播可能不在直播：%w", err)

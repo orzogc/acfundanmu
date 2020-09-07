@@ -7,7 +7,7 @@ AcFun直播弹幕下载，实现参照 [AcFunDanmaku](https://github.com/wpscott
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-dq, err := acfundanmu.Start(ctx, uid)
+dq, err := acfundanmu.Start(ctx, uid, nil)
 if err != nil {
 	log.Panicln(err)
 }
@@ -41,7 +41,7 @@ for {
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-dq, err := acfundanmu.Start(ctx, uid)
+dq, err := acfundanmu.Start(ctx, uid, nil)
 if err != nil {
 	log.Panicln(err)
 }
@@ -65,7 +65,7 @@ go func() {
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-dq, err := acfundanmu.Start(ctx, uid)
+dq, err := acfundanmu.Start(ctx, uid, nil)
 if err != nil {
 	log.Panicln(err)
 }
@@ -89,7 +89,7 @@ go func() {
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 // uid为主播的uid
-dq, err := acfundanmu.Start(ctx, uid)
+dq, err := acfundanmu.Start(ctx, uid, nil)
 if err != nil {
 	log.Panicln(err)
 }

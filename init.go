@@ -27,7 +27,7 @@ func panicln(err error) {
 }
 
 // 登陆acfun账号
-func login(username string, password string) (cookieContainer []*http.Cookie, e error) {
+func login(username, password string) (cookies []*http.Cookie, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("login() error: %w", err)
@@ -52,7 +52,7 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 		panicln(fmt.Errorf("以注册用户的身份登陆AcFun失败，响应为 %s", string(body)))
 	}
 
-	cookieContainer = resp.Cookies()
+	cookies = resp.Cookies()
 
 	userID := v.GetInt("userId")
 	content := fmt.Sprintf(safetyIDContent, userID)
@@ -69,13 +69,13 @@ func login(username string, password string) (cookieContainer []*http.Cookie, e 
 	}
 
 	cookie := &http.Cookie{Name: "safety_id", Value: string(v.GetStringBytes("safety_id")), Domain: ".acfun.cn"}
-	cookieContainer = append(cookieContainer, cookie)
+	cookies = append(cookies, cookie)
 
-	return cookieContainer, nil
+	return cookies, nil
 }
 
 // 初始化，获取相应的token，cookieContainer为nil时为游客模式
-func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
+func initialize(uid int, cookies []*http.Cookie) (t *token, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("initialize() error: %w", err)
@@ -99,11 +99,11 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 
 	var req *http.Request
 	form := url.Values{}
-	if cookieContainer != nil {
+	if cookies != nil {
 		form.Set(sid, midground)
 		req, err = http.NewRequest(http.MethodPost, getTokenURL, strings.NewReader(form.Encode()))
 		checkErr(err)
-		for _, cookie := range cookieContainer {
+		for _, cookie := range cookies {
 			req.AddCookie(cookie)
 		}
 	} else {
@@ -130,7 +130,7 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 	// 获取userId和对应的令牌
 	userID := v.GetInt64("userId")
 	var play, serviceToken, securityKey string
-	if cookieContainer != nil {
+	if cookies != nil {
 		securityKey = string(v.GetStringBytes("ssecurity"))
 		serviceToken = string(v.GetStringBytes(midgroundSt))
 		// 需要userId、deviceID和serviceToken
@@ -186,14 +186,14 @@ func initialize(uid int, cookieContainer []*http.Cookie) (t *token, e error) {
 		deviceID:        deviceID,
 	}
 
-	err = t.updateGiftList(cookieContainer)
+	err = t.updateGiftList(cookies)
 	checkErr(err)
 
 	return t, nil
 }
 
 // 更新礼物列表
-func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
+func (t *token) updateGiftList(cookies []*http.Cookie) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("updateGiftList() error: %w", err)
@@ -205,7 +205,7 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 	}
 
 	var giftList string
-	if cookieContainer != nil {
+	if cookies != nil {
 		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
 	} else {
 		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
@@ -256,7 +256,7 @@ func (t *token) updateGiftList(cookieContainer []*http.Cookie) (e error) {
 }
 
 // 获取直播间排名前50的在线观众信息列表
-func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList *[]WatchingUser, e error) {
+func (t *token) watchingList(cookies []*http.Cookie) (watchList *[]WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
@@ -268,7 +268,7 @@ func (t *token) watchingList(cookieContainer []*http.Cookie) (watchList *[]Watch
 	}
 
 	var watchURL string
-	if cookieContainer != nil {
+	if cookies != nil {
 		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
 	} else {
 		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
