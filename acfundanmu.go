@@ -12,9 +12,6 @@ import (
 // 队列长度
 const queueLen = 1000
 
-// ErrInitialize 就是初始化错误
-//var ErrInitialize = errors.New("获取token失败，主播可能不在直播")
-
 // DanmuType 就是弹幕信息的类型
 type DanmuType int
 
@@ -53,7 +50,7 @@ const (
 	ManagerAdded
 	// ManagerRemoved 登陆用户被移除房管权限？
 	ManagerRemoved
-	// IsManager 登陆用户是房管？
+	// IsManager 登陆用户是房管
 	IsManager
 )
 
