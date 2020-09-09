@@ -1,9 +1,0 @@
-﻿syntax = "proto3";
-
-option go_package = ".;acproto";
-
-package AcFunDanmu;
-
-message UnregisterRequest {}
-
-message UnregisterResponse {}

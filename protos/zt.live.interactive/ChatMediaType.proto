@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = ".;acproto";
+
+package AcFunDanmu;
+
+enum ChatMediaType {
+	UNKNOWN = 0;
+	AUDIO = 1;
+	VIDEO = 2;
+}

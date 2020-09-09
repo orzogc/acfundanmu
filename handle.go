@@ -154,8 +154,8 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 	for _, item := range actionSignal.Item {
 		for _, pl := range item.Payload {
 			wg.Add(1)
-			go func(singalType string, pl []byte) {
-				switch singalType {
+			go func(signalType string, pl []byte) {
+				switch signalType {
 				case "CommonActionSignalComment":
 					comment := &acproto.CommonActionSignalComment{}
 					err = proto.Unmarshal(pl, comment)
@@ -293,13 +293,13 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 						log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(pl))
 					*/
 				default:
-					log.Printf("未知的Action Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
-						singalType,
+					log.Printf("未知的Action Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
+						signalType,
 						string(pl),
 						base64.StdEncoding.EncodeToString(pl))
 				}
 				wg.Done()
-			}(item.SingalType, pl)
+			}(item.SignalType, pl)
 		}
 	}
 	wg.Wait()
@@ -325,7 +325,7 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 	for _, item := range signal.Item {
 		wg.Add(1)
 		go func(item *acproto.ZtLiveStateSignalItem) {
-			switch item.SingalType {
+			switch item.SignalType {
 			case "AcfunStateSignalDisplayInfo":
 				bananaInfo := &acproto.AcfunStateSignalDisplayInfo{}
 				err = proto.Unmarshal(item.Payload, bananaInfo)
@@ -405,8 +405,8 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 				//err = proto.Unmarshal(item.Payload, redpackList)
 				//checkErr(err)
 			default:
-				log.Printf("未知的State Signal item.SingalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
-					item.SingalType,
+				log.Printf("未知的State Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
+					item.SignalType,
 					string(item.Payload),
 					base64.StdEncoding.EncodeToString(item.Payload))
 			}
