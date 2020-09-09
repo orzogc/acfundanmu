@@ -90,9 +90,14 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 		}
 		switch message.MessageType {
 		case "ZtLiveScActionSignal":
-			t.handleMsgAct(&payload, q, info)
+			t.handleActionSignal(&payload, q, info)
 		case "ZtLiveScStateSignal":
-			t.handleMsgState(&payload, info)
+			t.handleStateSignal(&payload, info)
+		case "ZtLiveScNotifySignal":
+			notifySignal := &acproto.ZtLiveNotifySignalItem{}
+			err := proto.Unmarshal(payload, notifySignal)
+			checkErr(err)
+			t.handleNotifySignal(notifySignal.SignalType, &notifySignal.Payload, info)
 		case "ZtLiveScStatusChanged":
 			statusChanged := &acproto.ZtLiveScStatusChanged{}
 			err := proto.Unmarshal(payload, statusChanged)
@@ -143,7 +148,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 }
 
 // 处理action signal数据
-func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
+func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue, info *liveInfo) {
 	actionSignal := &acproto.ZtLiveScActionSignal{}
 	err := proto.Unmarshal(*payload, actionSignal)
 	checkErr(err)
@@ -169,7 +174,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 						},
 						Comment: comment.Content,
 					}
-					d.Avatar, d.Medal = getMoreInfo(comment.UserInfo)
+					getMoreInfo(&d.UserInfo, comment.UserInfo)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -185,7 +190,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 							Nickname: like.UserInfo.Nickname,
 						},
 					}
-					d.Avatar, d.Medal = getMoreInfo(like.UserInfo)
+					getMoreInfo(&d.UserInfo, like.UserInfo)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -201,7 +206,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 							Nickname: enter.UserInfo.Nickname,
 						},
 					}
-					d.Avatar, d.Medal = getMoreInfo(enter.UserInfo)
+					getMoreInfo(&d.UserInfo, enter.UserInfo)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -217,24 +222,16 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 							Nickname: follow.UserInfo.Nickname,
 						},
 					}
-					d.Avatar, d.Medal = getMoreInfo(follow.UserInfo)
+					getMoreInfo(&d.UserInfo, follow.UserInfo)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
 				case "CommonNotifySignalKickedOut":
-					kickedOut := &acproto.CommonNotifySignalKickedOut{}
-					err = proto.Unmarshal(pl, kickedOut)
-					checkErr(err)
-					info.Lock()
-					info.KickedOut = kickedOut.Reason
-					info.Unlock()
+					t.handleNotifySignal(signalType, &pl, info)
 				case "CommonNotifySignalViolationAlert":
-					violationAlert := &acproto.CommonNotifySignalViolationAlert{}
-					err = proto.Unmarshal(pl, violationAlert)
-					checkErr(err)
-					info.Lock()
-					info.ViolationAlert = violationAlert.ViolationContent
-					info.Unlock()
+					t.handleNotifySignal(signalType, &pl, info)
+				case "CommonNotifySignalLiveManagerState":
+					t.handleNotifySignal(signalType, &pl, info)
 				case "AcfunActionSignalThrowBanana":
 					banana := &acproto.AcfunActionSignalThrowBanana{}
 					err = proto.Unmarshal(pl, banana)
@@ -280,7 +277,7 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 							ExpireDurationMs:      int(gift.ExpireDurationMs),
 						},
 					}
-					d.Avatar, d.Medal = getMoreInfo(gift.User)
+					getMoreInfo(&d.UserInfo, gift.User)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -316,13 +313,13 @@ func (t *token) handleMsgAct(payload *[]byte, q *queue.Queue, info *liveInfo) {
 }
 
 // 处理state signal数据
-func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
-	signal := &acproto.ZtLiveScStateSignal{}
-	err := proto.Unmarshal(*payload, signal)
+func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
+	stateSignal := &acproto.ZtLiveScStateSignal{}
+	err := proto.Unmarshal(*payload, stateSignal)
 	checkErr(err)
 
 	var wg sync.WaitGroup
-	for _, item := range signal.Item {
+	for _, item := range stateSignal.Item {
 		wg.Add(1)
 		go func(item *acproto.ZtLiveStateSignalItem) {
 			switch item.SignalType {
@@ -357,7 +354,7 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 						DisplaySendAmount:      user.CustomWatchingListData, // proto里应该是写反了
 						CustomWatchingListData: user.DisplaySendAmount,
 					}
-					u.Avatar, u.Medal = getMoreInfo(user.UserInfo)
+					getMoreInfo(&u.UserInfo, user.UserInfo)
 					users[i] = u
 				}
 				info.Lock()
@@ -378,7 +375,7 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 						},
 						Comment: comment.Content,
 					}
-					d.Avatar, d.Medal = getMoreInfo(comment.UserInfo)
+					getMoreInfo(&d.UserInfo, comment.UserInfo)
 					danmu[i] = d
 				}
 				info.Lock()
@@ -416,10 +413,42 @@ func (t *token) handleMsgState(payload *[]byte, info *liveInfo) {
 	wg.Wait()
 }
 
+// 处理notify signal数据
+func (t *token) handleNotifySignal(signalType string, payload *[]byte, info *liveInfo) {
+	switch signalType {
+	case "CommonNotifySignalKickedOut":
+		kickedOut := &acproto.CommonNotifySignalKickedOut{}
+		err := proto.Unmarshal(*payload, kickedOut)
+		checkErr(err)
+		info.Lock()
+		info.KickedOut = kickedOut.Reason
+		info.Unlock()
+	case "CommonNotifySignalViolationAlert":
+		violationAlert := &acproto.CommonNotifySignalViolationAlert{}
+		err := proto.Unmarshal(*payload, violationAlert)
+		checkErr(err)
+		info.Lock()
+		info.ViolationAlert = violationAlert.ViolationContent
+		info.Unlock()
+	case "CommonNotifySignalLiveManagerState":
+		liveManagerState := &acproto.CommonNotifySignalLiveManagerState{}
+		err := proto.Unmarshal(*payload, liveManagerState)
+		checkErr(err)
+		info.Lock()
+		info.LiveManagerState = ManagerState(liveManagerState.State)
+		info.Unlock()
+	default:
+		log.Printf("未知的Notify Signal signalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
+			signalType,
+			string(*payload),
+			base64.StdEncoding.EncodeToString(*payload))
+	}
+}
+
 // 获取用户头像和粉丝牌
-func getMoreInfo(userInfo *acproto.ZtLiveUserInfo) (avatar string, medal MedalInfo) {
+func getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
 	if len(userInfo.Avatar) != 0 {
-		avatar = userInfo.Avatar[0].Url
+		user.Avatar = userInfo.Avatar[0].Url
 	}
 
 	if userInfo.Badge != "" {
@@ -427,10 +456,12 @@ func getMoreInfo(userInfo *acproto.ZtLiveUserInfo) (avatar string, medal MedalIn
 		v, err := p.Parse(userInfo.Badge)
 		checkErr(err)
 		v = v.Get("medalInfo")
-		medal.UperID = v.GetInt64("uperId")
-		medal.ClubName = string(v.GetStringBytes("clubName"))
-		medal.Level = v.GetInt("level")
+		user.Medal.UperID = v.GetInt64("uperId")
+		user.Medal.ClubName = string(v.GetStringBytes("clubName"))
+		user.Medal.Level = v.GetInt("level")
 	}
 
-	return avatar, medal
+	if userInfo.UserIdentity != nil {
+		user.ManagerType = ManagerType(userInfo.UserIdentity.ManagerType)
+	}
 }

@@ -33,6 +33,30 @@ const (
 	Gift
 )
 
+// ManagerType 就是房管类型
+type ManagerType int32
+
+const (
+	// NotManager 不是房管
+	NotManager ManagerType = iota
+	// NormalManager 是房管
+	NormalManager
+)
+
+// ManagerState 就是房管状态
+type ManagerState int32
+
+const (
+	// ManagerStateUnknown 未知的房管状态
+	ManagerStateUnknown ManagerState = iota
+	// ManagerAdded 登陆用户被添加房管权限？
+	ManagerAdded
+	// ManagerRemoved 登陆用户被移除房管权限？
+	ManagerRemoved
+	// IsManager 登陆用户是房管？
+	IsManager
+)
+
 // Giftdetail 就是礼物的详细信息
 type Giftdetail struct {
 	ID            int    // 礼物ID
@@ -62,10 +86,11 @@ type GiftInfo struct {
 
 // UserInfo 就是用户信息
 type UserInfo struct {
-	UserID   int64     // 用户uid
-	Nickname string    // 用户名字
-	Avatar   string    // 用户头像
-	Medal    MedalInfo // 粉丝牌
+	UserID      int64       // 用户uid
+	Nickname    string      // 用户名字
+	Avatar      string      // 用户头像
+	Medal       MedalInfo   // 粉丝牌
+	ManagerType ManagerType // 用户是否房管
 }
 
 // MedalInfo 就是粉丝牌信息
@@ -105,14 +130,15 @@ type TopUser WatchingUser
 
 // LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
-	KickedOut      string         // 被踢理由？
-	ViolationAlert string         // 直播间警告？
-	AllBananaCount string         // 直播间香蕉总数
-	WatchingCount  string         // 直播间在线观众数量
-	LikeCount      string         // 直播间点赞总数
-	LikeDelta      int            // 点赞增加数量？
-	TopUsers       []TopUser      // 礼物榜在线前三
-	RecentComment  []DanmuMessage // 进直播间时显示的最近发的弹幕
+	KickedOut        string         // 被踢理由？
+	ViolationAlert   string         // 直播间警告？
+	LiveManagerState ManagerState   // 登陆帐号的房管状态？
+	AllBananaCount   string         // 直播间香蕉总数
+	WatchingCount    string         // 直播间在线观众数量
+	LikeCount        string         // 直播间点赞总数
+	LikeDelta        int            // 点赞增加数量？
+	TopUsers         []TopUser      // 礼物榜在线前三
+	RecentComment    []DanmuMessage // 进直播间时显示的最近发的弹幕
 }
 
 // 带锁的LiveInfo
