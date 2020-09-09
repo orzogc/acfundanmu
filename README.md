@@ -9,7 +9,7 @@ defer cancel()
 // uid为主播的uid
 dq, err := acfundanmu.Start(ctx, uid, nil)
 if err != nil {
-	log.Panicln(err)
+    log.Panicln(err)
 }
 for {
     if danmu := dq.GetDanmu(); danmu != nil {
@@ -43,7 +43,7 @@ defer cancel()
 // uid为主播的uid
 dq, err := acfundanmu.Start(ctx, uid, nil)
 if err != nil {
-	log.Panicln(err)
+    log.Panicln(err)
 }
 go func() {
     for {
@@ -67,7 +67,7 @@ defer cancel()
 // uid为主播的uid
 dq, err := acfundanmu.Start(ctx, uid, nil)
 if err != nil {
-	log.Panicln(err)
+    log.Panicln(err)
 }
 go func() {
     for {
@@ -76,7 +76,10 @@ go func() {
             return
         default:
             // 循环获取watchingList并处理
-            watchingList := dq.GetWatchingList(nil)
+            watchingList, err := dq.GetWatchingList(nil)
+            if err != nil {
+                log.Panicln(err)
+            }
             fmt.Printf("%+v\n", *watchingList)
             time.Sleep(30 * time.Second)
         }
@@ -91,7 +94,7 @@ defer cancel()
 // uid为主播的uid
 dq, err := acfundanmu.Start(ctx, uid, nil)
 if err != nil {
-	log.Panicln(err)
+    log.Panicln(err)
 }
 dq.WriteASS(ctx, acfundanmu.SubConfig{
     Title:     "foo",

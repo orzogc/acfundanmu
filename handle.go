@@ -283,10 +283,10 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 				case "CommonActionSignalRichText":
 					/*
 						richText := &acproto.CommonActionSignalRichText{}
-						err = proto.Unmarshal(pl, richText)
+						err = proto.Unmarshal(*pl, richText)
 						checkErr(err)
 						log.Printf("CommonActionSignalRichText: \n%+v\n", richText)
-						log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(pl))
+						log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(*pl))
 					*/
 				default:
 					log.Printf("未知的Action Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
