@@ -204,8 +204,8 @@ func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
 }
 
 // GetWatchingList 返回直播间排名前50的在线观众信息列表
-func (dq *DanmuQueue) GetWatchingList() *[]WatchingUser {
-	watchList, err := dq.t.watchingList(nil)
+func (dq *DanmuQueue) GetWatchingList(cookies []*http.Cookie) *[]WatchingUser {
+	watchList, err := dq.t.watchingList(cookies)
 	checkErr(err)
 	return watchList
 }
