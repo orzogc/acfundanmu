@@ -76,7 +76,7 @@ go func() {
             return
         default:
             // 循环获取watchingList并处理
-            watchingList := dq.GetWatchingList()
+            watchingList := dq.GetWatchingList(nil)
             fmt.Printf("%+v\n", *watchingList)
             time.Sleep(30 * time.Second)
         }
