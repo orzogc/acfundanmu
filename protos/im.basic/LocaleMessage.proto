@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = ".;acproto";
+
+package AcFunDanmu;
+
+message LocaleMessage {
+    string locale = 1;
+    map<int32, string> errorMessage = 2;
+}

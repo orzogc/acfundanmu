@@ -1,5 +1,7 @@
 ﻿syntax = "proto3";
 
+option go_package = ".;acproto";
+
 package AcFunDanmu;
 
 import "AppInfo.proto";
@@ -31,7 +33,7 @@ message RegisterRequest {
 	enum ActiveStatus {
 		kInvalid = 0;
 		kAppInForeground = 1;
-		kAppinBackground = 2;
+		kAppInBackground = 2;
 	}
 }
 

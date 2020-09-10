@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = ".;acproto";
+
+package AcFunDanmu;
+
+message I18nCopyWriting {
+    string formatKey = 1;
+    repeated string formatParam = 2;
+}

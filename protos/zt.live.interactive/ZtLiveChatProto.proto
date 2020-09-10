@@ -1,0 +1,11 @@
+﻿syntax = "proto3";
+
+option go_package = ".;acproto";
+
+package AcFunDanmu;
+
+enum ZtLiveChatProto {
+	a = 0;
+	b = 1;
+	c = 2;
+}

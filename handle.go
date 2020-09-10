@@ -115,17 +115,19 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 				string(payload),
 				base64.StdEncoding.EncodeToString(payload))
 		}
-	case "Push.Message":
-		msg := &acproto.Message_Message{}
-		err := proto.Unmarshal(stream.PayloadData, msg)
-		checkErr(err)
-		switch msg.ContentType {
-		case int32(acproto.Cloud_Message_TEXT):
-			txt := &acproto.Cloud_Message_Text{}
-			err = proto.Unmarshal(msg.Content, txt)
-		default:
-			log.Println("未知的IM Push.Message：", msg.ContentType)
-		}
+	/*
+		case "Push.Message":
+			msg := &acproto.Message_Message{}
+			err := proto.Unmarshal(stream.PayloadData, msg)
+			checkErr(err)
+			switch msg.ContentType {
+			case int32(acproto.Cloud_Message_TEXT):
+				txt := &acproto.Cloud_Message_Text{}
+				err = proto.Unmarshal(msg.Content, txt)
+			default:
+				log.Println("未知的IM Push.Message：", msg.ContentType)
+			}
+	*/
 	default:
 		if stream.ErrorCode > 0 {
 			log.Println("Error: ", stream.ErrorCode, stream.ErrorMsg)

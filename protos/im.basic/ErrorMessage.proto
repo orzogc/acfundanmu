@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = ".;acproto";
+
+package AcFunDanmu;
+
+import "LocaleMessage.proto";
+
+message ErrorMessage {
+    repeated LocaleMessage localeMessages = 1;
+}

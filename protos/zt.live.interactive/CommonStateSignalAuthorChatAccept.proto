@@ -1,0 +1,10 @@
+﻿syntax = "proto3";
+
+option go_package = ".;acproto";
+
+package AcFunDanmu;
+
+message CommonStateSignalAuthorChatAccept {
+	string a = 1;
+	string b = 2;
+}

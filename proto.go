@@ -61,7 +61,7 @@ func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 		AppId:             appID,
 		Uid:               t.userID,
 		InstanceId:        t.instanceID,
-		DecodedPayloadLen: int32(length),
+		DecodedPayloadLen: uint32(length),
 		EncryptionMode:    acproto.PacketHeader_kEncryptionSessionKey,
 		SeqId:             t.seqID,
 		Kpn:               kpn,

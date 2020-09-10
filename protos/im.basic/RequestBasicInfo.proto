@@ -1,12 +1,14 @@
 ﻿syntax = "proto3";
 
+option go_package = ".;acproto";
+
 package AcFunDanmu;
 
 import "DeviceInfo.proto";
 import "AppInfo.proto";
 import "EnvInfo.proto";
 
-message RequestBasicInfo {
+message RequestBasicInfo { //RequsetBasicInfo
     DeviceInfo.PlatformType clientType = 1;
     string deviceId = 2;
     string clientIp = 3;
