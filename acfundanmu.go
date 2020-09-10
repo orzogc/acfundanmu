@@ -121,8 +121,6 @@ type WatchingUser struct {
 }
 
 // TopUser 就是礼物榜在线前三，目前没有粉丝牌信息。
-// AnonymousUser好像通常为false，是否匿名用户需要根据UserID的大小来判断。
-// DisplaySendAmount好像通常为空。
 type TopUser WatchingUser
 
 // LiveInfo 就是直播间的相关状态信息

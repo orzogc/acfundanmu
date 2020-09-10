@@ -352,8 +352,8 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 							Nickname: user.UserInfo.Nickname,
 						},
 						AnonymousUser:          user.AnonymousUser,
-						DisplaySendAmount:      user.CustomWatchingListData, // proto里应该是写反了
-						CustomWatchingListData: user.DisplaySendAmount,
+						DisplaySendAmount:      user.DisplaySendAmount,
+						CustomWatchingListData: user.CustomWatchingListData,
 					}
 					getMoreInfo(&u.UserInfo, user.UserInfo)
 					users[i] = u
