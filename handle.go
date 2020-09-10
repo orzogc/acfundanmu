@@ -257,8 +257,8 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					g, ok := t.gifts[int(gift.GiftId)]
 					if !ok {
 						g = Giftdetail{
-							ID:   int(gift.GiftId),
-							Name: "未知礼物",
+							GiftID:   int(gift.GiftId),
+							GiftName: "未知礼物",
 						}
 					}
 					d := DanmuMessage{
@@ -279,6 +279,21 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 						},
 					}
 					getMoreInfo(&d.UserInfo, gift.User)
+					if gift.DrawGiftInfo != nil {
+						d.Gift.DrawGiftInfo = DrawGiftInfo{
+							ScreenWidth:  gift.DrawGiftInfo.ScreenWidth,
+							ScreenHeight: gift.DrawGiftInfo.ScreenHeight,
+						}
+						d.Gift.DrawGiftInfo.DrawPoint = make([]DrawPoint, len(gift.DrawGiftInfo.DrawPoint))
+						for i, drawPoint := range gift.DrawGiftInfo.DrawPoint {
+							d.Gift.DrawGiftInfo.DrawPoint[i] = DrawPoint{
+								MarginLeft: drawPoint.MarginLeft,
+								MarginTop:  drawPoint.MarginTop,
+								ScaleRatio: drawPoint.ScaleRatio,
+								Handup:     drawPoint.Handup,
+							}
+						}
+					}
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -458,7 +473,7 @@ func (t *token) handleNotifySignal(payload *[]byte, info *liveInfo) {
 	wg.Wait()
 }
 
-// 获取用户头像和粉丝牌
+// 获取用户的头像、粉丝牌和房管类型
 func getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
 	if len(userInfo.Avatar) != 0 {
 		user.Avatar = userInfo.Avatar[0].Url

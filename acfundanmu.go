@@ -56,8 +56,8 @@ const (
 
 // Giftdetail 就是礼物的详细信息
 type Giftdetail struct {
-	ID            int    // 礼物ID
-	Name          string // 礼物名字
+	GiftID        int    // 礼物ID
+	GiftName      string // 礼物名字
 	ARLiveName    string // 不为空时礼物属于虚拟偶像区的特殊礼物
 	PayWalletType int    // 1为非免费礼物，2为免费礼物
 	Price         int    // 礼物价格，非免费礼物时单位为ac币，免费礼物（香蕉）时为1
@@ -70,6 +70,21 @@ type Giftdetail struct {
 	RedpackPrice  int    // 礼物红包价格总额，单位为AC币
 }
 
+// DrawPoint 绘制礼物的点？
+type DrawPoint struct {
+	MarginLeft int64
+	MarginTop  int64
+	ScaleRatio float64
+	Handup     bool
+}
+
+// DrawGiftInfo 绘制礼物的信息？目前好像都没有这部分
+type DrawGiftInfo struct {
+	ScreenWidth  int64
+	ScreenHeight int64
+	DrawPoint    []DrawPoint
+}
+
 // GiftInfo 就是弹幕里的礼物信息
 type GiftInfo struct {
 	Giftdetail                   // 礼物详细信息
@@ -79,6 +94,7 @@ type GiftInfo struct {
 	ComboID               string // 礼物连击ID
 	SlotDisplayDurationMs int    // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
 	ExpireDurationMs      int
+	DrawGiftInfo          DrawGiftInfo
 }
 
 // UserInfo 就是用户信息

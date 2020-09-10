@@ -236,8 +236,8 @@ func (t *token) updateGiftList(cookies []*http.Cookie) (e error) {
 	t.gifts = make(map[int]Giftdetail)
 	for _, gift := range v.GetArray("data", "giftList") {
 		g := Giftdetail{
-			ID:            gift.GetInt("giftId"),
-			Name:          string(gift.GetStringBytes("giftName")),
+			GiftID:        gift.GetInt("giftId"),
+			GiftName:      string(gift.GetStringBytes("giftName")),
 			ARLiveName:    string(gift.GetStringBytes("arLiveName")),
 			PayWalletType: gift.GetInt("payWalletType"),
 			Price:         gift.GetInt("giftPrice"),
@@ -249,7 +249,7 @@ func (t *token) updateGiftList(cookies []*http.Cookie) (e error) {
 			Description:   string(gift.GetStringBytes("description")),
 			RedpackPrice:  gift.GetInt("redpackPrice"),
 		}
-		t.gifts[g.ID] = g
+		t.gifts[g.GiftID] = g
 	}
 
 	return nil
