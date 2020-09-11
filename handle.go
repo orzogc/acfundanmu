@@ -423,25 +423,44 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				info.RecentComment = danmu
 				info.Unlock()
 			case "CommonStateSignalChatCall":
-				//chatCall := &acproto.CommonStateSignalChatCall{}
-				//err = proto.Unmarshal(item.Payload, chatCall)
-				//checkErr(err)
-				//log.Printf("chatCall: %+v\n", chatCall)
+				chatCall := &acproto.CommonStateSignalChatCall{}
+				err = proto.Unmarshal(item.Payload, chatCall)
+				checkErr(err)
+				chat := ChatInfo{
+					ChatID:          chatCall.ChatId,
+					LiveID:          chatCall.LiveId,
+					CallTimestampMs: chatCall.CallTimestampMs,
+				}
+				info.Lock()
+				info.Chat = chat
+				info.Unlock()
 			case "CommonStateSignalChatAccept":
-				//chatAccept := &acproto.CommonStateSignalChatAccept{}
-				//err = proto.Unmarshal(item.Payload, chatAccept)
-				//checkErr(err)
-				//log.Printf("chatAccept: %+v\n", chatAccept)
+				chatAccept := &acproto.CommonStateSignalChatAccept{}
+				err = proto.Unmarshal(item.Payload, chatAccept)
+				checkErr(err)
+				log.Printf("CommonStateSignalChatAccept: %+v\n", chatAccept)
 			case "CommonStateSignalChatReady":
-				//chatReady := &acproto.CommonStateSignalChatReady{}
-				//err = proto.Unmarshal(item.Payload, chatReady)
-				//checkErr(err)
-				//log.Printf("chatReady: %+v\n", chatReady)
+				chatReady := &acproto.CommonStateSignalChatReady{}
+				err = proto.Unmarshal(item.Payload, chatReady)
+				checkErr(err)
+				guest := UserInfo{
+					UserID:   chatReady.GuestUserInfo.UserId,
+					Nickname: chatReady.GuestUserInfo.Nickname,
+				}
+				getMoreInfo(&guest, chatReady.GuestUserInfo)
+				info.Lock()
+				info.Chat.ChatID = chatReady.ChatId
+				info.Chat.Guest = guest
+				info.Chat.MediaType = ChatMediaType(chatReady.MediaType)
+				info.Unlock()
 			case "CommonStateSignalChatEnd":
-				//chatEnd := &acproto.CommonStateSignalChatEnd{}
-				//err = proto.Unmarshal(item.Payload, chatEnd)
-				//checkErr(err)
-				//log.Printf("chatEnd: %+v\n", chatEnd)
+				chatEnd := &acproto.CommonStateSignalChatEnd{}
+				err = proto.Unmarshal(item.Payload, chatEnd)
+				checkErr(err)
+				info.Lock()
+				info.Chat.ChatID = chatEnd.ChatId
+				info.Chat.EndType = ChatEndType(chatEnd.EndType)
+				info.Unlock()
 			case "CommonStateSignalCurrentRedpackList":
 				redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
 				err = proto.Unmarshal(item.Payload, redpackList)

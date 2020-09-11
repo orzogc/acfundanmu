@@ -26,7 +26,7 @@ const (
 type ManagerState int32
 
 const (
-	// ManagerStateUnknown 未知的房管状态
+	// ManagerStateUnknown 未知的房管状态，通常说明登陆用户不是房管
 	ManagerStateUnknown ManagerState = iota
 	// ManagerAdded 登陆用户被添加房管权限？
 	ManagerAdded
@@ -46,6 +46,40 @@ const (
 	RedpackGetToken
 	// RedpackGrab 可以抢红包
 	RedpackGrab
+)
+
+// ChatMediaType 连麦类型
+type ChatMediaType int32
+
+const (
+	// ChatMediaUnknown 未知的连麦类型
+	ChatMediaUnknown ChatMediaType = iota
+	// ChatMediaAudio 语音连麦
+	ChatMediaAudio
+	// ChatMediaVideo 视频连麦
+	ChatMediaVideo
+)
+
+// ChatEndType 连麦结束类型
+type ChatEndType int32
+
+const (
+	// ChatEndUnknown 未知的连麦结束类型
+	ChatEndUnknown ChatEndType = iota
+	// ChatEndCancelByAuthor 连麦发起者（主播）取消连麦
+	ChatEndCancelByAuthor
+	// ChatEndByAuthor 连麦发起者（主播）结束连麦
+	ChatEndByAuthor
+	// ChatEndByGuest 被连麦的人结束连麦
+	ChatEndByGuest
+	// ChatEndGuestReject 被连麦的人拒绝连麦
+	ChatEndGuestReject
+	// ChatEndGuestTimeout 等待连麦超时
+	ChatEndGuestTimeout
+	// ChatEndGuestHeartbeatTimeout 被连麦的人Heartbeat超时
+	ChatEndGuestHeartbeatTimeout
+	// ChatEndAuthorHeartbeatTimeout 连麦发起者（主播）Heartbeat超时
+	ChatEndAuthorHeartbeatTimeout
 )
 
 // Giftdetail 就是礼物的详细信息
@@ -228,6 +262,16 @@ type Redpack struct {
 	SettleBeginTime      int64                // 抢红包的结束时间
 }
 
+// ChatInfo 连麦信息
+type ChatInfo struct {
+	ChatID          string        // 连麦ID
+	LiveID          string        // 直播ID
+	CallTimestampMs int64         // 连麦发起时间
+	Guest           UserInfo      // 被连麦的帐号信息，目前没有房管类型
+	MediaType       ChatMediaType // 连麦类型
+	EndType         ChatEndType   // 连麦结束类型
+}
+
 // LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
 	KickedOut        string       // 被踢理由？
@@ -238,14 +282,15 @@ type LiveInfo struct {
 	LikeCount        string       // 直播间点赞总数
 	LikeDelta        int          // 点赞增加数量？
 	TopUsers         []TopUser    // 礼物榜在线前三
-	RecentComment    []Comment    // APP进直播间时显示的最近发的弹幕
 	RedpackList      []Redpack    // 红包列表
+	Chat             ChatInfo     // 连麦信息
 }
 
 // 带锁的LiveInfo
 type liveInfo struct {
-	sync.Mutex // LiveInfo的锁
+	sync.Mutex // liveInfo的锁
 	LiveInfo
+	RecentComment []Comment // APP进直播间时显示的最近发的弹幕
 }
 
 // DanmuQueue 就是弹幕的队列
@@ -296,12 +341,20 @@ func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	return danmu
 }
 
-// GetInfo 返回直播间的状态信息info
+// GetInfo 返回直播间的状态信息
 func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
 	dq.info.Lock()
 	defer dq.info.Unlock()
 	info = dq.info.LiveInfo
 	return info
+}
+
+// GetRecentComment 返回进直播间时直播间里最近发的十条弹幕
+func (dq *DanmuQueue) GetRecentComment() (comments []Comment) {
+	dq.info.Lock()
+	defer dq.info.Unlock()
+	comments = dq.info.RecentComment
+	return comments
 }
 
 // GetWatchingList 返回直播间排名前50的在线观众信息列表
