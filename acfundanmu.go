@@ -12,24 +12,6 @@ import (
 // 队列长度
 const queueLen = 1000
 
-// DanmuType 就是弹幕信息的类型
-type DanmuType int
-
-const (
-	// Comment 弹幕
-	Comment DanmuType = iota
-	// Like 点赞
-	Like
-	// EnterRoom 用户进入直播间
-	EnterRoom
-	// FollowAuthor 用户关注了主播
-	FollowAuthor
-	// ThrowBanana 投蕉
-	ThrowBanana
-	// Gift 礼物
-	Gift
-)
-
 // ManagerType 就是房管类型
 type ManagerType int32
 
@@ -78,7 +60,7 @@ type DrawPoint struct {
 	Handup     bool
 }
 
-// DrawGiftInfo 绘制礼物的信息？目前好像都没有这部分
+// DrawGiftInfo 绘制礼物的信息？
 type DrawGiftInfo struct {
 	ScreenWidth  int64
 	ScreenHeight int64
@@ -94,7 +76,7 @@ type GiftInfo struct {
 	ComboID               string // 礼物连击ID
 	SlotDisplayDurationMs int    // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
 	ExpireDurationMs      int
-	DrawGiftInfo          DrawGiftInfo
+	DrawGiftInfo          DrawGiftInfo // 目前好像都没有这部分
 }
 
 // UserInfo 就是用户信息
@@ -113,22 +95,75 @@ type MedalInfo struct {
 	Level    int    // 粉丝牌等级
 }
 
-// DanmuMessage 就是websocket接受到的弹幕相关信息。
-// 不论是哪种Type都会有SendTime、UserInfo里的UserID和Nickname，除了ThrowBanana没有UserInfo里的Avatar，其他Type通常都有Avatar，粉丝牌需要用户佩戴才有。
-// Type为Comment时，Comment就是弹幕文字。
-// Type为Gift时，Gift就是礼物信息。
-// Type为Like、EnterRoom和FollowAuthor时没有多余的数据。
-// Type为ThrowBanana时，BananaCount就是投蕉数量，不过现在基本是用Gift代替。
-type DanmuMessage struct {
-	Type        DanmuType // 弹幕类型
-	SendTime    int64     // 弹幕发送时间，是以纳秒为单位的Unix时间
-	UserInfo              // 用户信息
-	Comment     string    // 弹幕内容
-	BananaCount int       // 投蕉数量，现在基本上不用这个
-	Gift        GiftInfo  // 礼物信息
+// DanmuMessage 弹幕的接口
+type DanmuMessage interface {
+	GetSendTime() int64 // 获取弹幕发送时间
 }
 
-// WatchingUser 就是观看直播的用户的信息，目前没有粉丝牌信息
+// DanmuCommon 弹幕通用部分
+type DanmuCommon struct {
+	SendTime int64 // 弹幕发送时间，是以纳秒为单位的Unix时间
+	UserInfo       // 用户信息
+}
+
+// Comment 用户发的弹幕
+type Comment struct {
+	DanmuCommon
+	Content string // 弹幕内容
+}
+
+// Like 用户点赞的弹幕
+type Like DanmuCommon
+
+// EnterRoom 用户进入直播间的弹幕
+type EnterRoom DanmuCommon
+
+// FollowAuthor 用户关注主播的弹幕
+type FollowAuthor DanmuCommon
+
+// ThrowBanana 用户投蕉的弹幕，没有Avatar、Medal和ManagerType，现在基本不用这个，通常用Gift代替
+type ThrowBanana struct {
+	DanmuCommon
+	BananaCount int // 投蕉数量
+}
+
+// Gift 用户赠送礼物的弹幕
+type Gift struct {
+	DanmuCommon
+	GiftInfo // 礼物信息
+}
+
+// GetSendTime 获取弹幕发送时间
+func (d *Comment) GetSendTime() int64 {
+	return d.SendTime
+}
+
+// GetSendTime 获取弹幕发送时间
+func (d *Like) GetSendTime() int64 {
+	return d.SendTime
+}
+
+// GetSendTime 获取弹幕发送时间
+func (d *EnterRoom) GetSendTime() int64 {
+	return d.SendTime
+}
+
+// GetSendTime 获取弹幕发送时间
+func (d *FollowAuthor) GetSendTime() int64 {
+	return d.SendTime
+}
+
+// GetSendTime 获取弹幕发送时间
+func (d *ThrowBanana) GetSendTime() int64 {
+	return d.SendTime
+}
+
+// GetSendTime 获取弹幕发送时间
+func (d *Gift) GetSendTime() int64 {
+	return d.SendTime
+}
+
+// WatchingUser 就是观看直播的用户的信息，目前没有Medal和ManagerType
 type WatchingUser struct {
 	UserInfo                      // 用户信息
 	AnonymousUser          bool   // 是否匿名用户
@@ -136,20 +171,20 @@ type WatchingUser struct {
 	CustomWatchingListData string // 用户的一些额外信息，格式为json
 }
 
-// TopUser 就是礼物榜在线前三，目前没有粉丝牌信息。
+// TopUser 就是礼物榜在线前三，目前没有Medal和ManagerType
 type TopUser WatchingUser
 
 // LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
-	KickedOut        string         // 被踢理由？
-	ViolationAlert   string         // 直播间警告？
-	LiveManagerState ManagerState   // 登陆帐号的房管状态？
-	AllBananaCount   string         // 直播间香蕉总数
-	WatchingCount    string         // 直播间在线观众数量
-	LikeCount        string         // 直播间点赞总数
-	LikeDelta        int            // 点赞增加数量？
-	TopUsers         []TopUser      // 礼物榜在线前三
-	RecentComment    []DanmuMessage // 进直播间时显示的最近发的弹幕
+	KickedOut        string       // 被踢理由？
+	ViolationAlert   string       // 直播间警告？
+	LiveManagerState ManagerState // 登陆帐号的房管状态？
+	AllBananaCount   string       // 直播间香蕉总数
+	WatchingCount    string       // 直播间在线观众数量
+	LikeCount        string       // 直播间点赞总数
+	LikeDelta        int          // 点赞增加数量？
+	TopUsers         []TopUser    // 礼物榜在线前三
+	RecentComment    []Comment    // APP进直播间时显示的最近发的弹幕
 }
 
 // 带锁的LiveInfo
@@ -193,7 +228,7 @@ func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	if (*queue.Queue)(dq.q).Disposed() {
 		return nil
 	}
-	ds, err := (*queue.Queue)(dq.q).Get(queueLen)
+	ds, err := dq.q.Get(queueLen)
 	if err != nil {
 		return nil
 	}

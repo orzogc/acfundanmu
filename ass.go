@@ -132,17 +132,18 @@ func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, ne
 			}
 
 			for _, d := range danmu {
-				if d.Type != Comment {
+				c, ok := d.(*Comment)
+				if !ok {
 					continue
 				}
 
-				length := utf8.RuneCountInString(d.Comment) * s.FontSize
+				length := utf8.RuneCountInString(c.Content) * s.FontSize
 				// leftTime就是弹幕运动到视频左边的时间
-				leftTime := d.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
+				leftTime := c.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
 				dt := dTime{
-					appear:    d.SendTime - s.StartTime,
-					emerge:    d.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
-					disappear: d.SendTime - s.StartTime + duration}
+					appear:    c.SendTime - s.StartTime,
+					emerge:    c.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
+					disappear: c.SendTime - s.StartTime + duration}
 				for i, t := range lastTime {
 					// 防止弹幕发生碰撞重叠
 					if dt.appear > t.emerge && leftTime > t.disappear {
@@ -150,13 +151,13 @@ func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, ne
 						s := fmt.Sprintf(dialogue,
 							danmuTime(dt.appear),
 							danmuTime(dt.disappear),
-							convert(d.Nickname),
-							d.UserID,
+							convert(c.Nickname),
+							c.UserID,
 							s.PlayResX+length/2,
 							s.FontSize*(i+1),
 							-length/2,
 							s.FontSize*(i+1),
-							d.Comment,
+							c.Content,
 						)
 						_, err = f.WriteString(s)
 						checkErr(err)

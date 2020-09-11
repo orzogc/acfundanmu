@@ -164,14 +164,15 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					comment := &acproto.CommonActionSignalComment{}
 					err = proto.Unmarshal(*pl, comment)
 					checkErr(err)
-					d := DanmuMessage{
-						Type:     Comment,
-						SendTime: comment.SendTimeMs * 1e6,
-						UserInfo: UserInfo{
-							UserID:   comment.UserInfo.UserId,
-							Nickname: comment.UserInfo.Nickname,
+					d := &Comment{
+						DanmuCommon: DanmuCommon{
+							SendTime: comment.SendTimeMs * 1e6,
+							UserInfo: UserInfo{
+								UserID:   comment.UserInfo.UserId,
+								Nickname: comment.UserInfo.Nickname,
+							},
 						},
-						Comment: comment.Content,
+						Content: comment.Content,
 					}
 					getMoreInfo(&d.UserInfo, comment.UserInfo)
 					mu.Lock()
@@ -181,8 +182,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					like := &acproto.CommonActionSignalLike{}
 					err = proto.Unmarshal(*pl, like)
 					checkErr(err)
-					d := DanmuMessage{
-						Type:     Like,
+					d := &Like{
 						SendTime: like.SendTimeMs * 1e6,
 						UserInfo: UserInfo{
 							UserID:   like.UserInfo.UserId,
@@ -197,8 +197,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					enter := &acproto.CommonActionSignalUserEnterRoom{}
 					err = proto.Unmarshal(*pl, enter)
 					checkErr(err)
-					d := DanmuMessage{
-						Type:     EnterRoom,
+					d := &EnterRoom{
 						SendTime: enter.SendTimeMs * 1e6,
 						UserInfo: UserInfo{
 							UserID:   enter.UserInfo.UserId,
@@ -213,8 +212,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					follow := &acproto.CommonActionSignalUserFollowAuthor{}
 					err = proto.Unmarshal(*pl, follow)
 					checkErr(err)
-					d := DanmuMessage{
-						Type:     FollowAuthor,
+					d := &FollowAuthor{
 						SendTime: follow.SendTimeMs * 1e6,
 						UserInfo: UserInfo{
 							UserID:   follow.UserInfo.UserId,
@@ -225,24 +223,25 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
-					/*
-						case "CommonNotifySignalKickedOut":
-							t.handleNotifySignal(signalType, &pl, info)
-						case "CommonNotifySignalViolationAlert":
-							t.handleNotifySignal(signalType, &pl, info)
-						case "CommonNotifySignalLiveManagerState":
-							t.handleNotifySignal(signalType, &pl, info)
-					*/
+				/*
+					case "CommonNotifySignalKickedOut":
+						t.handleNotifySignal(signalType, &pl, info)
+					case "CommonNotifySignalViolationAlert":
+						t.handleNotifySignal(signalType, &pl, info)
+					case "CommonNotifySignalLiveManagerState":
+						t.handleNotifySignal(signalType, &pl, info)
+				*/
 				case "AcfunActionSignalThrowBanana":
 					banana := &acproto.AcfunActionSignalThrowBanana{}
 					err = proto.Unmarshal(*pl, banana)
 					checkErr(err)
-					d := DanmuMessage{
-						Type:     ThrowBanana,
-						SendTime: banana.SendTimeMs * 1e6,
-						UserInfo: UserInfo{
-							UserID:   banana.Visitor.UserId,
-							Nickname: banana.Visitor.Name,
+					d := &ThrowBanana{
+						DanmuCommon: DanmuCommon{
+							SendTime: banana.SendTimeMs * 1e6,
+							UserInfo: UserInfo{
+								UserID:   banana.Visitor.UserId,
+								Nickname: banana.Visitor.Name,
+							},
 						},
 						BananaCount: int(banana.Count),
 					}
@@ -261,14 +260,15 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 							GiftName: "未知礼物",
 						}
 					}
-					d := DanmuMessage{
-						Type:     Gift,
-						SendTime: gift.SendTimeMs * 1e6,
-						UserInfo: UserInfo{
-							UserID:   gift.User.UserId,
-							Nickname: gift.User.Nickname,
+					d := &Gift{
+						DanmuCommon: DanmuCommon{
+							SendTime: gift.SendTimeMs * 1e6,
+							UserInfo: UserInfo{
+								UserID:   gift.User.UserId,
+								Nickname: gift.User.Nickname,
+							},
 						},
-						Gift: GiftInfo{
+						GiftInfo: GiftInfo{
 							Giftdetail:            g,
 							Count:                 int(gift.Count),
 							Combo:                 int(gift.Combo),
@@ -280,13 +280,13 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					}
 					getMoreInfo(&d.UserInfo, gift.User)
 					if gift.DrawGiftInfo != nil {
-						d.Gift.DrawGiftInfo = DrawGiftInfo{
+						d.DrawGiftInfo = DrawGiftInfo{
 							ScreenWidth:  gift.DrawGiftInfo.ScreenWidth,
 							ScreenHeight: gift.DrawGiftInfo.ScreenHeight,
 						}
-						d.Gift.DrawGiftInfo.DrawPoint = make([]DrawPoint, len(gift.DrawGiftInfo.DrawPoint))
+						d.DrawGiftInfo.DrawPoint = make([]DrawPoint, len(gift.DrawGiftInfo.DrawPoint))
 						for i, drawPoint := range gift.DrawGiftInfo.DrawPoint {
-							d.Gift.DrawGiftInfo.DrawPoint[i] = DrawPoint{
+							d.DrawGiftInfo.DrawPoint[i] = DrawPoint{
 								MarginLeft: drawPoint.MarginLeft,
 								MarginTop:  drawPoint.MarginTop,
 								ScaleRatio: drawPoint.ScaleRatio,
@@ -319,7 +319,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 
 	// 按SendTime大小排序
 	sort.Slice(danmu, func(i, j int) bool {
-		return danmu[i].SendTime < danmu[j].SendTime
+		return danmu[i].GetSendTime() < danmu[j].GetSendTime()
 	})
 
 	for _, d := range danmu {
@@ -380,16 +380,17 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				comments := &acproto.CommonStateSignalRecentComment{}
 				err = proto.Unmarshal(item.Payload, comments)
 				checkErr(err)
-				danmu := make([]DanmuMessage, len(comments.Comment))
+				danmu := make([]Comment, len(comments.Comment))
 				for i, comment := range comments.Comment {
-					d := DanmuMessage{
-						Type:     Comment,
-						SendTime: comment.SendTimeMs * 1e6,
-						UserInfo: UserInfo{
-							UserID:   comment.UserInfo.UserId,
-							Nickname: comment.UserInfo.Nickname,
+					d := Comment{
+						DanmuCommon: DanmuCommon{
+							SendTime: comment.SendTimeMs * 1e6,
+							UserInfo: UserInfo{
+								UserID:   comment.UserInfo.UserId,
+								Nickname: comment.UserInfo.Nickname,
+							},
 						},
-						Comment: comment.Content,
+						Content: comment.Content,
 					}
 					getMoreInfo(&d.UserInfo, comment.UserInfo)
 					danmu[i] = d
