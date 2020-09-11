@@ -115,19 +115,10 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 				string(payload),
 				base64.StdEncoding.EncodeToString(payload))
 		}
-	/*
-		case "Push.Message":
-			msg := &acproto.Message_Message{}
-			err := proto.Unmarshal(stream.PayloadData, msg)
-			checkErr(err)
-			switch msg.ContentType {
-			case int32(acproto.Cloud_Message_TEXT):
-				txt := &acproto.Cloud_Message_Text{}
-				err = proto.Unmarshal(msg.Content, txt)
-			default:
-				log.Println("未知的IM Push.Message：", msg.ContentType)
-			}
-	*/
+	case "Push.Message":
+		// AcFun帐号收到的私信信息
+	case "Push.SyncSession":
+	case "Push.DataUpdate":
 	default:
 		if stream.ErrorCode > 0 {
 			log.Println("Error: ", stream.ErrorCode, stream.ErrorMsg)
@@ -158,11 +149,11 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 	for _, item := range actionSignal.Item {
 		for _, pl := range item.Payload {
 			wg.Add(1)
-			go func(signalType string, pl *[]byte) {
+			go func(signalType string, pl []byte) {
 				switch signalType {
 				case "CommonActionSignalComment":
 					comment := &acproto.CommonActionSignalComment{}
-					err = proto.Unmarshal(*pl, comment)
+					err = proto.Unmarshal(pl, comment)
 					checkErr(err)
 					d := &Comment{
 						DanmuCommon: DanmuCommon{
@@ -180,7 +171,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalLike":
 					like := &acproto.CommonActionSignalLike{}
-					err = proto.Unmarshal(*pl, like)
+					err = proto.Unmarshal(pl, like)
 					checkErr(err)
 					d := &Like{
 						SendTime: like.SendTimeMs * 1e6,
@@ -195,7 +186,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalUserEnterRoom":
 					enter := &acproto.CommonActionSignalUserEnterRoom{}
-					err = proto.Unmarshal(*pl, enter)
+					err = proto.Unmarshal(pl, enter)
 					checkErr(err)
 					d := &EnterRoom{
 						SendTime: enter.SendTimeMs * 1e6,
@@ -210,7 +201,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalUserFollowAuthor":
 					follow := &acproto.CommonActionSignalUserFollowAuthor{}
-					err = proto.Unmarshal(*pl, follow)
+					err = proto.Unmarshal(pl, follow)
 					checkErr(err)
 					d := &FollowAuthor{
 						SendTime: follow.SendTimeMs * 1e6,
@@ -233,7 +224,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 				*/
 				case "AcfunActionSignalThrowBanana":
 					banana := &acproto.AcfunActionSignalThrowBanana{}
-					err = proto.Unmarshal(*pl, banana)
+					err = proto.Unmarshal(pl, banana)
 					checkErr(err)
 					d := &ThrowBanana{
 						DanmuCommon: DanmuCommon{
@@ -250,7 +241,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalGift":
 					gift := &acproto.CommonActionSignalGift{}
-					err = proto.Unmarshal(*pl, gift)
+					err = proto.Unmarshal(pl, gift)
 					checkErr(err)
 					// 礼物列表应该不会在直播中途改变，但以防万一
 					g, ok := t.gifts[gift.GiftId]
@@ -299,7 +290,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalRichText":
 					richText := &acproto.CommonActionSignalRichText{}
-					err = proto.Unmarshal(*pl, richText)
+					err = proto.Unmarshal(pl, richText)
 					checkErr(err)
 					d := &RichText{
 						SendTime: richText.SendTimeMs,
@@ -341,11 +332,11 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 				default:
 					log.Printf("未知的Action Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 						signalType,
-						string(*pl),
-						base64.StdEncoding.EncodeToString(*pl))
+						string(pl),
+						base64.StdEncoding.EncodeToString(pl))
 				}
 				wg.Done()
-			}(item.SignalType, &pl)
+			}(item.SignalType, pl)
 		}
 	}
 	wg.Wait()
@@ -435,18 +426,22 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				//chatCall := &acproto.CommonStateSignalChatCall{}
 				//err = proto.Unmarshal(item.Payload, chatCall)
 				//checkErr(err)
+				//log.Printf("chatCall: %+v\n", chatCall)
 			case "CommonStateSignalChatAccept":
 				//chatAccept := &acproto.CommonStateSignalChatAccept{}
 				//err = proto.Unmarshal(item.Payload, chatAccept)
 				//checkErr(err)
+				//log.Printf("chatAccept: %+v\n", chatAccept)
 			case "CommonStateSignalChatReady":
 				//chatReady := &acproto.CommonStateSignalChatReady{}
 				//err = proto.Unmarshal(item.Payload, chatReady)
 				//checkErr(err)
+				//log.Printf("chatReady: %+v\n", chatReady)
 			case "CommonStateSignalChatEnd":
 				//chatEnd := &acproto.CommonStateSignalChatEnd{}
 				//err = proto.Unmarshal(item.Payload, chatEnd)
 				//checkErr(err)
+				//log.Printf("chatEnd: %+v\n", chatEnd)
 			case "CommonStateSignalCurrentRedpackList":
 				redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
 				err = proto.Unmarshal(item.Payload, redpackList)
