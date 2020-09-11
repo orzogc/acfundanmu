@@ -36,6 +36,18 @@ const (
 	IsManager
 )
 
+// RedpackDisplayStatus 红包状态
+type RedpackDisplayStatus int32
+
+const (
+	// RedpackShow 红包出现？
+	RedpackShow RedpackDisplayStatus = iota
+	// RedpackGetToken 可以获取红包token？
+	RedpackGetToken
+	// RedpackGrab 可以抢红包
+	RedpackGrab
+)
+
 // Giftdetail 就是礼物的详细信息
 type Giftdetail struct {
 	GiftID        int    // 礼物ID
@@ -174,6 +186,18 @@ type WatchingUser struct {
 // TopUser 就是礼物榜在线前三，目前没有Medal和ManagerType
 type TopUser WatchingUser
 
+// Redpack 红包信息
+type Redpack struct {
+	UserInfo                                  // 发红包的用户
+	DisplayStatus        RedpackDisplayStatus // 红包的状态
+	GrabBeginTimeMs      int64                // 抢红包的开始时间
+	GetTokenLatestTimeMs int64                // 抢红包的用户获得token的最晚时间？
+	RedPackID            string               // 红包ID
+	RedpackBizUnit       string               // 一般是"ztLiveAcfunRedpackGift"
+	RedpackAmount        int64                // 红包的总价值，单位是ac币
+	SettleBeginTime      int64                // 抢红包的结束时间
+}
+
 // LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
 	KickedOut        string       // 被踢理由？
@@ -185,6 +209,7 @@ type LiveInfo struct {
 	LikeDelta        int          // 点赞增加数量？
 	TopUsers         []TopUser    // 礼物榜在线前三
 	RecentComment    []Comment    // APP进直播间时显示的最近发的弹幕
+	RedpackList      []Redpack    // 红包列表
 }
 
 // 带锁的LiveInfo

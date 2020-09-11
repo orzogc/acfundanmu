@@ -415,9 +415,30 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				//err = proto.Unmarshal(item.Payload, chatEnd)
 				//checkErr(err)
 			case "CommonStateSignalCurrentRedpackList":
-				//redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
-				//err = proto.Unmarshal(item.Payload, redpackList)
-				//checkErr(err)
+				redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
+				err = proto.Unmarshal(item.Payload, redpackList)
+				checkErr(err)
+				redpacks := make([]Redpack, len(redpackList.Redpacks))
+				for i, redpack := range redpackList.Redpacks {
+					r := Redpack{
+						UserInfo: UserInfo{
+							UserID:   redpack.Sender.UserId,
+							Nickname: redpack.Sender.Nickname,
+						},
+						DisplayStatus:        RedpackDisplayStatus(redpack.DisplayStatus),
+						GrabBeginTimeMs:      redpack.GrabBeginTimeMs,
+						GetTokenLatestTimeMs: redpack.GetTokenLatestTimeMs,
+						RedPackID:            redpack.RedPackId,
+						RedpackBizUnit:       redpack.RedpackBizUnit,
+						RedpackAmount:        redpack.RedpackAmount,
+						SettleBeginTime:      redpack.SettleBeginTime,
+					}
+					getMoreInfo(&r.UserInfo, redpack.Sender)
+					redpacks[i] = r
+				}
+				info.Lock()
+				info.RedpackList = redpacks
+				info.Unlock()
 			default:
 				log.Printf("未知的State Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 					item.SignalType,
