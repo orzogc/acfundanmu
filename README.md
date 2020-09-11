@@ -14,20 +14,33 @@ if err != nil {
 for {
     if danmu := dq.GetDanmu(); danmu != nil {
         for _, d := range danmu {
-            // 根据Type处理弹幕
-            switch d.Type {
-            case acfundanmu.Comment:
-                fmt.Printf("%s（%d）：%s\n", d.Nickname, d.UserID, d.Comment)
-            case acfundanmu.Like:
+            switch d := d.(type) {
+            case *acfundanmu.Comment:
+                fmt.Printf("%s（%d）：%s\n", d.Nickname, d.UserID, d.Content)
+            case *acfundanmu.Like:
                 fmt.Printf("%s（%d）点赞\n", d.Nickname, d.UserID)
-            case acfundanmu.EnterRoom:
+            case *acfundanmu.EnterRoom:
                 fmt.Printf("%s（%d）进入直播间\n", d.Nickname, d.UserID)
-            case acfundanmu.FollowAuthor:
+            case *acfundanmu.FollowAuthor:
                 fmt.Printf("%s（%d）关注了主播\n", d.Nickname, d.UserID)
-            case acfundanmu.ThrowBanana:
+            case *acfundanmu.ThrowBanana:
                 fmt.Printf("%s（%d）送出香蕉 * %d\n", d.Nickname, d.UserID, d.BananaCount)
-            case acfundanmu.Gift:
-                fmt.Printf("%s（%d）送出礼物 %s * %d，连击数：%d\n", d.Nickname, d.UserID, d.Gift.Name, d.Gift.Count, d.Gift.Combo)
+            case *acfundanmu.Gift:
+                fmt.Printf("%s（%d）送出礼物 %s * %d，连击数：%d\n", d.Nickname, d.UserID, d.GiftName, d.Count, d.Combo)
+            case *acfundanmu.RichText:
+                for _, r := range d.Segments {
+                    switch r := r.(type) {
+                    case acfundanmu.RichTextUserInfo:
+                        fmt.Printf("富文本用户信息：%+v\n", r)
+                    case acfundanmu.RichTextPlain:
+                        fmt.Printf("富文本文字：%s，颜色：%s\n", r.Text, r.Color)
+                    case acfundanmu.RichTextImage:
+                        for _, image := range r.Pictures {
+                            fmt.Printf("富文本图片：%s\n", image)
+                        }
+                        fmt.Printf("富文本图片另外的文字：%s，颜色：%s\n", r.AlternativeText, r.AlternativeColor)
+                    }
+                }
             }
         }
     } else {

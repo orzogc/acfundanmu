@@ -253,10 +253,10 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					err = proto.Unmarshal(*pl, gift)
 					checkErr(err)
 					// 礼物列表应该不会在直播中途改变，但以防万一
-					g, ok := t.gifts[int(gift.GiftId)]
+					g, ok := t.gifts[gift.GiftId]
 					if !ok {
 						g = Giftdetail{
-							GiftID:   int(gift.GiftId),
+							GiftID:   gift.GiftId,
 							GiftName: "未知礼物",
 						}
 					}
@@ -270,12 +270,12 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 						},
 						GiftInfo: GiftInfo{
 							Giftdetail:            g,
-							Count:                 int(gift.Count),
-							Combo:                 int(gift.Combo),
-							Value:                 int(gift.Value),
+							Count:                 gift.Count,
+							Combo:                 gift.Combo,
+							Value:                 gift.Value,
 							ComboID:               gift.ComboId,
-							SlotDisplayDurationMs: int(gift.SlotDisplayDurationMs),
-							ExpireDurationMs:      int(gift.ExpireDurationMs),
+							SlotDisplayDurationMs: gift.SlotDisplayDurationMs,
+							ExpireDurationMs:      gift.ExpireDurationMs,
 						},
 					}
 					getMoreInfo(&d.UserInfo, gift.User)
@@ -298,13 +298,46 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					danmu = append(danmu, d)
 					mu.Unlock()
 				case "CommonActionSignalRichText":
-					/*
-						richText := &acproto.CommonActionSignalRichText{}
-						err = proto.Unmarshal(*pl, richText)
-						checkErr(err)
-						log.Printf("CommonActionSignalRichText: \n%+v\n", richText)
-						log.Printf("CommonActionSignalRichText payload base64: \n%s\n", base64.StdEncoding.EncodeToString(*pl))
-					*/
+					richText := &acproto.CommonActionSignalRichText{}
+					err = proto.Unmarshal(*pl, richText)
+					checkErr(err)
+					d := &RichText{
+						SendTime: richText.SendTimeMs,
+					}
+					d.Segments = make([]interface{}, len(richText.Segments))
+					for i, segment := range richText.Segments {
+						switch segment := segment.Segment.(type) {
+						case *acproto.CommonActionSignalRichText_RichTextSegment_UserInfo:
+							userInfo := RichTextUserInfo{
+								UserInfo: UserInfo{
+									UserID:   segment.UserInfo.User.UserId,
+									Nickname: segment.UserInfo.User.Nickname,
+								},
+								Color: segment.UserInfo.Color,
+							}
+							getMoreInfo(&userInfo.UserInfo, segment.UserInfo.User)
+							d.Segments[i] = userInfo
+						case *acproto.CommonActionSignalRichText_RichTextSegment_Plain:
+							plain := RichTextPlain{
+								Text:  segment.Plain.Text,
+								Color: segment.Plain.Color,
+							}
+							d.Segments[i] = plain
+						case *acproto.CommonActionSignalRichText_RichTextSegment_Image:
+							image := RichTextImage{
+								AlternativeText:  segment.Image.AlternativeText,
+								AlternativeColor: segment.Image.AlternativeColor,
+							}
+							image.Pictures = make([]string, len(segment.Image.Pictures))
+							for j, picture := range segment.Image.Pictures {
+								image.Pictures[j] = picture.Url
+							}
+							d.Segments[i] = image
+						}
+					}
+					mu.Lock()
+					danmu = append(danmu, d)
+					mu.Unlock()
 				default:
 					log.Printf("未知的Action Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 						signalType,

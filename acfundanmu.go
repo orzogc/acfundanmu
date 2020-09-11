@@ -50,7 +50,7 @@ const (
 
 // Giftdetail 就是礼物的详细信息
 type Giftdetail struct {
-	GiftID        int    // 礼物ID
+	GiftID        int64  // 礼物ID
 	GiftName      string // 礼物名字
 	ARLiveName    string // 不为空时礼物属于虚拟偶像区的特殊礼物
 	PayWalletType int    // 1为非免费礼物，2为免费礼物
@@ -82,12 +82,12 @@ type DrawGiftInfo struct {
 // GiftInfo 就是弹幕里的礼物信息
 type GiftInfo struct {
 	Giftdetail                   // 礼物详细信息
-	Count                 int    // 礼物数量
-	Combo                 int    // 礼物连击数量
-	Value                 int    // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
+	Count                 int32  // 礼物数量
+	Combo                 int32  // 礼物连击数量
+	Value                 int64  // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID               string // 礼物连击ID
-	SlotDisplayDurationMs int    // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
-	ExpireDurationMs      int
+	SlotDisplayDurationMs int64  // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
+	ExpireDurationMs      int64
 	DrawGiftInfo          DrawGiftInfo // 目前好像都没有这部分
 }
 
@@ -105,6 +105,25 @@ type MedalInfo struct {
 	UperID   int64  // UP主的uid
 	ClubName string // 粉丝牌名字
 	Level    int    // 粉丝牌等级
+}
+
+// RichTextUserInfo 富文本里的用户信息
+type RichTextUserInfo struct {
+	UserInfo
+	Color string // 用户信息的颜色
+}
+
+// RichTextPlain 富文本里的文字
+type RichTextPlain struct {
+	Text  string // 文字
+	Color string // 文字的颜色
+}
+
+// RichTextImage 富文本里的图片
+type RichTextImage struct {
+	Pictures         []string // 图片
+	AlternativeText  string   // 可选的文本？
+	AlternativeColor string   // 可选的文本颜色？
 }
 
 // DanmuMessage 弹幕的接口
@@ -145,6 +164,12 @@ type Gift struct {
 	GiftInfo // 礼物信息
 }
 
+// RichText 富文本，目前是用于发红包和抢红包的相关消息
+type RichText struct {
+	SendTime int64         // 弹幕发送时间，是以纳秒为单位的Unix时间
+	Segments []interface{} // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
+}
+
 // GetSendTime 获取弹幕发送时间
 func (d *Comment) GetSendTime() int64 {
 	return d.SendTime
@@ -172,6 +197,11 @@ func (d *ThrowBanana) GetSendTime() int64 {
 
 // GetSendTime 获取弹幕发送时间
 func (d *Gift) GetSendTime() int64 {
+	return d.SendTime
+}
+
+// GetSendTime 获取弹幕发送时间
+func (d *RichText) GetSendTime() int64 {
 	return d.SendTime
 }
 

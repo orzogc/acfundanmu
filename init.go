@@ -233,10 +233,10 @@ func (t *token) updateGiftList(cookies []*http.Cookie) (e error) {
 		panicln(fmt.Errorf("获取礼物列表失败，响应为 %s", string(body)))
 	}
 
-	t.gifts = make(map[int]Giftdetail)
+	t.gifts = make(map[int64]Giftdetail)
 	for _, gift := range v.GetArray("data", "giftList") {
 		g := Giftdetail{
-			GiftID:        gift.GetInt("giftId"),
+			GiftID:        gift.GetInt64("giftId"),
 			GiftName:      string(gift.GetStringBytes("giftName")),
 			ARLiveName:    string(gift.GetStringBytes("arLiveName")),
 			PayWalletType: gift.GetInt("payWalletType"),
