@@ -259,15 +259,13 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 								Nickname: gift.User.Nickname,
 							},
 						},
-						GiftInfo: GiftInfo{
-							Giftdetail:            g,
-							Count:                 gift.Count,
-							Combo:                 gift.Combo,
-							Value:                 gift.Value,
-							ComboID:               gift.ComboId,
-							SlotDisplayDurationMs: gift.SlotDisplayDurationMs,
-							ExpireDurationMs:      gift.ExpireDurationMs,
-						},
+						Giftdetail:            g,
+						Count:                 gift.Count,
+						Combo:                 gift.Combo,
+						Value:                 gift.Value,
+						ComboID:               gift.ComboId,
+						SlotDisplayDurationMs: gift.SlotDisplayDurationMs,
+						ExpireDurationMs:      gift.ExpireDurationMs,
 					}
 					getMoreInfo(&d.UserInfo, gift.User)
 					if gift.DrawGiftInfo != nil {

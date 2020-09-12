@@ -113,18 +113,6 @@ type DrawGiftInfo struct {
 	DrawPoint    []DrawPoint
 }
 
-// GiftInfo 就是弹幕里的礼物信息
-type GiftInfo struct {
-	Giftdetail                   // 礼物详细信息
-	Count                 int32  // 礼物数量
-	Combo                 int32  // 礼物连击数量
-	Value                 int64  // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
-	ComboID               string // 礼物连击ID
-	SlotDisplayDurationMs int64  // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
-	ExpireDurationMs      int64
-	DrawGiftInfo          DrawGiftInfo // 目前好像都没有这部分
-}
-
 // UserInfo 就是用户信息
 type UserInfo struct {
 	UserID      int64       // 用户uid
@@ -195,7 +183,14 @@ type ThrowBanana struct {
 // Gift 用户赠送礼物的弹幕
 type Gift struct {
 	DanmuCommon
-	GiftInfo // 礼物信息
+	Giftdetail                   // 礼物详细信息
+	Count                 int32  // 礼物数量
+	Combo                 int32  // 礼物连击数量
+	Value                 int64  // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
+	ComboID               string // 礼物连击ID
+	SlotDisplayDurationMs int64  // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
+	ExpireDurationMs      int64
+	DrawGiftInfo          DrawGiftInfo // 目前好像都没有这部分
 }
 
 // RichText 富文本，目前是用于发红包和抢红包的相关消息
