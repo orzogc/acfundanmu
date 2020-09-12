@@ -1,5 +1,5 @@
 # acfundanmu
-AcFun直播弹幕下载，实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
+AcFun直播弹幕API，实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
 
 ### 示例代码
 #### 获取弹幕
