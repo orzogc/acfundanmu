@@ -184,6 +184,7 @@ func initialize(uid int, cookies []*http.Cookie) (t *token, e error) {
 		heartbeatSeqID:  1,
 		ticketIndex:     0,
 		deviceID:        deviceID,
+		medalParser:     fastjson.ParserPool{},
 	}
 
 	err = t.updateGiftList(cookies)

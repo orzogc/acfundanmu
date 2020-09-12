@@ -12,7 +12,6 @@ import (
 	"sync"
 
 	"github.com/orzogc/acfundanmu/acproto"
-	"github.com/valyala/fastjson"
 
 	"github.com/Workiva/go-datastructures/queue"
 	"google.golang.org/protobuf/proto"
@@ -165,7 +164,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 						},
 						Content: comment.Content,
 					}
-					getMoreInfo(&d.UserInfo, comment.UserInfo)
+					t.getMoreInfo(&d.UserInfo, comment.UserInfo)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -180,7 +179,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 							Nickname: like.UserInfo.Nickname,
 						},
 					}
-					getMoreInfo(&d.UserInfo, like.UserInfo)
+					t.getMoreInfo(&d.UserInfo, like.UserInfo)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -195,7 +194,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 							Nickname: enter.UserInfo.Nickname,
 						},
 					}
-					getMoreInfo(&d.UserInfo, enter.UserInfo)
+					t.getMoreInfo(&d.UserInfo, enter.UserInfo)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -210,7 +209,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 							Nickname: follow.UserInfo.Nickname,
 						},
 					}
-					getMoreInfo(&d.UserInfo, follow.UserInfo)
+					t.getMoreInfo(&d.UserInfo, follow.UserInfo)
 					mu.Lock()
 					danmu = append(danmu, d)
 					mu.Unlock()
@@ -267,7 +266,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 						SlotDisplayDurationMs: gift.SlotDisplayDurationMs,
 						ExpireDurationMs:      gift.ExpireDurationMs,
 					}
-					getMoreInfo(&d.UserInfo, gift.User)
+					t.getMoreInfo(&d.UserInfo, gift.User)
 					if gift.DrawGiftInfo != nil {
 						d.DrawGiftInfo = DrawGiftInfo{
 							ScreenWidth:  gift.DrawGiftInfo.ScreenWidth,
@@ -304,7 +303,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 								},
 								Color: segment.UserInfo.Color,
 							}
-							getMoreInfo(&userInfo.UserInfo, segment.UserInfo.User)
+							t.getMoreInfo(&userInfo.UserInfo, segment.UserInfo.User)
 							d.Segments[i] = userInfo
 						case *acproto.CommonActionSignalRichText_RichTextSegment_Plain:
 							plain := RichTextPlain{
@@ -392,7 +391,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 						DisplaySendAmount:      user.DisplaySendAmount,
 						CustomWatchingListData: user.CustomWatchingListData,
 					}
-					getMoreInfo(&u.UserInfo, user.UserInfo)
+					t.getMoreInfo(&u.UserInfo, user.UserInfo)
 					users[i] = u
 				}
 				info.Lock()
@@ -414,7 +413,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 						},
 						Content: comment.Content,
 					}
-					getMoreInfo(&d.UserInfo, comment.UserInfo)
+					t.getMoreInfo(&d.UserInfo, comment.UserInfo)
 					danmu[i] = d
 				}
 				info.Lock()
@@ -445,7 +444,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 					UserID:   chatReady.GuestUserInfo.UserId,
 					Nickname: chatReady.GuestUserInfo.Nickname,
 				}
-				getMoreInfo(&guest, chatReady.GuestUserInfo)
+				t.getMoreInfo(&guest, chatReady.GuestUserInfo)
 				info.Lock()
 				info.Chat.ChatID = chatReady.ChatId
 				info.Chat.Guest = guest
@@ -478,7 +477,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 						RedpackAmount:        redpack.RedpackAmount,
 						SettleBeginTime:      redpack.SettleBeginTime,
 					}
-					getMoreInfo(&r.UserInfo, redpack.Sender)
+					t.getMoreInfo(&r.UserInfo, redpack.Sender)
 					redpacks[i] = r
 				}
 				info.Lock()
@@ -541,19 +540,20 @@ func (t *token) handleNotifySignal(payload *[]byte, info *liveInfo) {
 }
 
 // 获取用户的头像、粉丝牌和房管类型
-func getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
+func (t *token) getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
 	if len(userInfo.Avatar) != 0 {
 		user.Avatar = userInfo.Avatar[0].Url
 	}
 
 	if userInfo.Badge != "" {
-		var p fastjson.Parser
+		p := t.medalParser.Get()
 		v, err := p.Parse(userInfo.Badge)
 		checkErr(err)
 		v = v.Get("medalInfo")
 		user.Medal.UperID = v.GetInt64("uperId")
 		user.Medal.ClubName = string(v.GetStringBytes("clubName"))
 		user.Medal.Level = v.GetInt("level")
+		t.medalParser.Put(p)
 	}
 
 	if userInfo.UserIdentity != nil {

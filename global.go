@@ -1,6 +1,10 @@
 package acfundanmu
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/valyala/fastjson"
+)
 
 const visitorSt = "acfun.api.visitor_st"
 const midgroundSt = "acfun.midground.api_st"
@@ -48,4 +52,5 @@ type token struct {
 	ticketIndex     int
 	deviceID        string
 	gifts           map[int64]Giftdetail
+	medalParser     fastjson.ParserPool
 }
