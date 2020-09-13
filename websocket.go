@@ -7,10 +7,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/orzogc/acfundanmu/acproto"
 	"github.com/valyala/fasthttp"
-
-	"github.com/golang/protobuf/proto"
 	"nhooyr.io/websocket"
 )
 

@@ -43,6 +43,7 @@ func (c *httpClient) httpRequest() (response *fasthttp.Response, e error) {
 	if c.method != "" {
 		req.Header.SetMethod(c.method)
 	} else {
+		// 默认为GET
 		req.Header.SetMethod("GET")
 	}
 
@@ -61,10 +62,10 @@ func (c *httpClient) httpRequest() (response *fasthttp.Response, e error) {
 	}
 
 	client := &fasthttp.Client{
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
-	err := client.DoTimeout(req, resp, 10*time.Second)
+	err := client.Do(req, resp)
 	checkErr(err)
 
 	response = fasthttp.AcquireResponse()

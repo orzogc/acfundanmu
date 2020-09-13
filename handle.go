@@ -94,7 +94,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 		case "ZtLiveScStateSignal":
 			t.handleStateSignal(&payload, info)
 		case "ZtLiveScNotifySignal":
-			t.handleNotifySignal(&payload, info)
+			handleNotifySignal(&payload, info)
 		case "ZtLiveScStatusChanged":
 			statusChanged := &acproto.ZtLiveScStatusChanged{}
 			err := proto.Unmarshal(payload, statusChanged)
@@ -497,7 +497,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 }
 
 // 处理notify signal数据
-func (t *token) handleNotifySignal(payload *[]byte, info *liveInfo) {
+func handleNotifySignal(payload *[]byte, info *liveInfo) {
 	notifySignal := &acproto.ZtLiveScNotifySignal{}
 	err := proto.Unmarshal(*payload, notifySignal)
 	checkErr(err)
