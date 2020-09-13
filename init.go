@@ -18,6 +18,7 @@ type httpClient struct {
 	referer     string
 }
 
+// http请求
 func (c *httpClient) httpRequest() (response *fasthttp.Response, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -62,10 +63,10 @@ func (c *httpClient) httpRequest() (response *fasthttp.Response, e error) {
 	}
 
 	client := &fasthttp.Client{
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  20 * time.Second,
+		WriteTimeout: 20 * time.Second,
 	}
-	err := client.Do(req, resp)
+	err := client.DoTimeout(req, resp, 10*time.Second)
 	checkErr(err)
 
 	response = fasthttp.AcquireResponse()
@@ -81,6 +82,10 @@ func login(username, password string) (cookies []*fasthttp.Cookie, e error) {
 			e = fmt.Errorf("login() error: %w", err)
 		}
 	}()
+
+	if username == "" || password == "" {
+		panicln(fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆"))
+	}
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
@@ -141,17 +146,17 @@ func login(username, password string) (cookies []*fasthttp.Cookie, e error) {
 }
 
 // 初始化，获取相应的token，cookies为nil时为游客模式
-func initialize(uid int, cookies []*fasthttp.Cookie) (t *token, e error) {
+func (t *token) initialize() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("initialize() error: %w", err)
 		}
 	}()
 
-	livePage := liveURL + strconv.Itoa(uid)
+	t.livePage = liveURL + strconv.FormatInt(t.uid, 10)
 
 	client := &httpClient{
-		url:    livePage,
+		url:    t.livePage,
 		method: "GET",
 	}
 	resp, err := client.httpRequest()
@@ -170,13 +175,13 @@ func initialize(uid int, cookies []*fasthttp.Cookie) (t *token, e error) {
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	if cookies != nil {
+	if len(t.cookies) != 0 {
 		form.Set(sid, midground)
 		client = &httpClient{
 			url:     getTokenURL,
 			body:    form.QueryString(),
 			method:  "POST",
-			cookies: cookies,
+			cookies: t.cookies,
 		}
 	} else {
 		form.Set(sid, visitor)
@@ -203,7 +208,7 @@ func initialize(uid int, cookies []*fasthttp.Cookie) (t *token, e error) {
 	// 获取userId和对应的令牌
 	userID := v.GetInt64("userId")
 	var play, serviceToken, securityKey string
-	if cookies != nil {
+	if len(t.cookies) != 0 {
 		securityKey = string(v.GetStringBytes("ssecurity"))
 		serviceToken = string(v.GetStringBytes(midgroundSt))
 		// 需要userId、deviceID和serviceToken
@@ -217,14 +222,14 @@ func initialize(uid int, cookies []*fasthttp.Cookie) (t *token, e error) {
 	form = fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	// authorId就是主播的uid
-	form.Set("authorId", strconv.Itoa(uid))
+	form.Set("authorId", strconv.FormatInt(t.uid, 10))
 	form.Set("pullStreamType", "FLV")
 	client = &httpClient{
 		url:         play,
 		body:        form.QueryString(),
 		method:      "POST",
 		contentType: "application/x-www-form-urlencoded",
-		referer:     livePage, // 会验证Referer
+		referer:     t.livePage, // 会验证Referer
 	}
 	resp, err = client.httpRequest()
 	checkErr(err)
@@ -237,40 +242,37 @@ func initialize(uid int, cookies []*fasthttp.Cookie) (t *token, e error) {
 		panicln(fmt.Errorf("获取直播详细信息失败，响应为 %s", string(body)))
 	}
 
-	liveID := string(v.GetStringBytes("data", "liveId"))
-	enterRoomAttach := string(v.GetStringBytes("data", "enterRoomAttach"))
-	availableTickets := v.GetArray("data", "availableTickets")
+	v = v.Get("data")
+	liveID := string(v.GetStringBytes("liveId"))
+	enterRoomAttach := string(v.GetStringBytes("enterRoomAttach"))
+	availableTickets := v.GetArray("availableTickets")
 	tickets := make([]string, len(availableTickets))
 	for i, ticket := range availableTickets {
 		tickets[i] = string(ticket.GetStringBytes())
 	}
 
-	t = &token{
-		userID:          userID,
-		securityKey:     securityKey,
-		serviceToken:    serviceToken,
-		liveID:          liveID,
-		enterRoomAttach: enterRoomAttach,
-		tickets:         tickets,
-		instanceID:      0,
-		sessionKey:      "",
-		seqID:           1,
-		headerSeqID:     1,
-		heartbeatSeqID:  1,
-		ticketIndex:     0,
-		deviceID:        deviceID,
-		medalParser:     fastjson.ParserPool{},
-		watchParser:     fastjson.ParserPool{},
-	}
+	t.userID = userID
+	t.securityKey = securityKey
+	t.serviceToken = serviceToken
+	t.liveID = liveID
+	t.enterRoomAttach = enterRoomAttach
+	t.tickets = tickets
+	t.instanceID = 0
+	t.sessionKey = ""
+	t.seqID = 1
+	t.headerSeqID = 1
+	t.heartbeatSeqID = 1
+	t.ticketIndex = 0
+	t.deviceID = deviceID
 
-	err = t.updateGiftList(cookies)
+	err = t.updateGiftList()
 	checkErr(err)
 
-	return t, nil
+	return nil
 }
 
 // 更新礼物列表
-func (t *token) updateGiftList(cookies []*fasthttp.Cookie) (e error) {
+func (t *token) updateGiftList() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("updateGiftList() error: %w", err)
@@ -282,7 +284,7 @@ func (t *token) updateGiftList(cookies []*fasthttp.Cookie) (e error) {
 	}
 
 	var giftList string
-	if cookies != nil {
+	if len(t.cookies) != 0 {
 		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
 	} else {
 		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
@@ -297,7 +299,7 @@ func (t *token) updateGiftList(cookies []*fasthttp.Cookie) (e error) {
 		body:        form.QueryString(),
 		method:      "POST",
 		contentType: "application/x-www-form-urlencoded",
-		referer:     liveMainPage,
+		referer:     t.livePage,
 	}
 	resp, err := client.httpRequest()
 	checkErr(err)
@@ -334,7 +336,7 @@ func (t *token) updateGiftList(cookies []*fasthttp.Cookie) (e error) {
 }
 
 // 获取直播间排名前50的在线观众信息列表
-func (t *token) watchingList(cookies []*fasthttp.Cookie) (watchList *[]WatchingUser, e error) {
+func (t *token) watchingList() (watchList *[]WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
@@ -346,7 +348,7 @@ func (t *token) watchingList(cookies []*fasthttp.Cookie) (watchList *[]WatchingU
 	}
 
 	var watchURL string
-	if cookies != nil {
+	if len(t.cookies) != 0 {
 		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
 	} else {
 		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
@@ -361,7 +363,7 @@ func (t *token) watchingList(cookies []*fasthttp.Cookie) (watchList *[]WatchingU
 		body:        form.QueryString(),
 		method:      "POST",
 		contentType: "application/x-www-form-urlencoded",
-		referer:     liveMainPage,
+		referer:     t.livePage,
 	}
 	resp, err := client.httpRequest()
 	checkErr(err)

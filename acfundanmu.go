@@ -2,11 +2,9 @@ package acfundanmu
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/Workiva/go-datastructures/queue"
-	"github.com/valyala/fasthttp"
 )
 
 // 队列长度
@@ -334,32 +332,35 @@ type DanmuQueue struct {
 	q    *queue.Queue // DanmuMessage的队列
 	info *liveInfo    // 直播间的相关信息状态
 	t    *token       // 令牌相关信息
-	ch   chan error   // 用来传递初始化的错误
 }
 
-// Login 用帐号邮箱和密码登陆AcFun获取cookies
-func Login(username, password string) ([]*fasthttp.Cookie, error) {
-	if username != "" && password != "" {
-		return login(username, password)
-	}
-	return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
-}
-
-// Start 启动websocket获取弹幕，uid是主播的uid，ctx用来结束websocket。
-// cookies可以利用Login()获取，为nil时使用访客模式登陆AcFun的弹幕系统，通常使用访客模式即可。
-func Start(ctx context.Context, uid int, cookies []*fasthttp.Cookie) (dq *DanmuQueue, err error) {
+// Init 初始化，uid为主播的uid，usernameAndPassword参数可以依次传递AcFun帐号邮箱和密码以登陆AcFun，没有时为游客模式，目前登陆模式和游客模式并没有区别
+func Init(uid int64, usernameAndPassword ...string) (dq *DanmuQueue, e error) {
 	dq = new(DanmuQueue)
-	dq.q = queue.New(queueLen)
-	dq.info = new(liveInfo)
-	dq.ch = make(chan error, 1)
-	go dq.wsStart(ctx, uid, cookies)
-	if err = <-dq.ch; err != nil {
+	dq.t = new(token)
+	dq.t.uid = uid
+	if len(usernameAndPassword) == 2 && usernameAndPassword[0] != "" && usernameAndPassword[1] != "" {
+		cookies, err := login(usernameAndPassword[0], usernameAndPassword[1])
+		if err != nil {
+			return nil, err
+		}
+		dq.t.cookies = cookies
+	}
+	err := dq.t.initialize()
+	if err != nil {
 		return nil, err
 	}
 	return dq, nil
 }
 
-// GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播）
+// StartDanmu 启动websocket获取弹幕，ctx用来结束websocket
+func (dq *DanmuQueue) StartDanmu(ctx context.Context) {
+	dq.q = queue.New(queueLen)
+	dq.info = new(liveInfo)
+	go dq.wsStart(ctx)
+}
+
+// GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu()
 func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	if (*queue.Queue)(dq.q).Disposed() {
 		return nil
@@ -377,7 +378,7 @@ func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	return danmu
 }
 
-// GetInfo 返回直播间的状态信息
+// GetInfo 返回直播间的状态信息，需要先调用StartDanmu()
 func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
 	dq.info.Lock()
 	defer dq.info.Unlock()
@@ -385,7 +386,7 @@ func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
 	return info
 }
 
-// GetRecentComment 返回进直播间时直播间里最近发的十条弹幕
+// GetRecentComment 返回进直播间时直播间里最近发的十条弹幕，需要先调用StartDanmu()
 func (dq *DanmuQueue) GetRecentComment() (comments []Comment) {
 	dq.info.Lock()
 	defer dq.info.Unlock()
@@ -393,7 +394,7 @@ func (dq *DanmuQueue) GetRecentComment() (comments []Comment) {
 	return comments
 }
 
-// GetWatchingList 返回直播间排名前50的在线观众信息列表
-func (dq *DanmuQueue) GetWatchingList(cookies []*fasthttp.Cookie) (*[]WatchingUser, error) {
-	return dq.t.watchingList(cookies)
+// GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetWatchingList() (*[]WatchingUser, error) {
+	return dq.t.watchingList()
 }

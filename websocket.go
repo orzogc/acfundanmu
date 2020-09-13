@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/dgrr/fastws"
 	"github.com/golang/protobuf/proto"
 	"github.com/orzogc/acfundanmu/acproto"
-	"github.com/valyala/fasthttp"
 )
 
 // 定时发送heartbeat和keepalive数据
@@ -43,8 +41,8 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, hb chan int6
 	}
 }
 
-// 启动websocket，uid为主播的uid，cookies是AcFun帐号的cookies，可以调用login()获取，其为nil时使用访客模式，目前登陆模式和访客模式并没有区别
-func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*fasthttp.Cookie) {
+// 启动websocket
+func (dq *DanmuQueue) wsStart(ctx context.Context) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("wsStart() error: %v", err)
@@ -52,26 +50,6 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*fasthttp.
 		}
 	}()
 	defer dq.q.Dispose()
-
-	var err error
-	for retry := 0; retry < 3; retry++ {
-		dq.t, err = initialize(uid, cookies)
-		if err != nil {
-			if retry == 2 {
-				e := fmt.Errorf("获取token失败，主播可能不在直播：%w", err)
-				log.Println("停止获取弹幕")
-				dq.ch <- e
-				panicln(e)
-			}
-			log.Printf("初始化出现错误：%v", err)
-			log.Println("尝试重新初始化")
-		} else {
-			break
-		}
-		time.Sleep(10 * time.Second)
-	}
-
-	dq.ch <- nil
 
 	conn, err := fastws.Dial(host)
 	checkErr(err)

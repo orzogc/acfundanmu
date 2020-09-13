@@ -4,13 +4,14 @@ AcFun直播弹幕API，实现参照 [AcFunDanmaku](https://github.com/wpscott/Ac
 ### 示例代码
 #### 获取弹幕
 ```go
-ctx, cancel := context.WithCancel(context.Background())
-defer cancel()
 // uid为主播的uid
-dq, err := acfundanmu.Start(ctx, uid, nil)
+dq, err := acfundanmu.Init(uid)
 if err != nil {
     log.Panicln(err)
 }
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+dq.StartDanmu(ctx)
 for {
     if danmu := dq.GetDanmu(); danmu != nil {
         for _, d := range danmu {
@@ -51,13 +52,14 @@ for {
 ```
 #### 获取直播间状态信息
 ```go
-ctx, cancel := context.WithCancel(context.Background())
-defer cancel()
 // uid为主播的uid
-dq, err := acfundanmu.Start(ctx, uid, nil)
+dq, err := acfundanmu.Init(uid)
 if err != nil {
     log.Panicln(err)
 }
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+dq.StartDanmu(ctx)
 go func() {
     for {
         select {
@@ -75,13 +77,13 @@ go func() {
 ```
 #### 获取直播间排名前50的在线观众信息列表
 ```go
-ctx, cancel := context.WithCancel(context.Background())
-defer cancel()
 // uid为主播的uid
-dq, err := acfundanmu.Start(ctx, uid, nil)
+dq, err := acfundanmu.Init(uid)
 if err != nil {
     log.Panicln(err)
 }
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
 go func() {
     for {
         select {
@@ -102,13 +104,14 @@ go func() {
 ```
 #### 将弹幕转换成ass字幕文件
 ```go
-ctx, cancel := context.WithCancel(context.Background())
-defer cancel()
 // uid为主播的uid
-dq, err := acfundanmu.Start(ctx, uid, nil)
+dq, err := acfundanmu.Init(uid)
 if err != nil {
     log.Panicln(err)
 }
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+dq.StartDanmu(ctx)
 dq.WriteASS(ctx, acfundanmu.SubConfig{
     Title:     "foo",
     PlayResX:  1280, // 直播录播视频的分辨率
