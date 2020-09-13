@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/orzogc/acfundanmu/acproto"
+	"github.com/valyala/fasthttp"
 
 	"github.com/golang/protobuf/proto"
 	"nhooyr.io/websocket"
@@ -42,8 +42,8 @@ func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int6
 	}
 }
 
-// 启动websocket，username（邮箱）和password用来登陆AcFun，其为空串时使用访客模式，目前登陆模式和访客模式并没有区别
-func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*http.Cookie) {
+// 启动websocket，uid为主播的uid，cookies是AcFun帐号的cookies，可以调用login()获取，其为nil时使用访客模式，目前登陆模式和访客模式并没有区别
+func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*fasthttp.Cookie) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("wsStart() error: %v", err)

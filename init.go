@@ -2,49 +2,103 @@ package acfundanmu
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
 
-// 检查错误
-func checkErr(err error) {
-	if err != nil {
-		panicln(err)
-	}
+type httpClient struct {
+	url         string
+	body        []byte
+	method      string
+	cookies     []*fasthttp.Cookie
+	contentType string
+	referer     string
 }
 
-// 打印错误然后panic
-func panicln(err error) {
-	log.Println(err)
-	panic(err)
+func (c *httpClient) httpRequest() (response *fasthttp.Response, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("httpRequest() error: %w", err)
+		}
+	}()
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if c.url != "" {
+		req.SetRequestURI(c.url)
+	} else {
+		panicln(fmt.Errorf("请求的url不能为空"))
+	}
+
+	if len(c.body) != 0 {
+		req.SetBody(c.body)
+	}
+
+	if c.method != "" {
+		req.Header.SetMethod(c.method)
+	} else {
+		req.Header.SetMethod("GET")
+	}
+
+	if len(c.cookies) != 0 {
+		for _, cookie := range c.cookies {
+			req.Header.SetCookieBytesKV(cookie.Key(), cookie.Value())
+		}
+	}
+
+	if c.contentType != "" {
+		req.Header.SetContentType(c.contentType)
+	}
+
+	if c.referer != "" {
+		req.Header.SetReferer(c.referer)
+	}
+
+	client := &fasthttp.Client{
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+	}
+	err := client.DoTimeout(req, resp, 10*time.Second)
+	checkErr(err)
+
+	response = fasthttp.AcquireResponse()
+	resp.CopyTo(response)
+
+	return response, nil
 }
 
 // 登陆acfun账号
-func login(username, password string) (cookies []*http.Cookie, e error) {
+func login(username, password string) (cookies []*fasthttp.Cookie, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("login() error: %w", err)
 		}
 	}()
 
-	form := url.Values{}
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
 	form.Set("username", username)
 	form.Set("password", password)
 	form.Set("key", "")
 	form.Set("captcha", "")
-	resp, err := http.PostForm(acfunSignInURL, form)
-	checkErr(err)
-	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	client := &httpClient{
+		url:         acfunSignInURL,
+		body:        form.QueryString(),
+		method:      "POST",
+		contentType: "application/x-www-form-urlencoded",
+	}
+	resp, err := client.httpRequest()
 	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
 	checkErr(err)
@@ -52,73 +106,91 @@ func login(username, password string) (cookies []*http.Cookie, e error) {
 		panicln(fmt.Errorf("以注册用户的身份登陆AcFun失败，响应为 %s", string(body)))
 	}
 
-	cookies = resp.Cookies()
+	resp.Header.VisitAllCookie(func(key, value []byte) {
+		cookie := fasthttp.AcquireCookie()
+		err = cookie.ParseBytes(value)
+		cookies = append(cookies, cookie)
+	})
 
 	userID := v.GetInt("userId")
 	content := fmt.Sprintf(safetyIDContent, userID)
-	resp, err = http.Post(acfunSafetyIDURL, "", strings.NewReader(content))
+	client = &httpClient{
+		url:    acfunSafetyIDURL,
+		body:   []byte(content),
+		method: "POST",
+	}
+	resp, err = client.httpRequest()
 	checkErr(err)
-	defer resp.Body.Close()
-	body, err = ioutil.ReadAll(resp.Body)
-	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body = resp.Body()
 
 	v, err = p.ParseBytes(body)
 	checkErr(err)
-	if v.GetInt("code") != 0 {
+	if !v.Exists("code") || v.GetInt("code") != 0 {
 		panicln(fmt.Errorf("获取safetyid失败，响应为 %s", string(body)))
 	}
 
-	cookie := &http.Cookie{Name: "safety_id", Value: string(v.GetStringBytes("safety_id")), Domain: ".acfun.cn"}
+	cookie := fasthttp.AcquireCookie()
+	cookie.SetKey("safety_id")
+	cookie.SetValueBytes(v.GetStringBytes("safety_id"))
+	cookie.SetDomain(".acfun.cn")
 	cookies = append(cookies, cookie)
 
 	return cookies, nil
 }
 
-// 初始化，获取相应的token，cookieContainer为nil时为游客模式
-func initialize(uid int, cookies []*http.Cookie) (t *token, e error) {
+// 初始化，获取相应的token，cookies为nil时为游客模式
+func initialize(uid int, cookies []*fasthttp.Cookie) (t *token, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("initialize() error: %w", err)
 		}
 	}()
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	livePage := liveURL + strconv.Itoa(uid)
 
-	resp, err := http.Get(liveURL + strconv.Itoa(uid))
+	client := &httpClient{
+		url:    livePage,
+		method: "GET",
+	}
+	resp, err := client.httpRequest()
 	checkErr(err)
-	defer resp.Body.Close()
+	defer fasthttp.ReleaseResponse(resp)
 
 	// 获取did（device ID）
-	var didCookie *http.Cookie
-	for _, cookie := range resp.Cookies() {
-		if cookie.Name == "_did" {
-			didCookie = cookie
+	didCookie := fasthttp.AcquireCookie()
+	resp.Header.VisitAllCookie(func(key, value []byte) {
+		if string(key) == "_did" {
+			err = didCookie.ParseBytes(value)
+			checkErr(err)
 		}
-	}
-	deviceID := didCookie.Value
+	})
+	deviceID := string(didCookie.Value())
 
-	var req *http.Request
-	form := url.Values{}
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
 	if cookies != nil {
 		form.Set(sid, midground)
-		req, err = http.NewRequest(http.MethodPost, getTokenURL, strings.NewReader(form.Encode()))
-		checkErr(err)
-		for _, cookie := range cookies {
-			req.AddCookie(cookie)
+		client = &httpClient{
+			url:     getTokenURL,
+			body:    form.QueryString(),
+			method:  "POST",
+			cookies: cookies,
 		}
 	} else {
 		form.Set(sid, visitor)
-		req, err = http.NewRequest(http.MethodPost, loginURL, strings.NewReader(form.Encode()))
-		checkErr(err)
-		req.AddCookie(didCookie)
+		client = &httpClient{
+			url:     loginURL,
+			body:    form.QueryString(),
+			method:  "POST",
+			cookies: []*fasthttp.Cookie{didCookie},
+		}
 	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	resp, err = client.Do(req)
+	client.contentType = "application/x-www-form-urlencoded"
+	resp, err = client.httpRequest()
 	checkErr(err)
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -141,20 +213,22 @@ func initialize(uid int, cookies []*http.Cookie) (t *token, e error) {
 		play = fmt.Sprintf(playURL, userID, deviceID, visitorSt, serviceToken)
 	}
 
-	form = url.Values{}
+	form = fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
 	// authorId就是主播的uid
 	form.Set("authorId", strconv.Itoa(uid))
 	form.Set("pullStreamType", "FLV")
-	req, err = http.NewRequest(http.MethodPost, play, strings.NewReader(form.Encode()))
+	client = &httpClient{
+		url:         play,
+		body:        form.QueryString(),
+		method:      "POST",
+		contentType: "application/x-www-form-urlencoded",
+		referer:     livePage, // 会验证Referer
+	}
+	resp, err = client.httpRequest()
 	checkErr(err)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	// 会验证Referer
-	req.Header.Set("Referer", liveURL+strconv.Itoa(uid))
-	resp, err = client.Do(req)
-	checkErr(err)
-	defer resp.Body.Close()
-	body, err = ioutil.ReadAll(resp.Body)
-	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body = resp.Body()
 
 	v, err = p.ParseBytes(body)
 	checkErr(err)
@@ -195,7 +269,7 @@ func initialize(uid int, cookies []*http.Cookie) (t *token, e error) {
 }
 
 // 更新礼物列表
-func (t *token) updateGiftList(cookies []*http.Cookie) (e error) {
+func (t *token) updateGiftList(cookies []*fasthttp.Cookie) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("updateGiftList() error: %w", err)
@@ -213,20 +287,21 @@ func (t *token) updateGiftList(cookies []*http.Cookie) (e error) {
 		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
 	}
 
-	client := &http.Client{Timeout: 10 * time.Second}
-
-	form := url.Values{}
-	form.Set("visitorId", strconv.Itoa(int(t.userID)))
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
 	form.Set("liveId", t.liveID)
-	req, err := http.NewRequest(http.MethodPost, giftList, strings.NewReader(form.Encode()))
+	client := &httpClient{
+		url:         giftList,
+		body:        form.QueryString(),
+		method:      "POST",
+		contentType: "application/x-www-form-urlencoded",
+		referer:     liveMainPage,
+	}
+	resp, err := client.httpRequest()
 	checkErr(err)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Referer", liveMainPage)
-	resp, err := client.Do(req)
-	checkErr(err)
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -258,7 +333,7 @@ func (t *token) updateGiftList(cookies []*http.Cookie) (e error) {
 }
 
 // 获取直播间排名前50的在线观众信息列表
-func (t *token) watchingList(cookies []*http.Cookie) (watchList *[]WatchingUser, e error) {
+func (t *token) watchingList(cookies []*fasthttp.Cookie) (watchList *[]WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
@@ -276,20 +351,21 @@ func (t *token) watchingList(cookies []*http.Cookie) (watchList *[]WatchingUser,
 		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
 	}
 
-	client := &http.Client{Timeout: 10 * time.Second}
-
-	form := url.Values{}
-	form.Set("visitorId", strconv.Itoa(int(t.userID)))
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
 	form.Set("liveId", t.liveID)
-	req, err := http.NewRequest(http.MethodPost, watchURL, strings.NewReader(form.Encode()))
+	client := &httpClient{
+		url:         watchURL,
+		body:        form.QueryString(),
+		method:      "POST",
+		contentType: "application/x-www-form-urlencoded",
+		referer:     liveMainPage,
+	}
+	resp, err := client.httpRequest()
 	checkErr(err)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Referer", liveMainPage)
-	resp, err := client.Do(req)
-	checkErr(err)
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
 
 	p := t.watchParser.Get()
 	defer t.watchParser.Put(p)

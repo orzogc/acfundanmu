@@ -3,10 +3,10 @@ package acfundanmu
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"sync"
 
 	"github.com/Workiva/go-datastructures/queue"
+	"github.com/valyala/fasthttp"
 )
 
 // 队列长度
@@ -338,7 +338,7 @@ type DanmuQueue struct {
 }
 
 // Login 用帐号邮箱和密码登陆AcFun获取cookies
-func Login(username, password string) ([]*http.Cookie, error) {
+func Login(username, password string) ([]*fasthttp.Cookie, error) {
 	if username != "" && password != "" {
 		return login(username, password)
 	}
@@ -347,7 +347,7 @@ func Login(username, password string) ([]*http.Cookie, error) {
 
 // Start 启动websocket获取弹幕，uid是主播的uid，ctx用来结束websocket。
 // cookies可以利用Login()获取，为nil时使用访客模式登陆AcFun的弹幕系统，通常使用访客模式即可。
-func Start(ctx context.Context, uid int, cookies []*http.Cookie) (dq *DanmuQueue, err error) {
+func Start(ctx context.Context, uid int, cookies []*fasthttp.Cookie) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.q = queue.New(queueLen)
 	dq.info = new(liveInfo)
@@ -394,6 +394,6 @@ func (dq *DanmuQueue) GetRecentComment() (comments []Comment) {
 }
 
 // GetWatchingList 返回直播间排名前50的在线观众信息列表
-func (dq *DanmuQueue) GetWatchingList(cookies []*http.Cookie) (*[]WatchingUser, error) {
+func (dq *DanmuQueue) GetWatchingList(cookies []*fasthttp.Cookie) (*[]WatchingUser, error) {
 	return dq.t.watchingList(cookies)
 }

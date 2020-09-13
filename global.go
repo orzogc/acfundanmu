@@ -1,6 +1,7 @@
 package acfundanmu
 
 import (
+	"log"
 	"sync"
 
 	"github.com/valyala/fastjson"
@@ -54,4 +55,17 @@ type token struct {
 	gifts           map[int64]Giftdetail
 	medalParser     fastjson.ParserPool
 	watchParser     fastjson.ParserPool
+}
+
+// 检查错误
+func checkErr(err error) {
+	if err != nil {
+		panicln(err)
+	}
+}
+
+// 打印错误然后panic
+func panicln(err error) {
+	log.Println(err)
+	panic(err)
 }
