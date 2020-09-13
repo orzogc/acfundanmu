@@ -19,11 +19,13 @@ import (
 
 // 生成ZtLiveCsCmd
 func (t *token) genCommand(command string, msg *[]byte) *[]byte {
+	t.Lock()
 	cmd := &acproto.ZtLiveCsCmd{
 		CmdType: command,
 		Ticket:  t.tickets[t.ticketIndex],
 		LiveId:  t.liveID,
 	}
+	t.Unlock()
 	if msg != nil {
 		cmd.Payload = *msg
 	}
@@ -181,7 +183,9 @@ func (t *token) pushMessage() *[]byte {
 	body := t.genPayload("Push.ZtLiveInteractive.Message", nil)
 
 	header := t.genHeader((len(*body)))
+	t.Lock()
 	header.SeqId = t.headerSeqID
+	t.Unlock()
 
 	return t.encode(header, body)
 }
@@ -285,7 +289,9 @@ func (t *token) decode(byt *[]byte) (downstream *acproto.DownstreamPayload, e er
 	}()
 
 	header, payloadBytes := decodeResponse(byt)
+	t.Lock()
 	t.headerSeqID = header.SeqId
+	t.Unlock()
 
 	payload := payloadBytes
 	if header.EncryptionMode != acproto.PacketHeader_kEncryptionNone {

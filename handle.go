@@ -105,7 +105,9 @@ func (t *token) handleCommand(conn *fastws.Conn, stream *acproto.DownstreamPaylo
 			ticketInvalid := &acproto.ZtLiveScTicketInvalid{}
 			err := proto.Unmarshal(payload, ticketInvalid)
 			checkErr(err)
+			t.Lock()
 			t.ticketIndex = (t.ticketIndex + 1) % len(t.tickets)
+			t.Unlock()
 			_, err = conn.WriteMessage(fastws.ModeBinary, *t.enterRoom())
 			checkErr(err)
 		default:
@@ -149,10 +151,11 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 		for _, pl := range item.Payload {
 			wg.Add(1)
 			go func(signalType string, pl []byte) {
+				defer wg.Done()
 				switch signalType {
 				case "CommonActionSignalComment":
 					comment := &acproto.CommonActionSignalComment{}
-					err = proto.Unmarshal(pl, comment)
+					err := proto.Unmarshal(pl, comment)
 					checkErr(err)
 					d := &Comment{
 						DanmuCommon: DanmuCommon{
@@ -170,7 +173,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalLike":
 					like := &acproto.CommonActionSignalLike{}
-					err = proto.Unmarshal(pl, like)
+					err := proto.Unmarshal(pl, like)
 					checkErr(err)
 					d := &Like{
 						SendTime: like.SendTimeMs * 1e6,
@@ -185,7 +188,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalUserEnterRoom":
 					enter := &acproto.CommonActionSignalUserEnterRoom{}
-					err = proto.Unmarshal(pl, enter)
+					err := proto.Unmarshal(pl, enter)
 					checkErr(err)
 					d := &EnterRoom{
 						SendTime: enter.SendTimeMs * 1e6,
@@ -200,7 +203,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalUserFollowAuthor":
 					follow := &acproto.CommonActionSignalUserFollowAuthor{}
-					err = proto.Unmarshal(pl, follow)
+					err := proto.Unmarshal(pl, follow)
 					checkErr(err)
 					d := &FollowAuthor{
 						SendTime: follow.SendTimeMs * 1e6,
@@ -223,7 +226,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 				*/
 				case "AcfunActionSignalThrowBanana":
 					banana := &acproto.AcfunActionSignalThrowBanana{}
-					err = proto.Unmarshal(pl, banana)
+					err := proto.Unmarshal(pl, banana)
 					checkErr(err)
 					d := &ThrowBanana{
 						DanmuCommon: DanmuCommon{
@@ -240,7 +243,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalGift":
 					gift := &acproto.CommonActionSignalGift{}
-					err = proto.Unmarshal(pl, gift)
+					err := proto.Unmarshal(pl, gift)
 					checkErr(err)
 					// 礼物列表应该不会在直播中途改变，但以防万一
 					g, ok := t.gifts[gift.GiftId]
@@ -287,7 +290,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					mu.Unlock()
 				case "CommonActionSignalRichText":
 					richText := &acproto.CommonActionSignalRichText{}
-					err = proto.Unmarshal(pl, richText)
+					err := proto.Unmarshal(pl, richText)
 					checkErr(err)
 					d := &RichText{
 						SendTime: richText.SendTimeMs,
@@ -332,7 +335,6 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 						string(pl),
 						base64.StdEncoding.EncodeToString(pl))
 				}
-				wg.Done()
 			}(item.SignalType, pl)
 		}
 	}
@@ -359,17 +361,18 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 	for _, item := range stateSignal.Item {
 		wg.Add(1)
 		go func(item *acproto.ZtLiveStateSignalItem) {
+			defer wg.Done()
 			switch item.SignalType {
 			case "AcfunStateSignalDisplayInfo":
 				bananaInfo := &acproto.AcfunStateSignalDisplayInfo{}
-				err = proto.Unmarshal(item.Payload, bananaInfo)
+				err := proto.Unmarshal(item.Payload, bananaInfo)
 				checkErr(err)
 				info.Lock()
 				info.AllBananaCount = bananaInfo.BananaCount
 				info.Unlock()
 			case "CommonStateSignalDisplayInfo":
 				stateInfo := &acproto.CommonStateSignalDisplayInfo{}
-				err = proto.Unmarshal(item.Payload, stateInfo)
+				err := proto.Unmarshal(item.Payload, stateInfo)
 				checkErr(err)
 				info.Lock()
 				info.WatchingCount = stateInfo.WatchingCount
@@ -378,7 +381,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				info.Unlock()
 			case "CommonStateSignalTopUsers":
 				topUsers := &acproto.CommonStateSignalTopUsers{}
-				err = proto.Unmarshal(item.Payload, topUsers)
+				err := proto.Unmarshal(item.Payload, topUsers)
 				checkErr(err)
 				users := make([]TopUser, len(topUsers.User))
 				for i, user := range topUsers.User {
@@ -399,7 +402,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				info.Unlock()
 			case "CommonStateSignalRecentComment":
 				comments := &acproto.CommonStateSignalRecentComment{}
-				err = proto.Unmarshal(item.Payload, comments)
+				err := proto.Unmarshal(item.Payload, comments)
 				checkErr(err)
 				danmu := make([]Comment, len(comments.Comment))
 				for i, comment := range comments.Comment {
@@ -421,7 +424,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				info.Unlock()
 			case "CommonStateSignalChatCall":
 				chatCall := &acproto.CommonStateSignalChatCall{}
-				err = proto.Unmarshal(item.Payload, chatCall)
+				err := proto.Unmarshal(item.Payload, chatCall)
 				checkErr(err)
 				chat := ChatInfo{
 					ChatID:          chatCall.ChatId,
@@ -433,12 +436,12 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				info.Unlock()
 			case "CommonStateSignalChatAccept":
 				chatAccept := &acproto.CommonStateSignalChatAccept{}
-				err = proto.Unmarshal(item.Payload, chatAccept)
+				err := proto.Unmarshal(item.Payload, chatAccept)
 				checkErr(err)
 				log.Printf("CommonStateSignalChatAccept: %+v\n", chatAccept)
 			case "CommonStateSignalChatReady":
 				chatReady := &acproto.CommonStateSignalChatReady{}
-				err = proto.Unmarshal(item.Payload, chatReady)
+				err := proto.Unmarshal(item.Payload, chatReady)
 				checkErr(err)
 				guest := UserInfo{
 					UserID:   chatReady.GuestUserInfo.UserId,
@@ -452,7 +455,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				info.Unlock()
 			case "CommonStateSignalChatEnd":
 				chatEnd := &acproto.CommonStateSignalChatEnd{}
-				err = proto.Unmarshal(item.Payload, chatEnd)
+				err := proto.Unmarshal(item.Payload, chatEnd)
 				checkErr(err)
 				info.Lock()
 				info.Chat.ChatID = chatEnd.ChatId
@@ -460,7 +463,7 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 				info.Unlock()
 			case "CommonStateSignalCurrentRedpackList":
 				redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
-				err = proto.Unmarshal(item.Payload, redpackList)
+				err := proto.Unmarshal(item.Payload, redpackList)
 				checkErr(err)
 				redpacks := make([]Redpack, len(redpackList.Redpacks))
 				for i, redpack := range redpackList.Redpacks {
@@ -489,7 +492,6 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 					string(item.Payload),
 					base64.StdEncoding.EncodeToString(item.Payload))
 			}
-			wg.Done()
 		}(item)
 	}
 	wg.Wait()
@@ -505,6 +507,7 @@ func handleNotifySignal(payload *[]byte, info *liveInfo) {
 	for _, item := range notifySignal.Item {
 		wg.Add(1)
 		go func(item *acproto.ZtLiveNotifySignalItem) {
+			defer wg.Done()
 			switch item.SignalType {
 			case "CommonNotifySignalKickedOut":
 				kickedOut := &acproto.CommonNotifySignalKickedOut{}
@@ -533,7 +536,6 @@ func handleNotifySignal(payload *[]byte, info *liveInfo) {
 					string(item.Payload),
 					base64.StdEncoding.EncodeToString(item.Payload))
 			}
-			wg.Done()
 		}(item)
 	}
 	wg.Wait()

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/dgrr/fastws"
@@ -47,7 +48,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*fasthttp.
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("wsStart() error: %v", err)
-			log.Println("websocket停止运行，如果要获取弹幕请重新启动websocket")
+			log.Println("停止获取弹幕")
 		}
 	}()
 	defer dq.q.Dispose()
@@ -80,7 +81,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*fasthttp.
 	defer wsCancel()
 	go func() {
 		<-wsCtx.Done()
-		dq.t.wsStop(conn, "")
+		conn.Close()
 	}()
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, *dq.t.register())
@@ -106,26 +107,54 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*fasthttp.
 	hb := make(chan int64, 10)
 	go dq.t.wsHeartbeat(wsCtx, conn, hb)
 
-	for {
-		_, msg, err = conn.ReadMessage(msg[:0])
-		if err != nil {
-			if !errors.Is(err, fastws.EOF) {
-				panicln(fmt.Errorf("websocket接收数据出现错误：%w", err))
+	msgCh := make(chan []byte, 100)
+	payloadCh := make(chan *acproto.DownstreamPayload, 100)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer close(msgCh)
+		var err error
+		for {
+			// nil是防止data race
+			_, msg, err = conn.ReadMessage(nil)
+			if err != nil {
+				if !errors.Is(err, fastws.EOF) {
+					log.Printf("websocket接收数据出现错误：%v", err)
+					log.Println("停止获取弹幕")
+				}
+				break
 			}
-			break
+			msgCh <- msg
 		}
+	}()
 
-		stream, err := dq.t.decode(&msg)
-		if err != nil {
-			log.Printf("解码接收到的数据出现错误：%v", err)
-			continue
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer close(payloadCh)
+		for msg := range msgCh {
+			stream, err := dq.t.decode(&msg)
+			if err != nil {
+				log.Printf("解码接收到的数据出现错误：%v", err)
+				continue
+			}
+			payloadCh <- stream
 		}
+	}()
 
-		err = dq.t.handleCommand(conn, stream, dq.q, dq.info, hb)
-		if err != nil {
-			log.Printf("处理接收到的数据出现错误：%v", err)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for stream := range payloadCh {
+			err := dq.t.handleCommand(conn, stream, dq.q, dq.info, hb)
+			if err != nil {
+				log.Printf("处理接收到的数据出现错误：%v", err)
+			}
 		}
-	}
+	}()
+
+	wg.Wait()
 }
 
 // 停止websocket

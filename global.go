@@ -38,7 +38,7 @@ const clientLiveSdkVersion = "kwai-acfun-live-link"
 const retryCount uint32 = 1
 
 type token struct {
-	sync.Mutex      // seqID的锁
+	sync.Mutex      // seqID、headerSeqID和ticketIndex的锁
 	userID          int64
 	securityKey     string // 第一次发送ws信息时所用密钥
 	serviceToken    string
