@@ -91,7 +91,7 @@ go func() {
             return
         default:
             // 循环获取watchingList并处理
-            watchingList, err := dq.GetWatchingList(nil)
+            watchingList, err := dq.GetWatchingList()
             if err != nil {
                 log.Panicln(err)
             }
