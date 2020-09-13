@@ -3,25 +3,26 @@ package acfundanmu
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/dgrr/fastws"
 	"github.com/golang/protobuf/proto"
 	"github.com/orzogc/acfundanmu/acproto"
 	"github.com/valyala/fasthttp"
-	"nhooyr.io/websocket"
 )
 
 // 定时发送heartbeat和keepalive数据
-func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int64) {
+func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, hb chan int64) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("Recovering from panic in wsHeartbeat(), the error is: %v", err)
 			// 重新启动wsHeartbeat()
 			time.Sleep(2 * time.Second)
 			hb <- 10000
-			t.wsHeartbeat(ctx, c, hb)
+			t.wsHeartbeat(ctx, conn, hb)
 		}
 	}()
 
@@ -33,9 +34,9 @@ func (t *token) wsHeartbeat(ctx context.Context, c *websocket.Conn, hb chan int6
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			err := c.Write(ctx, websocket.MessageBinary, *t.heartbeat())
+			_, err := conn.WriteMessage(fastws.ModeBinary, *t.heartbeat())
 			checkErr(err)
-			err = c.Write(ctx, websocket.MessageBinary, *t.keepAlive(false))
+			_, err = conn.WriteMessage(fastws.ModeBinary, *t.keepAlive(false))
 			checkErr(err)
 		}
 	}
@@ -71,15 +72,23 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*fasthttp.
 
 	dq.ch <- nil
 
-	c, _, err := websocket.Dial(ctx, host, nil)
+	conn, err := fastws.Dial(host)
 	checkErr(err)
-	defer c.Close(websocket.StatusInternalError, "可能出现错误")
 
-	err = c.Write(ctx, websocket.MessageBinary, *dq.t.register())
+	// 关闭websocket
+	wsCtx, wsCancel := context.WithCancel(ctx)
+	defer wsCancel()
+	go func() {
+		<-wsCtx.Done()
+		dq.t.wsStop(conn, "")
+	}()
+
+	_, err = conn.WriteMessage(fastws.ModeBinary, *dq.t.register())
 	checkErr(err)
-	_, resp, err := c.Read(ctx)
+	var msg []byte
+	_, msg, err = conn.ReadMessage(msg[:0])
 	checkErr(err)
-	registerDown, err := dq.t.decode(&resp)
+	registerDown, err := dq.t.decode(&msg)
 	checkErr(err)
 	regResp := &acproto.RegisterResponse{}
 	err = proto.Unmarshal(registerDown.PayloadData, regResp)
@@ -88,43 +97,42 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, uid int, cookies []*fasthttp.
 	dq.t.sessionKey = base64.StdEncoding.EncodeToString(regResp.SessKey)
 	//lz4CompressionThreshold = regResp.SdkOption.Lz4CompressionThresholdBytes
 
-	err = c.Write(ctx, websocket.MessageBinary, *dq.t.keepAlive(true))
+	_, err = conn.WriteMessage(fastws.ModeBinary, *dq.t.keepAlive(true))
 	checkErr(err)
 
-	err = c.Write(ctx, websocket.MessageBinary, *dq.t.enterRoom())
+	_, err = conn.WriteMessage(fastws.ModeBinary, *dq.t.enterRoom())
 	checkErr(err)
 
-	// 让websocket关闭时能马上结束wsHeartbeat()
-	hbCtx, hbCancel := context.WithCancel(ctx)
-	defer hbCancel()
-	hb := make(chan int64, 20)
-	go dq.t.wsHeartbeat(hbCtx, c, hb)
+	hb := make(chan int64, 10)
+	go dq.t.wsHeartbeat(wsCtx, conn, hb)
 
 	for {
-		_, buffer, err := c.Read(ctx)
+		_, msg, err = conn.ReadMessage(msg[:0])
 		if err != nil {
+			if !errors.Is(err, fastws.EOF) {
+				panicln(fmt.Errorf("websocket接收数据出现错误：%w", err))
+			}
 			break
 		}
 
-		stream, err := dq.t.decode(&buffer)
+		stream, err := dq.t.decode(&msg)
 		if err != nil {
-			log.Printf("解码接受到的数据出现错误：%v", err)
+			log.Printf("解码接收到的数据出现错误：%v", err)
 			continue
 		}
 
-		err = dq.t.handleCommand(ctx, c, stream, dq.q, dq.info, hb)
+		err = dq.t.handleCommand(conn, stream, dq.q, dq.info, hb)
 		if err != nil {
-			log.Printf("处理接受到的数据出现错误：%v", err)
+			log.Printf("处理接收到的数据出现错误：%v", err)
 		}
 	}
 }
 
 // 停止websocket
-func (t *token) wsStop(ctx context.Context, c *websocket.Conn, message string) {
-	err := c.Write(ctx, websocket.MessageBinary, *t.userExit())
+func (t *token) wsStop(conn *fastws.Conn, message string) {
+	_, err := conn.WriteMessage(fastws.ModeBinary, *t.userExit())
 	checkErr(err)
-	err = c.Write(ctx, websocket.MessageBinary, *t.unregister())
+	_, err = conn.WriteMessage(fastws.ModeBinary, *t.unregister())
 	checkErr(err)
-	c.Close(websocket.StatusNormalClosure, message)
-	//fmt.Println(message)
+	conn.CloseString(message)
 }

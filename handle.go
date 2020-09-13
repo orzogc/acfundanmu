@@ -3,7 +3,6 @@ package acfundanmu
 import (
 	"bytes"
 	"compress/gzip"
-	"context"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -11,16 +10,16 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/dgrr/fastws"
 	"github.com/orzogc/acfundanmu/acproto"
 	"github.com/valyala/fastjson"
 
 	"github.com/Workiva/go-datastructures/queue"
 	"google.golang.org/protobuf/proto"
-	"nhooyr.io/websocket"
 )
 
 // 处理接受到的数据里的命令
-func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *acproto.DownstreamPayload, q *queue.Queue, info *liveInfo, hb chan<- int64) (e error) {
+func (t *token) handleCommand(conn *fastws.Conn, stream *acproto.DownstreamPayload, q *queue.Queue, info *liveInfo, hb chan<- int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("handleCommand() error: %w", err)
@@ -28,7 +27,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 	}()
 
 	if stream == nil {
-		return
+		panicln(fmt.Errorf("stream为nil"))
 	}
 
 	switch stream.Command {
@@ -72,9 +71,9 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 		unregister := &acproto.UnregisterResponse{}
 		err := proto.Unmarshal(stream.PayloadData, unregister)
 		checkErr(err)
-		c.Close(websocket.StatusNormalClosure, "Unregister")
+		conn.CloseString("Unregister")
 	case "Push.ZtLiveInteractive.Message":
-		err := c.Write(ctx, websocket.MessageBinary, *t.pushMessage())
+		_, err := conn.WriteMessage(fastws.ModeBinary, *t.pushMessage())
 		checkErr(err)
 		message := &acproto.ZtLiveScMessage{}
 		err = proto.Unmarshal(stream.PayloadData, message)
@@ -100,14 +99,14 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 			err := proto.Unmarshal(payload, statusChanged)
 			checkErr(err)
 			if statusChanged.Type == acproto.ZtLiveScStatusChanged_LIVE_CLOSED || statusChanged.Type == acproto.ZtLiveScStatusChanged_LIVE_BANNED {
-				t.wsStop(ctx, c, "直播已经结束")
+				t.wsStop(conn, "Live closed")
 			}
 		case "ZtLiveScTicketInvalid":
 			ticketInvalid := &acproto.ZtLiveScTicketInvalid{}
 			err := proto.Unmarshal(payload, ticketInvalid)
 			checkErr(err)
 			t.ticketIndex = (t.ticketIndex + 1) % len(t.tickets)
-			err = c.Write(ctx, websocket.MessageBinary, *t.enterRoom())
+			_, err = conn.WriteMessage(fastws.ModeBinary, *t.enterRoom())
 			checkErr(err)
 		default:
 			log.Printf("未知的message.MessageType：%s\npayload string:\n%s\npayload base64:\n%s\n",
@@ -123,7 +122,7 @@ func (t *token) handleCommand(ctx context.Context, c *websocket.Conn, stream *ac
 		if stream.ErrorCode > 0 {
 			log.Println("Error: ", stream.ErrorCode, stream.ErrorMsg)
 			if stream.ErrorCode == 10018 {
-				t.wsStop(ctx, c, "Log out")
+				t.wsStop(conn, "Log out")
 			}
 			log.Println(string(stream.ErrorData))
 		} else {
