@@ -275,7 +275,7 @@ func (d *RichText) GetUserInfo() UserInfo {
 	return UserInfo{}
 }
 
-// WatchingUser 就是观看直播的用户的信息，目前没有Medal和ManagerType
+// WatchingUser 就是观看直播的用户的信息，目前没有Medal
 type WatchingUser struct {
 	UserInfo                      // 用户信息
 	AnonymousUser          bool   // 是否匿名用户

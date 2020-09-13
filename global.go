@@ -53,4 +53,5 @@ type token struct {
 	deviceID        string
 	gifts           map[int64]Giftdetail
 	medalParser     fastjson.ParserPool
+	watchParser     fastjson.ParserPool
 }

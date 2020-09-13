@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/orzogc/acfundanmu/acproto"
+	"github.com/valyala/fastjson"
 
 	"github.com/Workiva/go-datastructures/queue"
 	"google.golang.org/protobuf/proto"
@@ -547,13 +548,20 @@ func (t *token) getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
 
 	if userInfo.Badge != "" {
 		p := t.medalParser.Get()
+		defer t.medalParser.Put(p)
 		v, err := p.Parse(userInfo.Badge)
 		checkErr(err)
-		v = v.Get("medalInfo")
-		user.Medal.UperID = v.GetInt64("uperId")
-		user.Medal.ClubName = string(v.GetStringBytes("clubName"))
-		user.Medal.Level = v.GetInt("level")
-		t.medalParser.Put(p)
+		o := v.GetObject("medalInfo")
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "uperId":
+				user.Medal.UperID = v.GetInt64()
+			case "clubName":
+				user.Medal.ClubName = string(v.GetStringBytes())
+			case "level":
+				user.Medal.Level = v.GetInt()
+			}
+		})
 	}
 
 	if userInfo.UserIdentity != nil {

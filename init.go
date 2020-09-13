@@ -185,6 +185,7 @@ func initialize(uid int, cookies []*http.Cookie) (t *token, e error) {
 		ticketIndex:     0,
 		deviceID:        deviceID,
 		medalParser:     fastjson.ParserPool{},
+		watchParser:     fastjson.ParserPool{},
 	}
 
 	err = t.updateGiftList(cookies)
@@ -290,7 +291,8 @@ func (t *token) watchingList(cookies []*http.Cookie) (watchList *[]WatchingUser,
 	body, err := ioutil.ReadAll(resp.Body)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := t.watchParser.Get()
+	defer t.watchParser.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -300,16 +302,27 @@ func (t *token) watchingList(cookies []*http.Cookie) (watchList *[]WatchingUser,
 	watchArray := v.GetArray("data", "list")
 	watchingUserList := make([]WatchingUser, len(watchArray))
 	for i, watch := range watchArray {
-		watchingUserList[i] = WatchingUser{
-			UserInfo: UserInfo{
-				UserID:   watch.GetInt64("userId"),
-				Nickname: string(watch.GetStringBytes("nickname")),
-				Avatar:   string(watch.GetStringBytes("avatar", "0", "url")),
-			},
-			AnonymousUser:          watch.GetBool("anonymousUser"),
-			DisplaySendAmount:      string(watch.GetStringBytes("displaySendAmount")),
-			CustomWatchingListData: string(watch.GetStringBytes("customWatchingListData")),
-		}
+		o := watch.GetObject()
+		w := WatchingUser{}
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "userId":
+				w.UserID = v.GetInt64()
+			case "nickname":
+				w.Nickname = string(v.GetStringBytes())
+			case "avatar":
+				w.Avatar = string(v.GetStringBytes("0", "url"))
+			case "anonymousUser":
+				w.AnonymousUser = v.GetBool()
+			case "displaySendAmount":
+				w.DisplaySendAmount = string(v.GetStringBytes())
+			case "customWatchingListData":
+				w.CustomWatchingListData = string(v.GetStringBytes())
+			case "managerType":
+				w.ManagerType = ManagerType(v.GetInt())
+			}
+		})
+		watchingUserList[i] = w
 	}
 
 	return &watchingUserList, nil
