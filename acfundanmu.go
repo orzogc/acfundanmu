@@ -409,6 +409,6 @@ func (dq *DanmuQueue) GetRecentComment() (comments []Comment) {
 }
 
 // GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetWatchingList() (*[]WatchingUser, error) {
+func (dq *DanmuQueue) GetWatchingList() ([]WatchingUser, error) {
 	return dq.t.watchingList()
 }

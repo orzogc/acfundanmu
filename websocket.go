@@ -33,9 +33,9 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, hb chan int6
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			_, err := conn.WriteMessage(fastws.ModeBinary, *t.heartbeat())
+			_, err := conn.WriteMessage(fastws.ModeBinary, t.heartbeat())
 			checkErr(err)
-			_, err = conn.WriteMessage(fastws.ModeBinary, *t.keepAlive(false))
+			_, err = conn.WriteMessage(fastws.ModeBinary, t.keepAlive(false))
 			checkErr(err)
 		}
 	}
@@ -62,12 +62,12 @@ func (dq *DanmuQueue) wsStart(ctx context.Context) {
 		conn.Close()
 	}()
 
-	_, err = conn.WriteMessage(fastws.ModeBinary, *dq.t.register())
+	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.register())
 	checkErr(err)
 	var msg []byte
 	_, msg, err = conn.ReadMessage(msg[:0])
 	checkErr(err)
-	registerDown, err := dq.t.decode(&msg)
+	registerDown, err := dq.t.decode(msg)
 	checkErr(err)
 	regResp := &acproto.RegisterResponse{}
 	err = proto.Unmarshal(registerDown.PayloadData, regResp)
@@ -76,10 +76,10 @@ func (dq *DanmuQueue) wsStart(ctx context.Context) {
 	dq.t.sessionKey = base64.StdEncoding.EncodeToString(regResp.SessKey)
 	//lz4CompressionThreshold = regResp.SdkOption.Lz4CompressionThresholdBytes
 
-	_, err = conn.WriteMessage(fastws.ModeBinary, *dq.t.keepAlive(true))
+	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.keepAlive(true))
 	checkErr(err)
 
-	_, err = conn.WriteMessage(fastws.ModeBinary, *dq.t.enterRoom())
+	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.enterRoom())
 	checkErr(err)
 
 	hb := make(chan int64, 10)
@@ -112,7 +112,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context) {
 		defer wg.Done()
 		defer close(payloadCh)
 		for msg := range msgCh {
-			stream, err := dq.t.decode(&msg)
+			stream, err := dq.t.decode(msg)
 			if err != nil {
 				log.Printf("解码接收到的数据出现错误：%v", err)
 				continue
@@ -137,9 +137,9 @@ func (dq *DanmuQueue) wsStart(ctx context.Context) {
 
 // 停止websocket
 func (t *token) wsStop(conn *fastws.Conn, message string) {
-	_, err := conn.WriteMessage(fastws.ModeBinary, *t.userExit())
+	_, err := conn.WriteMessage(fastws.ModeBinary, t.userExit())
 	checkErr(err)
-	_, err = conn.WriteMessage(fastws.ModeBinary, *t.unregister())
+	_, err = conn.WriteMessage(fastws.ModeBinary, t.unregister())
 	checkErr(err)
 	conn.CloseString(message)
 }

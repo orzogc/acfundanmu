@@ -18,7 +18,7 @@ import (
 )
 
 // 生成ZtLiveCsCmd
-func (t *token) genCommand(command string, msg *[]byte) *[]byte {
+func (t *token) genCommand(command string, msg []byte) []byte {
 	t.Lock()
 	cmd := &acproto.ZtLiveCsCmd{
 		CmdType: command,
@@ -27,17 +27,17 @@ func (t *token) genCommand(command string, msg *[]byte) *[]byte {
 	}
 	t.Unlock()
 	if msg != nil {
-		cmd.Payload = *msg
+		cmd.Payload = msg
 	}
 
 	cmdBytes, err := proto.Marshal(cmd)
 	checkErr(err)
 
-	return &cmdBytes
+	return cmdBytes
 }
 
 // 生成UpstreamPayload
-func (t *token) genPayload(cmd string, msg *[]byte) *[]byte {
+func (t *token) genPayload(cmd string, msg []byte) []byte {
 	t.Lock()
 	payload := &acproto.UpstreamPayload{
 		Command:    cmd,
@@ -47,13 +47,13 @@ func (t *token) genPayload(cmd string, msg *[]byte) *[]byte {
 	}
 	t.Unlock()
 	if msg != nil {
-		payload.PayloadData = *msg
+		payload.PayloadData = msg
 	}
 
 	body, err := proto.Marshal(payload)
 	checkErr(err)
 
-	return &body
+	return body
 }
 
 // 生成PacketHeader
@@ -73,7 +73,7 @@ func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 }
 
 // register数据
-func (t *token) register() *[]byte {
+func (t *token) register() []byte {
 	request := &acproto.RegisterRequest{
 		AppInfo: &acproto.AppInfo{
 			AppName:    appName,
@@ -96,9 +96,9 @@ func (t *token) register() *[]byte {
 	requestBytes, err := proto.Marshal(request)
 	checkErr(err)
 
-	body := t.genPayload("Basic.Register", &requestBytes)
+	body := t.genPayload("Basic.Register", requestBytes)
 
-	header := t.genHeader(len(*body))
+	header := t.genHeader(len(body))
 	header.EncryptionMode = acproto.PacketHeader_kEncryptionServiceToken
 	header.TokenInfo = &acproto.TokenInfo{
 		TokenType: acproto.TokenInfo_kServiceToken,
@@ -110,35 +110,35 @@ func (t *token) register() *[]byte {
 }
 
 // unregister数据
-func (t *token) unregister() *[]byte {
+func (t *token) unregister() []byte {
 	//unregister := &acproto.UnregisterRequest{}
 	//unregisterBytes, err := proto.Marshal(unregister)
 	//checkErr(err)
 
 	body := t.genPayload("Basic.Ping", nil)
 
-	header := t.genHeader(len(*body))
+	header := t.genHeader(len(body))
 
 	return t.encode(header, body)
 }
 
 // ping数据
-func (t *token) ping() *[]byte {
+func (t *token) ping() []byte {
 	ping := &acproto.PingRequest{
 		PingType: acproto.PingRequest_kPostRegister,
 	}
 	pingBytes, err := proto.Marshal(ping)
 	checkErr(err)
 
-	body := t.genPayload("Basic.Ping", &pingBytes)
+	body := t.genPayload("Basic.Ping", pingBytes)
 
-	header := t.genHeader(len(*body))
+	header := t.genHeader(len(body))
 
 	return t.encode(header, body)
 }
 
 // enter room数据
-func (t *token) enterRoom() *[]byte {
+func (t *token) enterRoom() []byte {
 	request := &acproto.ZtLiveCsEnterRoom{
 		EnterRoomAttach:      t.enterRoomAttach,
 		ClientLiveSdkVersion: clientLiveSdkVersion,
@@ -146,11 +146,11 @@ func (t *token) enterRoom() *[]byte {
 	requestBytes, err := proto.Marshal(request)
 	checkErr(err)
 
-	cmd := t.genCommand("ZtLiveCsEnterRoom", &requestBytes)
+	cmd := t.genCommand("ZtLiveCsEnterRoom", requestBytes)
 
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
 
-	header := t.genHeader(len(*body))
+	header := t.genHeader(len(body))
 	t.Lock()
 	t.seqID++
 	t.Unlock()
@@ -159,7 +159,7 @@ func (t *token) enterRoom() *[]byte {
 }
 
 // keep alive数据
-func (t *token) keepAlive(increase bool) *[]byte {
+func (t *token) keepAlive(increase bool) []byte {
 	keepAlive := &acproto.KeepAliveRequest{
 		PresenceStatus:  acproto.RegisterRequest_kPresenceOnline,
 		AppActiveStatus: acproto.RegisterRequest_kAppInForeground,
@@ -167,9 +167,9 @@ func (t *token) keepAlive(increase bool) *[]byte {
 	keepAliveBytes, err := proto.Marshal(keepAlive)
 	checkErr(err)
 
-	body := t.genPayload("Basic.KeepAlive", &keepAliveBytes)
+	body := t.genPayload("Basic.KeepAlive", keepAliveBytes)
 
-	header := t.genHeader(len(*body))
+	header := t.genHeader(len(body))
 
 	if increase {
 		t.seqID++
@@ -179,10 +179,10 @@ func (t *token) keepAlive(increase bool) *[]byte {
 }
 
 // push message数据
-func (t *token) pushMessage() *[]byte {
+func (t *token) pushMessage() []byte {
 	body := t.genPayload("Push.ZtLiveInteractive.Message", nil)
 
-	header := t.genHeader((len(*body)))
+	header := t.genHeader((len(body)))
 	t.Lock()
 	header.SeqId = t.headerSeqID
 	t.Unlock()
@@ -191,7 +191,7 @@ func (t *token) pushMessage() *[]byte {
 }
 
 // heartbeat数据
-func (t *token) heartbeat() *[]byte {
+func (t *token) heartbeat() []byte {
 	heartbeat := &acproto.ZtLiveCsHeartbeat{
 		ClientTimestampMs: time.Now().UnixNano() / 1e6,
 		Sequence:          t.heartbeatSeqID,
@@ -199,11 +199,11 @@ func (t *token) heartbeat() *[]byte {
 	heartbeatBytes, err := proto.Marshal(heartbeat)
 	checkErr(err)
 
-	cmd := t.genCommand("ZtLiveCsHeartbeat", &heartbeatBytes)
+	cmd := t.genCommand("ZtLiveCsHeartbeat", heartbeatBytes)
 
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
 
-	header := t.genHeader(len(*body))
+	header := t.genHeader(len(body))
 	t.heartbeatSeqID++
 	t.Lock()
 	t.seqID++
@@ -213,12 +213,12 @@ func (t *token) heartbeat() *[]byte {
 }
 
 // user exit数据
-func (t *token) userExit() *[]byte {
+func (t *token) userExit() []byte {
 	cmd := t.genCommand("ZtLiveCsUserExit", nil)
 
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
 
-	header := t.genHeader(len(*body))
+	header := t.genHeader(len(body))
 	t.Lock()
 	t.seqID++
 	t.Unlock()
@@ -227,7 +227,7 @@ func (t *token) userExit() *[]byte {
 }
 
 // 将header和body按照格式组合起来
-func (t *token) encode(header *acproto.PacketHeader, body *[]byte) *[]byte {
+func (t *token) encode(header *acproto.PacketHeader, body []byte) []byte {
 	headerBytes, err := proto.Marshal(header)
 	checkErr(err)
 
@@ -244,44 +244,44 @@ func (t *token) encode(header *acproto.PacketHeader, body *[]byte) *[]byte {
 	checkErr(err)
 	err = binary.Write(buf, binary.BigEndian, uint32(len(headerBytes)))
 	checkErr(err)
-	err = binary.Write(buf, binary.BigEndian, uint32(len(*encrypted)))
+	err = binary.Write(buf, binary.BigEndian, uint32(len(encrypted)))
 	checkErr(err)
 	buf.Write(headerBytes)
-	buf.Write(*encrypted)
+	buf.Write(encrypted)
 
 	b := buf.Bytes()
-	return &b
+	return b
 }
 
 // 根据密钥加密body，加密方式为aes-128-cbc
-func encrypt(key string, body *[]byte) *[]byte {
+func encrypt(key string, body []byte) []byte {
 	keyBytes, err := base64.StdEncoding.DecodeString(key)
 	checkErr(err)
 	body = padding(body, aes.BlockSize)
 
 	block, err := aes.NewCipher(keyBytes)
 	checkErr(err)
-	cipherText := make([]byte, len(*body))
+	cipherText := make([]byte, len(body))
 	iv := make([]byte, aes.BlockSize)
 	_, err = io.ReadFull(rand.Reader, iv)
 	checkErr(err)
 	mode := cipher.NewCBCEncrypter(block, iv)
-	mode.CryptBlocks(cipherText, *body)
+	mode.CryptBlocks(cipherText, body)
 
 	encrypted := append(iv, cipherText...)
-	return &encrypted
+	return encrypted
 }
 
 // aes-128-cbc的padding（PKCS #7）
-func padding(cipherText *[]byte, blockSize int) *[]byte {
-	padding := (blockSize - len(*cipherText)%blockSize)
+func padding(cipherText []byte, blockSize int) []byte {
+	padding := (blockSize - len(cipherText)%blockSize)
 	padText := bytes.Repeat([]byte{byte(padding)}, padding)
-	text := append(*cipherText, padText...)
-	return &text
+	text := append(cipherText, padText...)
+	return text
 }
 
 // 将body/payload从数据中分离出来
-func (t *token) decode(byt *[]byte) (downstream *acproto.DownstreamPayload, e error) {
+func (t *token) decode(byt []byte) (downstream *acproto.DownstreamPayload, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("decode() error: %w", err)
@@ -302,22 +302,20 @@ func (t *token) decode(byt *[]byte) (downstream *acproto.DownstreamPayload, e er
 		payload = decrypt(payloadBytes, key)
 	}
 
-	if len(*payload) != int(header.DecodedPayloadLen) {
-		panicln(fmt.Errorf("decode(): the length of body/payload is wrong: payload %d header %d", len(*payload), header.DecodedPayloadLen))
+	if len(payload) != int(header.DecodedPayloadLen) {
+		panicln(fmt.Errorf("decode(): the length of body/payload is wrong: payload %d header %d", len(payload), header.DecodedPayloadLen))
 	}
 
-	//payload = payload[:header.DecodedPayloadLen]
-
 	downstream = &acproto.DownstreamPayload{}
-	err := proto.Unmarshal(*payload, downstream)
+	err := proto.Unmarshal(payload, downstream)
 	checkErr(err)
 
 	return downstream, nil
 }
 
 // 分离header和body/payload
-func decodeResponse(byt *[]byte) (*acproto.PacketHeader, *[]byte) {
-	reader := bytes.NewReader(*byt)
+func decodeResponse(byt []byte) (*acproto.PacketHeader, []byte) {
+	reader := bytes.NewReader(byt)
 
 	// 具体数据格式看https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu
 	length := make([]byte, 4)
@@ -347,23 +345,23 @@ func decodeResponse(byt *[]byte) (*acproto.PacketHeader, *[]byte) {
 	err = proto.Unmarshal(headerBytes, header)
 	checkErr(err)
 
-	return header, &payloadBytes
+	return header, payloadBytes
 }
 
 // 解密数据，解密方式为aes-128-cbc
-func decrypt(byt *[]byte, key string) *[]byte {
+func decrypt(byt []byte, key string) []byte {
 	keyBytes, err := base64.StdEncoding.DecodeString(key)
 	checkErr(err)
 	block, err := aes.NewCipher(keyBytes)
 	checkErr(err)
 
-	if len(*byt) < aes.BlockSize {
+	if len(byt) < aes.BlockSize {
 		log.Println("decrypt(): Ciphertext block size is too short!")
 		return nil
 	}
 
-	iv := (*byt)[:aes.BlockSize]
-	cipherText := (*byt)[aes.BlockSize:]
+	iv := byt[:aes.BlockSize]
+	cipherText := byt[aes.BlockSize:]
 
 	if len(cipherText)%aes.BlockSize != 0 {
 		panicln(fmt.Errorf("decrypt(): cipherText is not a multiple of the block size"))
@@ -372,13 +370,13 @@ func decrypt(byt *[]byte, key string) *[]byte {
 	mode := cipher.NewCBCDecrypter(block, iv)
 	mode.CryptBlocks(cipherText, cipherText)
 
-	return unpadding(&cipherText)
+	return unpadding(cipherText)
 }
 
 // aes-128-cbc的unpadding（PKCS #7）
-func unpadding(text *[]byte) *[]byte {
-	length := len(*text)
-	unpadding := int((*text)[length-1])
-	t := (*text)[:(length - unpadding)]
-	return &t
+func unpadding(text []byte) []byte {
+	length := len(text)
+	unpadding := int(text[length-1])
+	t := text[:(length - unpadding)]
+	return t
 }

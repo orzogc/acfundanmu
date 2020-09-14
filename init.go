@@ -338,7 +338,7 @@ func (t *token) updateGiftList() (e error) {
 }
 
 // 获取直播间排名前50的在线观众信息列表
-func (t *token) watchingList() (watchList *[]WatchingUser, e error) {
+func (t *token) watchingList() (watchList []WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
@@ -407,7 +407,7 @@ func (t *token) watchingList() (watchList *[]WatchingUser, e error) {
 		watchingUserList[i] = w
 	}
 
-	return &watchingUserList, nil
+	return watchingUserList, nil
 }
 
 // 初始化

@@ -73,7 +73,7 @@ func (t *token) handleCommand(conn *fastws.Conn, stream *acproto.DownstreamPaylo
 		checkErr(err)
 		conn.CloseString("Unregister")
 	case "Push.ZtLiveInteractive.Message":
-		_, err := conn.WriteMessage(fastws.ModeBinary, *t.pushMessage())
+		_, err := conn.WriteMessage(fastws.ModeBinary, t.pushMessage())
 		checkErr(err)
 		message := &acproto.ZtLiveScMessage{}
 		err = proto.Unmarshal(stream.PayloadData, message)
@@ -108,7 +108,7 @@ func (t *token) handleCommand(conn *fastws.Conn, stream *acproto.DownstreamPaylo
 			t.Lock()
 			t.ticketIndex = (t.ticketIndex + 1) % len(t.tickets)
 			t.Unlock()
-			_, err = conn.WriteMessage(fastws.ModeBinary, *t.enterRoom())
+			_, err = conn.WriteMessage(fastws.ModeBinary, t.enterRoom())
 			checkErr(err)
 		default:
 			log.Printf("未知的message.MessageType：%s\npayload string:\n%s\npayload base64:\n%s\n",
