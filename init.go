@@ -145,11 +145,11 @@ func login(username, password string) (cookies []*fasthttp.Cookie, e error) {
 	return cookies, nil
 }
 
-// 初始化，获取相应的token，cookies为nil时为游客模式
-func (t *token) initialize() (e error) {
+// 获取相应的token
+func (t *token) getToken() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("initialize() error: %w", err)
+			e = fmt.Errorf("getToken() error: %w", err)
 		}
 	}()
 
@@ -405,4 +405,16 @@ func (t *token) watchingList() (watchList *[]WatchingUser, e error) {
 	}
 
 	return &watchingUserList, nil
+}
+
+// 初始化
+func (t *token) initialize(usernameAndPassword ...string) error {
+	if len(usernameAndPassword) == 2 && usernameAndPassword[0] != "" && usernameAndPassword[1] != "" {
+		cookies, err := login(usernameAndPassword[0], usernameAndPassword[1])
+		if err != nil {
+			return err
+		}
+		t.cookies = cookies
+	}
+	return t.getToken()
 }

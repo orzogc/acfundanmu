@@ -253,7 +253,7 @@ func (t *token) encode(header *acproto.PacketHeader, body *[]byte) *[]byte {
 	return &b
 }
 
-// 根据密钥加密body，加密方式为AES的CBC模式
+// 根据密钥加密body，加密方式为aes-128-cbc
 func encrypt(key string, body *[]byte) *[]byte {
 	keyBytes, err := base64.StdEncoding.DecodeString(key)
 	checkErr(err)
@@ -272,7 +272,7 @@ func encrypt(key string, body *[]byte) *[]byte {
 	return &encrypted
 }
 
-// AES的CBC模式的padding
+// aes-128-cbc的padding（PKCS #7）
 func padding(cipherText *[]byte, blockSize int) *[]byte {
 	padding := (blockSize - len(*cipherText)%blockSize)
 	padText := bytes.Repeat([]byte{byte(padding)}, padding)
@@ -350,7 +350,7 @@ func decodeResponse(byt *[]byte) (*acproto.PacketHeader, *[]byte) {
 	return header, &payloadBytes
 }
 
-// 解密数据，解密方式为AES的CBC模式
+// 解密数据，解密方式为aes-128-cbc
 func decrypt(byt *[]byte, key string) *[]byte {
 	keyBytes, err := base64.StdEncoding.DecodeString(key)
 	checkErr(err)
@@ -375,7 +375,7 @@ func decrypt(byt *[]byte, key string) *[]byte {
 	return unpadding(&cipherText)
 }
 
-// AES的CBC模式的unpadding
+// aes-128-cbc的unpadding（PKCS #7）
 func unpadding(text *[]byte) *[]byte {
 	length := len(*text)
 	unpadding := int((*text)[length-1])

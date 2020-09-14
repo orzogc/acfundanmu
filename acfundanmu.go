@@ -2,7 +2,10 @@ package acfundanmu
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"sync"
+	"time"
 
 	"github.com/Workiva/go-datastructures/queue"
 )
@@ -339,16 +342,19 @@ func Init(uid int64, usernameAndPassword ...string) (dq *DanmuQueue, e error) {
 	dq = new(DanmuQueue)
 	dq.t = new(token)
 	dq.t.uid = uid
-	if len(usernameAndPassword) == 2 && usernameAndPassword[0] != "" && usernameAndPassword[1] != "" {
-		cookies, err := login(usernameAndPassword[0], usernameAndPassword[1])
+	for retry := 0; retry < 3; retry++ {
+		err := dq.t.initialize(usernameAndPassword...)
 		if err != nil {
-			return nil, err
+			if retry == 2 {
+				log.Println("初始化失败，停止获取弹幕")
+				return nil, fmt.Errorf("Init(): 初始化失败，主播可能不在直播：%w", err)
+			}
+			log.Printf("初始化出现错误：%v", err)
+			log.Println("尝试重新初始化")
+		} else {
+			break
 		}
-		dq.t.cookies = cookies
-	}
-	err := dq.t.initialize()
-	if err != nil {
-		return nil, err
+		time.Sleep(10 * time.Second)
 	}
 	return dq, nil
 }
