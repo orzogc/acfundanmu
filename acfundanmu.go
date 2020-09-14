@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/Workiva/go-datastructures/queue"
+	"github.com/valyala/fasthttp"
 )
 
 // 队列长度
@@ -340,8 +342,14 @@ type DanmuQueue struct {
 // Init 初始化，uid为主播的uid，usernameAndPassword参数可以依次传递AcFun帐号邮箱和密码以登陆AcFun，没有时为游客模式，目前登陆模式和游客模式并没有区别
 func Init(uid int64, usernameAndPassword ...string) (dq *DanmuQueue, e error) {
 	dq = new(DanmuQueue)
-	dq.t = new(token)
-	dq.t.uid = uid
+	dq.t = &token{
+		uid:      uid,
+		livePage: liveURL + strconv.FormatInt(uid, 10),
+		client: &fasthttp.Client{
+			ReadTimeout:  10 * time.Second,
+			WriteTimeout: 10 * time.Second,
+		},
+	}
 	for retry := 0; retry < 3; retry++ {
 		err := dq.t.initialize(usernameAndPassword...)
 		if err != nil {

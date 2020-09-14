@@ -55,6 +55,7 @@ type token struct {
 	gifts           map[int64]Giftdetail
 	uid             int64 // 主播uid
 	livePage        string
+	client          *fasthttp.Client
 	cookies         []*fasthttp.Cookie
 	medalParser     fastjson.ParserPool
 	watchParser     fastjson.ParserPool

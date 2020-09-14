@@ -3,13 +3,13 @@ package acfundanmu
 import (
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
 
 type httpClient struct {
+	client      *fasthttp.Client
 	url         string
 	body        []byte
 	method      string
@@ -62,11 +62,7 @@ func (c *httpClient) httpRequest() (response *fasthttp.Response, e error) {
 		req.Header.SetReferer(c.referer)
 	}
 
-	client := &fasthttp.Client{
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
-	err := client.Do(req, resp)
+	err := c.client.Do(req, resp)
 	checkErr(err)
 
 	response = fasthttp.AcquireResponse()
@@ -76,9 +72,10 @@ func (c *httpClient) httpRequest() (response *fasthttp.Response, e error) {
 }
 
 // 登陆acfun账号
-func login(username, password string) (cookies []*fasthttp.Cookie, e error) {
+func (t *token) login(username, password string) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
+			t.cookies = nil
 			e = fmt.Errorf("login() error: %w", err)
 		}
 	}()
@@ -95,6 +92,7 @@ func login(username, password string) (cookies []*fasthttp.Cookie, e error) {
 	form.Set("captcha", "")
 
 	client := &httpClient{
+		client:      t.client,
 		url:         acfunSignInURL,
 		body:        form.QueryString(),
 		method:      "POST",
@@ -115,12 +113,13 @@ func login(username, password string) (cookies []*fasthttp.Cookie, e error) {
 	resp.Header.VisitAllCookie(func(key, value []byte) {
 		cookie := fasthttp.AcquireCookie()
 		err = cookie.ParseBytes(value)
-		cookies = append(cookies, cookie)
+		t.cookies = append(t.cookies, cookie)
 	})
 
 	userID := v.GetInt("userId")
 	content := fmt.Sprintf(safetyIDContent, userID)
 	client = &httpClient{
+		client: t.client,
 		url:    acfunSafetyIDURL,
 		body:   []byte(content),
 		method: "POST",
@@ -140,9 +139,9 @@ func login(username, password string) (cookies []*fasthttp.Cookie, e error) {
 	cookie.SetKey("safety_id")
 	cookie.SetValueBytes(v.GetStringBytes("safety_id"))
 	cookie.SetDomain(".acfun.cn")
-	cookies = append(cookies, cookie)
+	t.cookies = append(t.cookies, cookie)
 
-	return cookies, nil
+	return nil
 }
 
 // 获取相应的token
@@ -153,9 +152,8 @@ func (t *token) getToken() (e error) {
 		}
 	}()
 
-	t.livePage = liveURL + strconv.FormatInt(t.uid, 10)
-
 	client := &httpClient{
+		client: t.client,
 		url:    t.livePage,
 		method: "GET",
 	}
@@ -178,6 +176,7 @@ func (t *token) getToken() (e error) {
 	if len(t.cookies) != 0 {
 		form.Set(sid, midground)
 		client = &httpClient{
+			client:  t.client,
 			url:     getTokenURL,
 			body:    form.QueryString(),
 			method:  "POST",
@@ -186,6 +185,7 @@ func (t *token) getToken() (e error) {
 	} else {
 		form.Set(sid, visitor)
 		client = &httpClient{
+			client:  t.client,
 			url:     loginURL,
 			body:    form.QueryString(),
 			method:  "POST",
@@ -225,6 +225,7 @@ func (t *token) getToken() (e error) {
 	form.Set("authorId", strconv.FormatInt(t.uid, 10))
 	form.Set("pullStreamType", "FLV")
 	client = &httpClient{
+		client:      t.client,
 		url:         play,
 		body:        form.QueryString(),
 		method:      "POST",
@@ -295,6 +296,7 @@ func (t *token) updateGiftList() (e error) {
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
 	form.Set("liveId", t.liveID)
 	client := &httpClient{
+		client:      t.client,
 		url:         giftList,
 		body:        form.QueryString(),
 		method:      "POST",
@@ -359,6 +361,7 @@ func (t *token) watchingList() (watchList *[]WatchingUser, e error) {
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
 	form.Set("liveId", t.liveID)
 	client := &httpClient{
+		client:      t.client,
 		url:         watchURL,
 		body:        form.QueryString(),
 		method:      "POST",
@@ -410,11 +413,10 @@ func (t *token) watchingList() (watchList *[]WatchingUser, e error) {
 // 初始化
 func (t *token) initialize(usernameAndPassword ...string) error {
 	if len(usernameAndPassword) == 2 && usernameAndPassword[0] != "" && usernameAndPassword[1] != "" {
-		cookies, err := login(usernameAndPassword[0], usernameAndPassword[1])
+		err := t.login(usernameAndPassword[0], usernameAndPassword[1])
 		if err != nil {
 			return err
 		}
-		t.cookies = cookies
 	}
 	return t.getToken()
 }
