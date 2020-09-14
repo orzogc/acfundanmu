@@ -63,10 +63,10 @@ func (c *httpClient) httpRequest() (response *fasthttp.Response, e error) {
 	}
 
 	client := &fasthttp.Client{
-		ReadTimeout:  20 * time.Second,
-		WriteTimeout: 20 * time.Second,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
-	err := client.DoTimeout(req, resp, 10*time.Second)
+	err := client.Do(req, resp)
 	checkErr(err)
 
 	response = fasthttp.AcquireResponse()
