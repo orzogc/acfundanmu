@@ -2,9 +2,9 @@ package acfundanmu
 
 import (
 	"log"
+	"net/http"
 	"sync"
 
-	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
 
@@ -55,7 +55,7 @@ type token struct {
 	gifts           map[int64]Giftdetail
 	uid             int64 // 主播uid
 	livePage        string
-	cookies         []*fasthttp.Cookie
+	cookies         []*http.Cookie
 	medalParser     fastjson.ParserPool
 	watchParser     fastjson.ParserPool
 }
