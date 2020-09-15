@@ -339,8 +339,16 @@ type DanmuQueue struct {
 	t    *token       // 令牌相关信息
 }
 
-// Init 初始化，uid为主播的uid，usernameAndPassword参数可以依次传递AcFun帐号邮箱和密码以登陆AcFun，没有时为游客模式，目前登陆模式和游客模式并没有区别
-func Init(uid int64, usernameAndPassword ...string) (dq *DanmuQueue, e error) {
+// Login 登陆AcFun帐号
+func Login(username, password string) (cookies [][]byte, e error) {
+	if username == "" || password == "" {
+		return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
+	}
+	return login(username, password)
+}
+
+// Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有区别
+func Init(uid int64, cookies ...[][]byte) (dq *DanmuQueue, e error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
 		uid:      uid,
@@ -350,8 +358,12 @@ func Init(uid int64, usernameAndPassword ...string) (dq *DanmuQueue, e error) {
 			WriteTimeout: 10 * time.Second,
 		},
 	}
+	if len(cookies) == 1 && len(cookies[0]) != 0 {
+		dq.t.cookies = cookies[0]
+	}
+
 	for retry := 0; retry < 3; retry++ {
-		err := dq.t.initialize(usernameAndPassword...)
+		err := dq.t.getToken()
 		if err != nil {
 			if retry == 2 {
 				log.Println("初始化失败，停止获取弹幕")
@@ -364,6 +376,7 @@ func Init(uid int64, usernameAndPassword ...string) (dq *DanmuQueue, e error) {
 		}
 		time.Sleep(10 * time.Second)
 	}
+
 	return dq, nil
 }
 
