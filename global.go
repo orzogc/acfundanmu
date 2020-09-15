@@ -56,7 +56,7 @@ type token struct {
 	uid             int64 // 主播uid
 	livePage        string
 	client          *fasthttp.Client
-	cookies         [][]byte
+	cookies         []string
 	medalParser     fastjson.ParserPool
 	watchParser     fastjson.ParserPool
 }

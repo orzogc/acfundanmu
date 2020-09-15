@@ -69,7 +69,7 @@ func (c *httpClient) httpRequest() (resp *fasthttp.Response, e error) {
 }
 
 // 登陆acfun账号
-func login(username, password string) (cookies [][]byte, e error) {
+func login(username, password string) (cookies []string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			cookies = nil
@@ -113,9 +113,7 @@ func login(username, password string) (cookies [][]byte, e error) {
 	}
 
 	resp.Header.VisitAllCookie(func(key, value []byte) {
-		var cookie []byte
-		cookie = append(cookie, value...)
-		cookies = append(cookies, cookie)
+		cookies = append(cookies, string(value))
 	})
 
 	userID := v.GetInt("userId")
@@ -142,9 +140,7 @@ func login(username, password string) (cookies [][]byte, e error) {
 	cookie.SetKey("safety_id")
 	cookie.SetValueBytes(v.GetStringBytes("safety_id"))
 	cookie.SetDomain(".acfun.cn")
-	var safetyID []byte
-	safetyID = append(safetyID, cookie.Cookie()...)
-	cookies = append(cookies, safetyID)
+	cookies = append(cookies, cookie.String())
 
 	return cookies, nil
 }
@@ -185,7 +181,7 @@ func (t *token) getToken() (e error) {
 		for _, c := range t.cookies {
 			cookie := fasthttp.AcquireCookie()
 			defer fasthttp.ReleaseCookie(cookie)
-			err = cookie.ParseBytes(c)
+			err = cookie.Parse(c)
 			checkErr(err)
 			cookies = append(cookies, cookie)
 		}
