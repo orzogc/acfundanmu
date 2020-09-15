@@ -24,12 +24,17 @@ func (c *httpClient) httpRequest() (resp *fasthttp.Response, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("httpRequest() error: %w", err)
+			fasthttp.ReleaseResponse(resp)
 		}
 	}()
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 	resp = fasthttp.AcquireResponse()
+
+	if c.client == nil {
+		panicln(fmt.Errorf("client不能为nil"))
+	}
 
 	if c.url != "" {
 		req.SetRequestURI(c.url)
