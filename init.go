@@ -20,10 +20,10 @@ type httpClient struct {
 }
 
 // http请求，调用后需要 defer fasthttp.ReleaseResponse(resp)
-func (c *httpClient) httpRequest() (resp *fasthttp.Response, e error) {
+func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("httpRequest() error: %w", err)
+			e = fmt.Errorf("doRequest() error: %w", err)
 			fasthttp.ReleaseResponse(resp)
 		}
 	}()
@@ -105,7 +105,7 @@ func login(username, password string) (cookies []string, e error) {
 		method:      "POST",
 		contentType: "application/x-www-form-urlencoded",
 	}
-	resp, err := client.httpRequest()
+	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -129,7 +129,7 @@ func login(username, password string) (cookies []string, e error) {
 		body:   []byte(content),
 		method: "POST",
 	}
-	resp, err = client.httpRequest()
+	resp, err = client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body = resp.Body()
@@ -163,7 +163,7 @@ func (t *token) getToken() (e error) {
 		url:    t.livePage,
 		method: "GET",
 	}
-	resp, err := client.httpRequest()
+	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 
@@ -208,7 +208,7 @@ func (t *token) getToken() (e error) {
 		}
 	}
 	client.contentType = "application/x-www-form-urlencoded"
-	resp, err = client.httpRequest()
+	resp, err = client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -247,7 +247,7 @@ func (t *token) getToken() (e error) {
 		contentType: "application/x-www-form-urlencoded",
 		referer:     t.livePage, // 会验证Referer
 	}
-	resp, err = client.httpRequest()
+	resp, err = client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body = resp.Body()
@@ -318,7 +318,7 @@ func (t *token) updateGiftList() (e error) {
 		contentType: "application/x-www-form-urlencoded",
 		referer:     t.livePage,
 	}
-	resp, err := client.httpRequest()
+	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -383,7 +383,7 @@ func (t *token) watchingList() (watchList []WatchingUser, e error) {
 		contentType: "application/x-www-form-urlencoded",
 		referer:     t.livePage,
 	}
-	resp, err := client.httpRequest()
+	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
