@@ -278,10 +278,7 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, e error) {
 	dq.t = &token{
 		uid:      uid,
 		livePage: liveURL + strconv.FormatInt(uid, 10),
-		client: &fasthttp.Client{
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
-		},
+		client:   &fasthttp.Client{},
 	}
 	if len(cookies) == 1 && len(cookies[0]) != 0 {
 		dq.t.cookies = cookies[0]
