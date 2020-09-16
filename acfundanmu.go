@@ -279,8 +279,9 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, e error) {
 		uid:      uid,
 		livePage: liveURL + strconv.FormatInt(uid, 10),
 		client: &fasthttp.Client{
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
+			MaxIdleConnDuration: 90 * time.Second,
+			ReadTimeout:         10 * time.Second,
+			WriteTimeout:        10 * time.Second,
 		},
 	}
 	if len(cookies) == 1 && len(cookies[0]) != 0 {
