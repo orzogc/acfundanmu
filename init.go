@@ -3,6 +3,7 @@ package acfundanmu
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
@@ -92,7 +93,10 @@ func login(username, password string) (cookies []string, e error) {
 	form.Set("key", "")
 	form.Set("captcha", "")
 
-	c := &fasthttp.Client{}
+	c := &fasthttp.Client{
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 
 	client := &httpClient{
 		client:      c,
