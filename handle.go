@@ -118,11 +118,12 @@ func (t *token) handleCommand(conn *fastws.Conn, stream *acproto.DownstreamPaylo
 		}
 	case "Push.Message":
 		// AcFun帐号收到的私信信息
-	case "Push.SyncSession":
 	case "Push.DataUpdate":
+	case "Push.SyncSession":
+	case "Push.acfun":
 	default:
 		if stream.ErrorCode > 0 {
-			log.Println("Error: ", stream.ErrorCode, stream.ErrorMsg)
+			log.Println("Stream Error:", stream.ErrorCode, stream.ErrorMsg)
 			if stream.ErrorCode == 10018 {
 				t.wsStop(conn, "Log out")
 			}

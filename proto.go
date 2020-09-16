@@ -72,7 +72,7 @@ func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 	return header
 }
 
-// register数据
+// Register数据
 func (t *token) register() []byte {
 	request := &acproto.RegisterRequest{
 		AppInfo: &acproto.AppInfo{
@@ -109,20 +109,16 @@ func (t *token) register() []byte {
 	return t.encode(header, body)
 }
 
-// unregister数据
+// Unregister数据
 func (t *token) unregister() []byte {
-	//unregister := &acproto.UnregisterRequest{}
-	//unregisterBytes, err := proto.Marshal(unregister)
-	//checkErr(err)
-
-	body := t.genPayload("Basic.Ping", nil)
+	body := t.genPayload("Basic.Unregister", nil)
 
 	header := t.genHeader(len(body))
 
 	return t.encode(header, body)
 }
 
-// ping数据
+// Ping数据
 func (t *token) ping() []byte {
 	ping := &acproto.PingRequest{
 		PingType: acproto.PingRequest_kPostRegister,
@@ -137,7 +133,7 @@ func (t *token) ping() []byte {
 	return t.encode(header, body)
 }
 
-// enter room数据
+// EnterRoom数据
 func (t *token) enterRoom() []byte {
 	request := &acproto.ZtLiveCsEnterRoom{
 		EnterRoomAttach:      t.enterRoomAttach,
@@ -158,7 +154,7 @@ func (t *token) enterRoom() []byte {
 	return t.encode(header, body)
 }
 
-// keep alive数据
+// KeepAlive数据
 func (t *token) keepAlive(increase bool) []byte {
 	keepAlive := &acproto.KeepAliveRequest{
 		PresenceStatus:  acproto.RegisterRequest_kPresenceOnline,
@@ -178,7 +174,7 @@ func (t *token) keepAlive(increase bool) []byte {
 	return t.encode(header, body)
 }
 
-// push message数据
+// Push Message数据
 func (t *token) pushMessage() []byte {
 	body := t.genPayload("Push.ZtLiveInteractive.Message", nil)
 
@@ -190,7 +186,7 @@ func (t *token) pushMessage() []byte {
 	return t.encode(header, body)
 }
 
-// heartbeat数据
+// Heartbeat数据
 func (t *token) heartbeat() []byte {
 	heartbeat := &acproto.ZtLiveCsHeartbeat{
 		ClientTimestampMs: time.Now().UnixNano() / 1e6,
@@ -212,7 +208,7 @@ func (t *token) heartbeat() []byte {
 	return t.encode(header, body)
 }
 
-// user exit数据
+// UserExit数据
 func (t *token) userExit() []byte {
 	cmd := t.genCommand("ZtLiveCsUserExit", nil)
 
