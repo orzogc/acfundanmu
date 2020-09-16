@@ -245,7 +245,7 @@ func (t *token) getToken() (e error) {
 		body:        form.QueryString(),
 		method:      "POST",
 		contentType: "application/x-www-form-urlencoded",
-		referer:     t.livePage, // 会验证Referer
+		referer:     t.livePage, // 会验证 Referer
 	}
 	resp, err = client.doRequest()
 	checkErr(err)
@@ -316,7 +316,6 @@ func (t *token) updateGiftList() (e error) {
 		body:        form.QueryString(),
 		method:      "POST",
 		contentType: "application/x-www-form-urlencoded",
-		referer:     t.livePage,
 	}
 	resp, err := client.doRequest()
 	checkErr(err)
@@ -381,7 +380,6 @@ func (t *token) watchingList() (watchList []WatchingUser, e error) {
 		body:        form.QueryString(),
 		method:      "POST",
 		contentType: "application/x-www-form-urlencoded",
-		referer:     t.livePage,
 	}
 	resp, err := client.doRequest()
 	checkErr(err)
