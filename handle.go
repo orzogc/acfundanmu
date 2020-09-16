@@ -27,7 +27,7 @@ func (t *token) handleCommand(conn *fastws.Conn, stream *acproto.DownstreamPaylo
 	}()
 
 	if stream == nil {
-		panicln(fmt.Errorf("stream为nil"))
+		panic(fmt.Errorf("stream为nil"))
 	}
 
 	switch stream.Command {

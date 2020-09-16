@@ -45,7 +45,7 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, hb chan int6
 func (dq *DanmuQueue) wsStart(ctx context.Context) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Printf("wsStart() error: %v", err)
+			log.Printf("Recovering from panic in wsStart(), the error is:  %v", err)
 			log.Println("停止获取弹幕")
 		}
 	}()

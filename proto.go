@@ -303,7 +303,7 @@ func (t *token) decode(byt []byte) (downstream *acproto.DownstreamPayload, e err
 	}
 
 	if len(payload) != int(header.DecodedPayloadLen) {
-		panicln(fmt.Errorf("decode(): the length of body/payload is wrong: payload %d header %d", len(payload), header.DecodedPayloadLen))
+		panic(fmt.Errorf("the length of body/payload is wrong: payload %d header %d", len(payload), header.DecodedPayloadLen))
 	}
 
 	downstream = &acproto.DownstreamPayload{}
@@ -364,7 +364,7 @@ func decrypt(byt []byte, key string) []byte {
 	cipherText := byt[aes.BlockSize:]
 
 	if len(cipherText)%aes.BlockSize != 0 {
-		panicln(fmt.Errorf("decrypt(): cipherText is not a multiple of the block size"))
+		panic(fmt.Errorf("decrypt(): cipherText is not a multiple of the block size"))
 	}
 
 	mode := cipher.NewCBCDecrypter(block, iv)

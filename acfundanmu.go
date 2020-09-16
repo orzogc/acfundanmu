@@ -292,7 +292,7 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, e error) {
 		if err != nil {
 			if retry == 2 {
 				log.Println("初始化失败，停止获取弹幕")
-				return nil, fmt.Errorf("Init(): 初始化失败，主播可能不在直播：%w", err)
+				return nil, fmt.Errorf("Init() error: 初始化失败，主播可能不在直播：%w", err)
 			}
 			log.Printf("初始化出现错误：%v", err)
 			log.Println("尝试重新初始化")

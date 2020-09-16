@@ -1,7 +1,6 @@
 package acfundanmu
 
 import (
-	"log"
 	"sync"
 
 	"github.com/valyala/fasthttp"
@@ -64,12 +63,6 @@ type token struct {
 // 检查错误
 func checkErr(err error) {
 	if err != nil {
-		panicln(err)
+		panic(err)
 	}
-}
-
-// 打印错误然后panic
-func panicln(err error) {
-	log.Println(err)
-	panic(err)
 }
