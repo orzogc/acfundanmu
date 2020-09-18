@@ -103,7 +103,7 @@ func login(username, password string) (cookies []string, e error) {
 		url:         acfunSignInURL,
 		body:        form.QueryString(),
 		method:      "POST",
-		contentType: "application/x-www-form-urlencoded",
+		contentType: formContentType,
 	}
 	resp, err := client.doRequest()
 	checkErr(err)
@@ -191,23 +191,21 @@ func (t *token) getToken() (e error) {
 			cookies = append(cookies, cookie)
 		}
 		client = &httpClient{
-			client:  t.client,
 			url:     getTokenURL,
 			body:    form.QueryString(),
-			method:  "POST",
 			cookies: cookies,
 		}
 	} else {
 		form.Set(sid, visitor)
 		client = &httpClient{
-			client:  t.client,
 			url:     loginURL,
 			body:    form.QueryString(),
-			method:  "POST",
 			cookies: []*fasthttp.Cookie{didCookie},
 		}
 	}
-	client.contentType = "application/x-www-form-urlencoded"
+	client.client = t.client
+	client.method = "POST"
+	client.contentType = formContentType
 	resp, err = client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
@@ -244,7 +242,7 @@ func (t *token) getToken() (e error) {
 		url:         play,
 		body:        form.QueryString(),
 		method:      "POST",
-		contentType: "application/x-www-form-urlencoded",
+		contentType: formContentType,
 		referer:     t.livePage, // 会验证 Referer
 	}
 	resp, err = client.doRequest()
@@ -315,7 +313,7 @@ func (t *token) updateGiftList() (e error) {
 		url:         giftList,
 		body:        form.QueryString(),
 		method:      "POST",
-		contentType: "application/x-www-form-urlencoded",
+		contentType: formContentType,
 	}
 	resp, err := client.doRequest()
 	checkErr(err)
@@ -344,6 +342,11 @@ func (t *token) updateGiftList() (e error) {
 			MagicFaceID:   gift.GetInt("magicFaceId"),
 			Description:   string(gift.GetStringBytes("description")),
 			RedpackPrice:  gift.GetInt("redpackPrice"),
+		}
+		list := gift.GetArray("allowBatchSendSizeList")
+		g.AllowBatchSendSizeList = make([]int, len(list))
+		for i, num := range list {
+			g.AllowBatchSendSizeList[i] = num.GetInt()
 		}
 		t.gifts[g.GiftID] = g
 	}
@@ -379,7 +382,7 @@ func (t *token) watchingList() (watchList []WatchingUser, e error) {
 		url:         watchURL,
 		body:        form.QueryString(),
 		method:      "POST",
-		contentType: "application/x-www-form-urlencoded",
+		contentType: formContentType,
 	}
 	resp, err := client.doRequest()
 	checkErr(err)

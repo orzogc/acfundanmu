@@ -36,6 +36,8 @@ const (
 	clientLiveSdkVersion = "kwai-acfun-live-link"
 
 	retryCount uint32 = 1
+
+	formContentType = "application/x-www-form-urlencoded"
 )
 
 type token struct {

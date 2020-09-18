@@ -87,18 +87,19 @@ const (
 
 // Giftdetail 就是礼物的详细信息
 type Giftdetail struct {
-	GiftID        int64  // 礼物ID
-	GiftName      string // 礼物名字
-	ARLiveName    string // 不为空时礼物属于虚拟偶像区的特殊礼物
-	PayWalletType int    // 1为非免费礼物，2为免费礼物
-	Price         int    // 礼物价格，非免费礼物时单位为ac币，免费礼物（香蕉）时为1
-	WebpPic       string // 礼物的webp格式图片（动图）
-	PngPic        string // 礼物的png格式图片（大）
-	SmallPngPic   string // 礼物的png格式图片（小）
-	CanCombo      bool   // 是否能连击，一般免费礼物（香蕉）不能连击，其余能连击
-	MagicFaceID   int
-	Description   string // 礼物的描述
-	RedpackPrice  int    // 礼物红包价格总额，单位为AC币
+	GiftID                 int64  // 礼物ID
+	GiftName               string // 礼物名字
+	ARLiveName             string // 不为空时礼物属于虚拟偶像区的特殊礼物
+	PayWalletType          int    // 1为非免费礼物，2为免费礼物
+	Price                  int    // 礼物价格，非免费礼物时单位为ac币，免费礼物（香蕉）时为1
+	WebpPic                string // 礼物的webp格式图片（动图）
+	PngPic                 string // 礼物的png格式图片（大）
+	SmallPngPic            string // 礼物的png格式图片（小）
+	AllowBatchSendSizeList []int  // 网页或APP单次能够赠送的礼物数量列表
+	CanCombo               bool   // 是否能连击，一般免费礼物（香蕉）不能连击，其余能连击
+	MagicFaceID            int
+	Description            string // 礼物的描述
+	RedpackPrice           int    // 礼物红包价格总额，单位为AC币
 }
 
 // DrawPoint 绘制礼物的点？
@@ -188,8 +189,8 @@ type ThrowBanana struct {
 type Gift struct {
 	DanmuCommon
 	Giftdetail                   // 礼物详细信息
-	Count                 int32  // 礼物数量
-	Combo                 int32  // 礼物连击数量
+	Count                 int32  // 礼物单次赠送的数量，礼物总数是Count * Combo
+	Combo                 int32  // 礼物连击数量，礼物总数是Count * Combo
 	Value                 int64  // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID               string // 礼物连击ID
 	SlotDisplayDurationMs int64  // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
