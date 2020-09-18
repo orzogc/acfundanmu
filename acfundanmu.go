@@ -265,15 +265,31 @@ type DanmuQueue struct {
 }
 
 // Login 登陆AcFun帐号
-func Login(username, password string) (cookies []string, e error) {
+func Login(username, password string) (cookies []string, err error) {
 	if username == "" || password == "" {
 		return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
 	}
-	return login(username, password)
+
+	for retry := 0; retry < 3; retry++ {
+		cookies, err = login(username, password)
+		if err != nil {
+			if retry == 2 {
+				log.Printf("登陆AcFun帐号失败：%v", err)
+				return nil, fmt.Errorf("Login() error: 登陆AcFun帐号失败：%w", err)
+			}
+			log.Printf("登陆AcFun帐号出现错误：%v", err)
+			log.Println("尝试重新登陆AcFun帐号")
+		} else {
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
+
+	return cookies, nil
 }
 
 // Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有区别
-func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, e error) {
+func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
 		uid:      uid,
@@ -289,10 +305,10 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, e error) {
 	}
 
 	for retry := 0; retry < 3; retry++ {
-		err := dq.t.getToken()
+		err = dq.t.getToken()
 		if err != nil {
 			if retry == 2 {
-				log.Println("初始化失败，停止获取弹幕")
+				log.Printf("初始化失败，停止获取弹幕：%v", err)
 				return nil, fmt.Errorf("Init() error: 初始化失败，主播可能不在直播：%w", err)
 			}
 			log.Printf("初始化出现错误：%v", err)
