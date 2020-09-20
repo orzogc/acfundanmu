@@ -249,7 +249,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 					// 礼物列表应该不会在直播中途改变，但以防万一
 					g, ok := t.gifts[gift.GiftId]
 					if !ok {
-						g = Giftdetail{
+						g = GiftDetail{
 							GiftID:   gift.GiftId,
 							GiftName: "未知礼物",
 						}
@@ -262,7 +262,7 @@ func (t *token) handleActionSignal(payload *[]byte, q *queue.Queue) {
 								Nickname: gift.User.Nickname,
 							},
 						},
-						Giftdetail:            g,
+						GiftDetail:            g,
 						Count:                 gift.Count,
 						Combo:                 gift.Combo,
 						Value:                 gift.Value,
@@ -542,7 +542,7 @@ func handleNotifySignal(payload *[]byte, info *liveInfo) {
 	wg.Wait()
 }
 
-// 获取用户的头像、粉丝牌和房管类型
+// 获取用户的头像、守护徽章和房管类型
 func (t *token) getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
 	if len(userInfo.Avatar) != 0 {
 		user.Avatar = userInfo.Avatar[0].Url

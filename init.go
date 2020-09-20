@@ -94,8 +94,9 @@ func login(username, password string) (cookies []string, e error) {
 	form.Set("captcha", "")
 
 	c := &fasthttp.Client{
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		MaxIdleConnDuration: 90 * time.Second,
+		ReadTimeout:         10 * time.Second,
+		WriteTimeout:        10 * time.Second,
 	}
 
 	client := &httpClient{
@@ -305,9 +306,9 @@ func (t *token) updateGiftList() (e error) {
 		panic(fmt.Errorf("获取礼物列表失败，响应为 %s", string(body)))
 	}
 
-	t.gifts = make(map[int64]Giftdetail)
+	t.gifts = make(map[int64]GiftDetail)
 	for _, gift := range v.GetArray("data", "giftList") {
-		g := Giftdetail{
+		g := GiftDetail{
 			GiftID:        gift.GetInt64("giftId"),
 			GiftName:      string(gift.GetStringBytes("giftName")),
 			ARLiveName:    string(gift.GetStringBytes("arLiveName")),

@@ -84,8 +84,8 @@ const (
 	ChatEndAuthorHeartbeatTimeout
 )
 
-// Giftdetail 就是礼物的详细信息
-type Giftdetail struct {
+// GiftDetail 就是礼物的详细信息
+type GiftDetail struct {
 	GiftID                 int64  // 礼物ID
 	GiftName               string // 礼物名字
 	ARLiveName             string // 不为空时礼物属于虚拟偶像区的特殊礼物
@@ -121,15 +121,15 @@ type UserInfo struct {
 	UserID      int64       // 用户uid
 	Nickname    string      // 用户名字
 	Avatar      string      // 用户头像
-	Medal       MedalInfo   // 粉丝牌
+	Medal       MedalInfo   // 守护徽章
 	ManagerType ManagerType // 用户是否房管
 }
 
-// MedalInfo 就是粉丝牌信息
+// MedalInfo 就是守护徽章信息
 type MedalInfo struct {
 	UperID   int64  // UP主的uid
-	ClubName string // 粉丝牌名字
-	Level    int    // 粉丝牌等级
+	ClubName string // 守护徽章名字
+	Level    int    // 守护徽章等级
 }
 
 // RichTextUserInfo 富文本里的用户信息
@@ -187,7 +187,7 @@ type ThrowBanana struct {
 // Gift 用户赠送礼物的弹幕
 type Gift struct {
 	DanmuCommon
-	Giftdetail                   // 礼物详细信息
+	GiftDetail                   // 礼物详细信息
 	Count                 int32  // 礼物单次赠送的数量，礼物总数是Count * Combo
 	Combo                 int32  // 礼物连击数量，礼物总数是Count * Combo
 	Value                 int64  // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
@@ -249,7 +249,7 @@ type liveInfo struct {
 	RecentComment []Comment // APP进直播间时显示的最近发的弹幕
 }
 
-// DanmuQueue 就是弹幕的队列
+// DanmuQueue 就是直播间弹幕系统相关信息
 type DanmuQueue struct {
 	q    *queue.Queue // DanmuMessage的队列
 	info *liveInfo    // 直播间的相关信息状态

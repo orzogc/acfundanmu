@@ -59,7 +59,7 @@ type token struct {
 	heartbeatSeqID  int64
 	ticketIndex     int
 	deviceID        string
-	gifts           map[int64]Giftdetail
+	gifts           map[int64]GiftDetail
 	uid             int64 // 主播uid
 	livePage        string
 	client          *fasthttp.Client
