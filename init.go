@@ -355,6 +355,7 @@ func (t *token) fetchKuaiShouAPI(url string) (*fasthttp.Response, error) {
 		body:        form.QueryString(),
 		method:      "POST",
 		contentType: formContentType,
+		referer:     t.livePage,
 	}
 	return client.doRequest()
 }

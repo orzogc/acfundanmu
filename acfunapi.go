@@ -8,6 +8,21 @@ import (
 	"github.com/valyala/fastjson"
 )
 
+// WatchingUser 就是观看直播的用户的信息，目前没有Medal
+type WatchingUser struct {
+	UserInfo                      // 用户信息
+	AnonymousUser          bool   // 是否匿名用户
+	DisplaySendAmount      string // 赠送的全部礼物的价值，单位是ac币
+	CustomWatchingListData string // 用户的一些额外信息，格式为json
+}
+
+// Summary 就是直播的总结信息
+type Summary struct {
+	LiveDurationMs int64 // 直播时长，以毫秒为单位
+	LikeCount      int   // 点赞总数
+	WatchCount     int   // 观看直播的人数总数
+}
+
 // 获取直播间排名前50的在线观众信息列表
 func (t *token) watchingList() (watchList []WatchingUser, e error) {
 	defer func() {
@@ -58,8 +73,8 @@ func (t *token) watchingList() (watchList []WatchingUser, e error) {
 	return watchingUserList, nil
 }
 
-// 获取直播结束后的总结信息
-func (t *token) getEndSummary() (summary EndSummary, e error) {
+// 获取直播总结信息
+func (t *token) getSummary() (summary Summary, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getEndSummary() error: %w", err)
@@ -93,7 +108,7 @@ func (dq *DanmuQueue) GetWatchingList() ([]WatchingUser, error) {
 	return dq.t.watchingList()
 }
 
-// GetEndSummary 返回直播结束时的总结信息，需要在直播结束前调用Init()，直播结束后调用本函数，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetEndSummary() (EndSummary, error) {
-	return dq.t.getEndSummary()
+// GetSummary 返回直播总结信息，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetSummary() (Summary, error) {
+	return dq.t.getSummary()
 }

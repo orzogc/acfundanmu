@@ -203,14 +203,6 @@ type RichText struct {
 	Segments []interface{} // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
 }
 
-// WatchingUser 就是观看直播的用户的信息，目前没有Medal
-type WatchingUser struct {
-	UserInfo                      // 用户信息
-	AnonymousUser          bool   // 是否匿名用户
-	DisplaySendAmount      string // 赠送的全部礼物的价值，单位是ac币
-	CustomWatchingListData string // 用户的一些额外信息，格式为json
-}
-
 // TopUser 就是礼物榜在线前三，目前没有Medal和ManagerType
 type TopUser WatchingUser
 
@@ -262,13 +254,6 @@ type DanmuQueue struct {
 	q    *queue.Queue // DanmuMessage的队列
 	info *liveInfo    // 直播间的相关信息状态
 	t    *token       // 令牌相关信息
-}
-
-// EndSummary 就是直播结束后的总结信息
-type EndSummary struct {
-	LiveDurationMs int64 // 直播时长，以毫秒为单位
-	LikeCount      int   // 点赞总数
-	WatchCount     int   // 观看直播的人数总数
 }
 
 // Login 登陆AcFun帐号
