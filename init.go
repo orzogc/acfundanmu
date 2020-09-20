@@ -33,7 +33,11 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	resp = fasthttp.AcquireResponse()
 
 	if c.client == nil {
-		panic(fmt.Errorf("client不能为nil"))
+		c.client = &fasthttp.Client{
+			MaxIdleConnDuration: 90 * time.Second,
+			ReadTimeout:         10 * time.Second,
+			WriteTimeout:        10 * time.Second,
+		}
 	}
 
 	if c.url != "" {
@@ -183,13 +187,13 @@ func (t *token) getToken() (e error) {
 	defer fasthttp.ReleaseArgs(form)
 	if len(t.cookies) != 0 {
 		form.Set(sid, midground)
-		var cookies []*fasthttp.Cookie
-		for _, c := range t.cookies {
+		cookies := make([]*fasthttp.Cookie, len(t.cookies))
+		for i, c := range t.cookies {
 			cookie := fasthttp.AcquireCookie()
 			defer fasthttp.ReleaseCookie(cookie)
 			err = cookie.Parse(c)
 			checkErr(err)
-			cookies = append(cookies, cookie)
+			cookies[i] = cookie
 		}
 		client = &httpClient{
 			url:     getTokenURL,

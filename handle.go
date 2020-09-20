@@ -391,9 +391,9 @@ func (t *token) handleStateSignal(payload *[]byte, info *liveInfo) {
 							UserID:   user.UserInfo.UserId,
 							Nickname: user.UserInfo.Nickname,
 						},
-						AnonymousUser:          user.AnonymousUser,
-						DisplaySendAmount:      user.DisplaySendAmount,
-						CustomWatchingListData: user.CustomWatchingListData,
+						AnonymousUser:     user.AnonymousUser,
+						DisplaySendAmount: user.DisplaySendAmount,
+						CustomData:        user.CustomWatchingListData,
 					}
 					t.getMoreInfo(&u.UserInfo, user.UserInfo)
 					users[i] = u

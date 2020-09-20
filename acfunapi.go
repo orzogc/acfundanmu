@@ -3,7 +3,6 @@ package acfundanmu
 import (
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
@@ -11,11 +10,14 @@ import (
 
 // WatchingUser 就是观看直播的用户的信息，目前没有Medal
 type WatchingUser struct {
-	UserInfo                      // 用户信息
-	AnonymousUser          bool   // 是否匿名用户
-	DisplaySendAmount      string // 赠送的全部礼物的价值，单位是ac币
-	CustomWatchingListData string // 用户的一些额外信息，格式为json
+	UserInfo                 // 用户信息
+	AnonymousUser     bool   // 是否匿名用户
+	DisplaySendAmount string // 赠送的全部礼物的价值，单位是ac币，注意不一定是纯数字的字符串
+	CustomData        string // 用户的一些额外信息，格式为json
 }
+
+// BillboardUser 就是礼物贡献榜上的用户的信息，没有AnonymousUser、Medal和ManagerType
+type BillboardUser WatchingUser
 
 // Summary 就是直播的总结信息
 type Summary struct {
@@ -36,7 +38,7 @@ type MedalDetail struct {
 }
 
 // 获取直播间排名前50的在线观众信息列表
-func (t *token) watchingList() (watchList []WatchingUser, e error) {
+func (t *token) getWatchingList() (watchList []WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
@@ -74,7 +76,7 @@ func (t *token) watchingList() (watchList []WatchingUser, e error) {
 			case "displaySendAmount":
 				w.DisplaySendAmount = string(v.GetStringBytes())
 			case "customWatchingListData":
-				w.CustomWatchingListData = string(v.GetStringBytes())
+				w.CustomData = string(v.GetStringBytes())
 			case "managerType":
 				w.ManagerType = ManagerType(v.GetInt())
 			}
@@ -83,6 +85,75 @@ func (t *token) watchingList() (watchList []WatchingUser, e error) {
 	}
 
 	return watchingUserList, nil
+}
+
+// 获取直播间最近七日内的礼物贡献榜前50名观众的详细信息
+func (t *token) getBillboard() (billboard []BillboardUser, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getBillboard() error: %w", err)
+		}
+	}()
+
+	if t == nil {
+		panic(fmt.Errorf("获取token失败，可能主播不在直播"))
+	}
+
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("authorId", strconv.FormatInt(t.uid, 10))
+	cookie := fasthttp.AcquireCookie()
+	defer fasthttp.ReleaseCookie(cookie)
+	if len(t.cookies) != 0 {
+		cookie.SetKey(midgroundSt)
+	} else {
+		cookie.SetKey(visitorSt)
+	}
+	cookie.SetValue(t.serviceToken)
+	client := &httpClient{
+		client:      t.client,
+		url:         fmt.Sprintf(billboardURL, t.userID, t.deviceID),
+		body:        form.QueryString(),
+		method:      "POST",
+		cookies:     []*fasthttp.Cookie{cookie},
+		contentType: formContentType,
+	}
+	resp, err := client.doRequest()
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	p := t.watchParser.Get()
+	defer t.watchParser.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("获取最近七日内的礼物贡献榜失败，响应为 %s", string(body)))
+	}
+
+	billboardArray := v.GetArray("data", "list")
+	billboard = make([]BillboardUser, len(billboardArray))
+	for i, user := range billboardArray {
+		o := user.GetObject()
+		b := BillboardUser{}
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "userId":
+				b.UserID = v.GetInt64()
+			case "nickname":
+				b.Nickname = string(v.GetStringBytes())
+			case "avatar":
+				b.Avatar = string(v.GetStringBytes("0", "url"))
+			case "displaySendAmount":
+				b.DisplaySendAmount = string(v.GetStringBytes())
+			case "customData":
+				b.CustomData = string(v.GetStringBytes())
+			}
+		})
+		billboard[i] = b
+	}
+
+	return billboard, nil
 }
 
 // 获取直播总结信息
@@ -132,11 +203,6 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 		httpCookies = append(httpCookies, cookie)
 	}
 	client := &httpClient{
-		client: &fasthttp.Client{
-			MaxIdleConnDuration: 90 * time.Second,
-			ReadTimeout:         10 * time.Second,
-			WriteTimeout:        10 * time.Second,
-		},
 		url:     fmt.Sprintf(medalInfoURL, uid),
 		method:  "GET",
 		cookies: httpCookies,
@@ -178,7 +244,12 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 
 // GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetWatchingList() ([]WatchingUser, error) {
-	return dq.t.watchingList()
+	return dq.t.getWatchingList()
+}
+
+// GetBillboard 返回直播间最近七日内的礼物贡献榜前50名观众的详细信息，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetBillboard() ([]BillboardUser, error) {
+	return dq.t.getBillboard()
 }
 
 // GetSummary 返回直播总结信息，不需要调用StartDanmu()
