@@ -293,29 +293,7 @@ func (t *token) updateGiftList() (e error) {
 		}
 	}()
 
-	if t == nil {
-		panic(fmt.Errorf("获取token失败，可能主播不在直播"))
-	}
-
-	var giftList string
-	if len(t.cookies) != 0 {
-		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
-	} else {
-		giftList = fmt.Sprintf(giftURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
-	}
-
-	form := fasthttp.AcquireArgs()
-	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	form.Set("liveId", t.liveID)
-	client := &httpClient{
-		client:      t.client,
-		url:         giftList,
-		body:        form.QueryString(),
-		method:      "POST",
-		contentType: formContentType,
-	}
-	resp, err := client.doRequest()
+	resp, err := t.fetchKuaiShouAPI(giftURL)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -354,23 +332,17 @@ func (t *token) updateGiftList() (e error) {
 	return nil
 }
 
-// 获取直播间排名前50的在线观众信息列表
-func (t *token) watchingList() (watchList []WatchingUser, e error) {
-	defer func() {
-		if err := recover(); err != nil {
-			e = fmt.Errorf("watchingList() error: %w", err)
-		}
-	}()
-
+// 通过快手API获取数据，调用后需要 defer fasthttp.ReleaseResponse(resp)
+func (t *token) fetchKuaiShouAPI(url string) (*fasthttp.Response, error) {
 	if t == nil {
 		panic(fmt.Errorf("获取token失败，可能主播不在直播"))
 	}
 
-	var watchURL string
+	var apiURL string
 	if len(t.cookies) != 0 {
-		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
+		apiURL = fmt.Sprintf(url, t.userID, t.deviceID, midgroundSt, t.serviceToken)
 	} else {
-		watchURL = fmt.Sprintf(watchingURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
+		apiURL = fmt.Sprintf(url, t.userID, t.deviceID, visitorSt, t.serviceToken)
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -379,49 +351,10 @@ func (t *token) watchingList() (watchList []WatchingUser, e error) {
 	form.Set("liveId", t.liveID)
 	client := &httpClient{
 		client:      t.client,
-		url:         watchURL,
+		url:         apiURL,
 		body:        form.QueryString(),
 		method:      "POST",
 		contentType: formContentType,
 	}
-	resp, err := client.doRequest()
-	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
-
-	p := t.watchParser.Get()
-	defer t.watchParser.Put(p)
-	v, err := p.ParseBytes(body)
-	checkErr(err)
-	if v.GetInt("result") != 1 {
-		panic(fmt.Errorf("获取在线观众列表失败，响应为 %s", string(body)))
-	}
-
-	watchArray := v.GetArray("data", "list")
-	watchingUserList := make([]WatchingUser, len(watchArray))
-	for i, watch := range watchArray {
-		o := watch.GetObject()
-		w := WatchingUser{}
-		o.Visit(func(k []byte, v *fastjson.Value) {
-			switch string(k) {
-			case "userId":
-				w.UserID = v.GetInt64()
-			case "nickname":
-				w.Nickname = string(v.GetStringBytes())
-			case "avatar":
-				w.Avatar = string(v.GetStringBytes("0", "url"))
-			case "anonymousUser":
-				w.AnonymousUser = v.GetBool()
-			case "displaySendAmount":
-				w.DisplaySendAmount = string(v.GetStringBytes())
-			case "customWatchingListData":
-				w.CustomWatchingListData = string(v.GetStringBytes())
-			case "managerType":
-				w.ManagerType = ManagerType(v.GetInt())
-			}
-		})
-		watchingUserList[i] = w
-	}
-
-	return watchingUserList, nil
+	return client.doRequest()
 }

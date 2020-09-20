@@ -10,15 +10,13 @@ import (
 const (
 	visitorSt        = "acfun.api.visitor_st"
 	midgroundSt      = "acfun.midground.api_st"
-	acfunHost        = "https://live.acfun.cn"
 	acfunSignInURL   = "https://id.app.acfun.cn/rest/web/login/signin"
 	acfunSafetyIDURL = "https://sec-cdn.gifshow.com/safetyid"
-	liveURL          = "https://live.acfun.cn/live/"
+	liveURL          = "https://live.acfun.cn/live/%d"
 	loginURL         = "https://id.app.acfun.cn/rest/app/visitor/login"
 	getTokenURL      = "https://id.app.acfun.cn/rest/web/token/get"
 	playURL          = "https://api.kuaishouzt.com/rest/zt/live/web/startPlay?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	giftURL          = "https://api.kuaishouzt.com/rest/zt/live/web/gift/list?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	watchingURL      = "https://api.kuaishouzt.com/rest/zt/live/web/watchingList?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 
 	safetyIDContent = "{\"platform\":5,\"app_version\":\"2.0.32\",\"device_id\":\"null\",\"user_id\":\"%d\"}"
 
@@ -38,6 +36,12 @@ const (
 	retryCount uint32 = 1
 
 	formContentType = "application/x-www-form-urlencoded"
+)
+
+const (
+	watchingListURL = "https://api.kuaishouzt.com/rest/zt/live/web/watchingList?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	endSummaryURL   = "https://api.kuaishouzt.com/rest/zt/live/web/endSummary?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	medalInfoURL    = "https://api-new.app.acfun.cn/rest/app/fansClub/live/medalInfo?uperId=%d"
 )
 
 type token struct {

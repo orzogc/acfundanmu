@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 
@@ -265,6 +264,13 @@ type DanmuQueue struct {
 	t    *token       // 令牌相关信息
 }
 
+// EndSummary 就是直播结束后的总结信息
+type EndSummary struct {
+	LiveDurationMs int64 // 直播时长，以毫秒为单位
+	LikeCount      int   // 点赞总数
+	WatchCount     int   // 观看直播的人数总数
+}
+
 // Login 登陆AcFun帐号
 func Login(username, password string) (cookies []string, err error) {
 	if username == "" || password == "" {
@@ -294,7 +300,7 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
 		uid:      uid,
-		livePage: liveURL + strconv.FormatInt(uid, 10),
+		livePage: fmt.Sprintf(liveURL, uid),
 		client: &fasthttp.Client{
 			MaxIdleConnDuration: 90 * time.Second,
 			ReadTimeout:         10 * time.Second,
@@ -362,9 +368,4 @@ func (dq *DanmuQueue) GetRecentComment() (comments []Comment) {
 	defer dq.info.Unlock()
 	comments = dq.info.RecentComment
 	return comments
-}
-
-// GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetWatchingList() ([]WatchingUser, error) {
-	return dq.t.watchingList()
 }
