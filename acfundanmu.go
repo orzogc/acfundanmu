@@ -344,6 +344,8 @@ func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
 	dq.info.Lock()
 	defer dq.info.Unlock()
 	info = dq.info.LiveInfo
+	info.TopUsers = append([]TopUser{}, dq.info.TopUsers...)
+	info.RedpackList = append([]Redpack{}, dq.info.RedpackList...)
 	return info
 }
 
@@ -351,6 +353,6 @@ func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
 func (dq *DanmuQueue) GetRecentComment() (comments []Comment) {
 	dq.info.Lock()
 	defer dq.info.Unlock()
-	comments = dq.info.RecentComment
+	comments = append([]Comment{}, dq.info.RecentComment...)
 	return comments
 }
