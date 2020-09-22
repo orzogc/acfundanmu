@@ -12,7 +12,7 @@ import (
 type WatchingUser struct {
 	UserInfo                 // 用户信息
 	AnonymousUser     bool   // 是否匿名用户
-	DisplaySendAmount string // 赠送的全部礼物的价值，单位是ac币，注意不一定是纯数字的字符串
+	DisplaySendAmount string // 赠送的全部礼物的价值，单位是AC币，注意不一定是纯数字的字符串
 	CustomData        string // 用户的一些额外信息，格式为json
 }
 
@@ -37,15 +37,21 @@ type MedalDetail struct {
 	CurrentDegreeLimit int    // 守护徽章目前等级的亲密度的上限
 }
 
+// LuckyUser 就是抢到红包的用户，没有Medal和ManagerType
+type LuckyUser struct {
+	UserInfo
+	GrabAmount int // 抢红包抢到的AC币
+}
+
 // 获取直播间排名前50的在线观众信息列表
-func (t *token) getWatchingList() (watchList []WatchingUser, e error) {
+func (t *token) getWatchingList() (watchingList []WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(watchingListURL)
+	resp, err := t.fetchKuaiShouAPI(watchingListURL, nil)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -59,7 +65,7 @@ func (t *token) getWatchingList() (watchList []WatchingUser, e error) {
 	}
 
 	watchArray := v.GetArray("data", "list")
-	watchingUserList := make([]WatchingUser, len(watchArray))
+	watchingList = make([]WatchingUser, len(watchArray))
 	for i, watch := range watchArray {
 		o := watch.GetObject()
 		w := WatchingUser{}
@@ -81,10 +87,10 @@ func (t *token) getWatchingList() (watchList []WatchingUser, e error) {
 				w.ManagerType = ManagerType(v.GetInt())
 			}
 		})
-		watchingUserList[i] = w
+		watchingList[i] = w
 	}
 
-	return watchingUserList, nil
+	return watchingList, nil
 }
 
 // 获取直播间最近七日内的礼物贡献榜前50名观众的详细信息
@@ -94,10 +100,6 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 			e = fmt.Errorf("getBillboard() error: %w", err)
 		}
 	}()
-
-	if t == nil {
-		panic(fmt.Errorf("获取token失败，可能主播不在直播"))
-	}
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
@@ -164,7 +166,7 @@ func (t *token) getSummary() (summary Summary, e error) {
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(endSummaryURL)
+	resp, err := t.fetchKuaiShouAPI(endSummaryURL, nil)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -242,6 +244,50 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 	return medalList, clubName, nil
 }
 
+// 获取抢到红包的用户列表
+func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getLuckList() error: %w", err)
+		}
+	}()
+
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("liveId", t.liveID)
+	form.Set("redpackBizUnit", redpack.RedpackBizUnit)
+	form.Set("redpackId", redpack.RedPackID)
+	resp, err := t.fetchKuaiShouAPI(redpackLuckListURL, form)
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	p := t.watchParser.Get()
+	defer t.watchParser.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("获取抢到红包的用户列表失败，响应为 %s", string(body)))
+	}
+
+	luckyArray := v.GetArray("data", "luckyList")
+	luckyList = make([]LuckyUser, len(luckyArray))
+	for i, user := range luckyArray {
+		v := user.Get("simpleUserInfo")
+		luckyList[i] = LuckyUser{
+			UserInfo: UserInfo{
+				UserID:   v.GetInt64("userId"),
+				Nickname: string(v.GetStringBytes("nickname")),
+				Avatar:   string(v.GetStringBytes("headPic", "url")),
+			},
+			GrabAmount: user.GetInt("grabAmount"),
+		}
+	}
+
+	return luckyList, nil
+}
+
 // GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetWatchingList() ([]WatchingUser, error) {
 	return dq.t.getWatchingList()
@@ -260,4 +306,9 @@ func (dq *DanmuQueue) GetSummary() (Summary, error) {
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName
 func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, e error) {
 	return getMedalInfo(uid, cookies)
+}
+
+// GetLuckList 返回抢到红包的用户列表，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
+	return dq.t.getLuckList(redpack)
 }

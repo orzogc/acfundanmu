@@ -298,7 +298,7 @@ func (t *token) updateGiftList() (e error) {
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(giftURL)
+	resp, err := t.fetchKuaiShouAPI(giftURL, nil)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -337,12 +337,8 @@ func (t *token) updateGiftList() (e error) {
 	return nil
 }
 
-// 通过快手API获取数据，调用后需要 defer fasthttp.ReleaseResponse(resp)
-func (t *token) fetchKuaiShouAPI(url string) (*fasthttp.Response, error) {
-	if t == nil {
-		panic(fmt.Errorf("获取token失败，可能主播不在直播"))
-	}
-
+// 通过快手API获取数据，form为nil时采用默认form，调用后需要 defer fasthttp.ReleaseResponse(resp)
+func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args) (*fasthttp.Response, error) {
 	var apiURL string
 	if len(t.cookies) != 0 {
 		apiURL = fmt.Sprintf(url, t.userID, t.deviceID, midgroundSt, t.serviceToken)
@@ -350,10 +346,12 @@ func (t *token) fetchKuaiShouAPI(url string) (*fasthttp.Response, error) {
 		apiURL = fmt.Sprintf(url, t.userID, t.deviceID, visitorSt, t.serviceToken)
 	}
 
-	form := fasthttp.AcquireArgs()
-	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	form.Set("liveId", t.liveID)
+	if form == nil {
+		form = fasthttp.AcquireArgs()
+		defer fasthttp.ReleaseArgs(form)
+		form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+		form.Set("liveId", t.liveID)
+	}
 	client := &httpClient{
 		client:      t.client,
 		url:         apiURL,

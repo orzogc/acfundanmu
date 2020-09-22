@@ -39,10 +39,11 @@ const (
 )
 
 const (
-	watchingListURL = "https://api.kuaishouzt.com/rest/zt/live/web/watchingList?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	billboardURL    = "https://api.kuaishouzt.com/rest/zt/live/billboard?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s"
-	endSummaryURL   = "https://api.kuaishouzt.com/rest/zt/live/web/endSummary?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	medalInfoURL    = "https://api-new.app.acfun.cn/rest/app/fansClub/live/medalInfo?uperId=%d"
+	watchingListURL    = "https://api.kuaishouzt.com/rest/zt/live/web/watchingList?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	endSummaryURL      = "https://api.kuaishouzt.com/rest/zt/live/web/endSummary?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	redpackLuckListURL = "https://api.kuaishouzt.com/rest/zt/live/web/redpack/getLuckList?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	billboardURL       = "https://api.kuaishouzt.com/rest/zt/live/billboard?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s"
+	medalInfoURL       = "https://api-new.app.acfun.cn/rest/app/fansClub/live/medalInfo?uperId=%d"
 )
 
 type token struct {

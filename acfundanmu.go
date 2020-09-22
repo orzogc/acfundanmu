@@ -90,7 +90,7 @@ type GiftDetail struct {
 	GiftName               string // 礼物名字
 	ARLiveName             string // 不为空时礼物属于虚拟偶像区的特殊礼物
 	PayWalletType          int    // 1为非免费礼物，2为免费礼物
-	Price                  int    // 礼物价格，非免费礼物时单位为ac币，免费礼物（香蕉）时为1
+	Price                  int    // 礼物价格，非免费礼物时单位为AC币，免费礼物（香蕉）时为1
 	WebpPic                string // 礼物的webp格式图片（动图）
 	PngPic                 string // 礼物的png格式图片（大）
 	SmallPngPic            string // 礼物的png格式图片（小）
@@ -190,7 +190,7 @@ type Gift struct {
 	GiftDetail                   // 礼物详细信息
 	Count                 int32  // 礼物单次赠送的数量，礼物总数是Count * Combo
 	Combo                 int32  // 礼物连击数量，礼物总数是Count * Combo
-	Value                 int64  // 礼物价值，非免费礼物时单位为ac币*1000，免费礼物（香蕉）时单位为礼物数量
+	Value                 int64  // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID               string // 礼物连击ID
 	SlotDisplayDurationMs int64  // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
 	ExpireDurationMs      int64
@@ -214,7 +214,7 @@ type Redpack struct {
 	GetTokenLatestTimeMs int64                // 抢红包的用户获得token的最晚时间？
 	RedPackID            string               // 红包ID
 	RedpackBizUnit       string               // 一般是"ztLiveAcfunRedpackGift"
-	RedpackAmount        int64                // 红包的总价值，单位是ac币
+	RedpackAmount        int64                // 红包的总价值，单位是AC币
 	SettleBeginTime      int64                // 抢红包的结束时间
 }
 
@@ -256,7 +256,7 @@ type DanmuQueue struct {
 	t    *token       // 令牌相关信息
 }
 
-// Login 登陆AcFun帐号
+// Login 登陆AcFun帐号，username为帐号邮箱，password为帐号密码
 func Login(username, password string) (cookies []string, err error) {
 	if username == "" || password == "" {
 		return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
@@ -314,7 +314,7 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	return dq, nil
 }
 
-// StartDanmu 启动websocket获取弹幕，ctx用来结束websocket
+// StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，调用StartDanmu()后最好调用GetDanmu()或WriteASS()以清空弹幕队列
 func (dq *DanmuQueue) StartDanmu(ctx context.Context) {
 	dq.q = queue.New(queueLen)
 	dq.info = new(liveInfo)
