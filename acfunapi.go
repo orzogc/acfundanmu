@@ -252,6 +252,10 @@ func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 		}
 	}()
 
+	if len(t.cookies) == 0 {
+		panic(fmt.Errorf("获取抢到红包的用户列表需要登陆AcFun帐号"))
+	}
+
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
@@ -279,7 +283,7 @@ func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 			UserInfo: UserInfo{
 				UserID:   v.GetInt64("userId"),
 				Nickname: string(v.GetStringBytes("nickname")),
-				Avatar:   string(v.GetStringBytes("headPic", "url")),
+				Avatar:   string(v.GetStringBytes("headPic", "0", "url")),
 			},
 			GrabAmount: user.GetInt("grabAmount"),
 		}
@@ -308,7 +312,7 @@ func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 	return getMedalInfo(uid, cookies)
 }
 
-// GetLuckList 返回抢到红包的用户列表，不需要调用StartDanmu()
+// GetLuckList 返回抢到红包的用户列表，需要调用Login()登陆AcFun帐号，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 	return dq.t.getLuckList(redpack)
 }

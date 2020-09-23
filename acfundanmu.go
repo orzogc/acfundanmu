@@ -256,7 +256,7 @@ type DanmuQueue struct {
 	t    *token       // 令牌相关信息
 }
 
-// Login 登陆AcFun帐号，username为帐号邮箱，password为帐号密码
+// Login 登陆AcFun帐号，username为帐号邮箱或手机号，password为帐号密码
 func Login(username, password string) (cookies []string, err error) {
 	if username == "" || password == "" {
 		return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
@@ -280,7 +280,7 @@ func Login(username, password string) (cookies []string, err error) {
 	return cookies, nil
 }
 
-// Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有区别
+// Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有太大区别
 func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
