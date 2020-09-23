@@ -156,7 +156,7 @@ func login(username, password string) (cookies []string, e error) {
 }
 
 // 获取相应的token
-func (t *token) getToken() (e error) {
+func (t *token) getToken() (stream StreamInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getToken() error: %w", err)
@@ -287,7 +287,27 @@ func (t *token) getToken() (e error) {
 	err = t.updateGiftList()
 	checkErr(err)
 
-	return nil
+	stream = StreamInfo{
+		Title:         string(v.GetStringBytes("caption")),
+		LiveStartTime: v.GetInt64("liveStartTime"),
+		Panoramic:     v.GetBool("panoramic"),
+	}
+	videoPlayRes := v.GetStringBytes("videoPlayRes")
+	v, err = p.ParseBytes(videoPlayRes)
+	checkErr(err)
+	stream.StreamName = string(v.GetStringBytes("streamName"))
+	representation := v.GetArray("liveAdaptiveManifest", "0", "adaptationSet", "representation")
+	stream.StreamList = make([]StreamURL, len(representation))
+	for i, r := range representation {
+		stream.StreamList[i] = StreamURL{
+			URL:         string(r.GetStringBytes("url")),
+			Bitrate:     r.GetInt("bitrate"),
+			QualityType: string(r.GetStringBytes("qualityType")),
+			QualityName: string(r.GetStringBytes("name")),
+		}
+	}
+
+	return stream, nil
 }
 
 // 更新礼物列表

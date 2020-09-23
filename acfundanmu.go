@@ -228,6 +228,32 @@ type ChatInfo struct {
 	EndType         ChatEndType   // 连麦结束类型
 }
 
+// TokenInfo 就是AcFun直播的token相关信息
+type TokenInfo struct {
+	UserID       int64  // 登陆模式或游客模式的uid
+	SecurityKey  string // 密钥
+	ServiceToken string // token
+	LiveID       string // 直播ID
+	DeviceID     string // 设备ID
+}
+
+// StreamURL 就是直播源相关信息
+type StreamURL struct {
+	URL         string // 直播源链接
+	Bitrate     int    // 直播源码率，不一定是实际码率
+	QualityType string // 直播源类型，一般是"STANDARD"、"HIGH"、"SUPER"、"BLUE_RAY"
+	QualityName string // 直播源类型的中文名字，一般是"高清"、"超清"、"蓝光 4M"、"蓝光 5M"、"蓝光 6M"、"蓝光 7M"、"蓝光 8M"
+}
+
+// StreamInfo 就是直播的一部分信息
+type StreamInfo struct {
+	Title         string      // 直播间标题
+	LiveStartTime int64       // 直播开始的时间，是以毫秒为单位的Unix time
+	Panoramic     bool        // 是否全景直播
+	StreamList    []StreamURL // 直播源列表
+	StreamName    string      // 直播源名字（ID）
+}
+
 // LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
 	KickedOut        string       // 被踢理由？
@@ -244,8 +270,10 @@ type LiveInfo struct {
 
 // 带锁的LiveInfo
 type liveInfo struct {
-	sync.Mutex // liveInfo的锁
+	sync.Mutex // LiveInfo和RecentComment的锁
 	LiveInfo
+	TokenInfo
+	StreamInfo
 	RecentComment []Comment // APP进直播间时显示的最近发的弹幕
 }
 
@@ -295,9 +323,10 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	if len(cookies) == 1 && len(cookies[0]) != 0 {
 		dq.t.cookies = cookies[0]
 	}
+	dq.info = new(liveInfo)
 
 	for retry := 0; retry < 3; retry++ {
-		err = dq.t.getToken()
+		dq.info.StreamInfo, err = dq.t.getToken()
 		if err != nil {
 			if retry == 2 {
 				log.Printf("初始化失败，停止获取弹幕：%v", err)
@@ -311,13 +340,20 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 		time.Sleep(10 * time.Second)
 	}
 
+	dq.info.TokenInfo = TokenInfo{
+		UserID:       dq.t.userID,
+		SecurityKey:  dq.t.securityKey,
+		ServiceToken: dq.t.serviceToken,
+		LiveID:       dq.t.liveID,
+		DeviceID:     dq.t.deviceID,
+	}
+
 	return dq, nil
 }
 
 // StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，调用StartDanmu()后最好调用GetDanmu()或WriteASS()以清空弹幕队列
 func (dq *DanmuQueue) StartDanmu(ctx context.Context) {
 	dq.q = queue.New(queueLen)
-	dq.info = new(liveInfo)
 	go dq.wsStart(ctx)
 }
 
@@ -339,13 +375,25 @@ func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	return danmu
 }
 
-// GetInfo 返回直播间的状态信息，需要先调用StartDanmu()
-func (dq *DanmuQueue) GetInfo() (info LiveInfo) {
+// GetLiveInfo 返回直播间的状态信息，需要先调用StartDanmu()
+func (dq *DanmuQueue) GetLiveInfo() (info LiveInfo) {
 	dq.info.Lock()
 	defer dq.info.Unlock()
 	info = dq.info.LiveInfo
 	info.TopUsers = append([]TopUser{}, dq.info.TopUsers...)
 	info.RedpackList = append([]Redpack{}, dq.info.RedpackList...)
+	return info
+}
+
+// GetTokenInfo 返回直播间token相关信息，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetTokenInfo() TokenInfo {
+	return dq.info.TokenInfo
+}
+
+// GetStreamInfo 返回直播的一些信息，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetStreamInfo() (info StreamInfo) {
+	info = dq.info.StreamInfo
+	info.StreamList = append([]StreamURL{}, dq.info.StreamList...)
 	return info
 }
 
