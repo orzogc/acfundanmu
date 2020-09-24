@@ -1,5 +1,5 @@
 # acfundanmu
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/orzogc/acfundanmu)](https://pkg.go.dev/github.com/orzogc/acfundanmu)
+[![GoDoc](https://godoc.org/github.com/orzogc/acfundanmu?status.png)](https://godoc.org/github.com/orzogc/acfundanmu) [![PkgGoDev](https://pkg.go.dev/badge/github.com/orzogc/acfundanmu)](https://pkg.go.dev/github.com/orzogc/acfundanmu)
 
 AcFun直播API，弹幕实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
 
