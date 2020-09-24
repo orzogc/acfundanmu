@@ -1,5 +1,5 @@
 # acfundanmu
-AcFun直播弹幕API，实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
+AcFun直播API，弹幕实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
 
 ### 示例代码
 #### 获取弹幕
@@ -68,7 +68,7 @@ go func() {
         default:
             // 循环获取info并处理
             time.Sleep(5 * time.Second)
-            info := dq.GetInfo()
+            info := dq.GetLiveInfo()
             log.Printf("%+v\n", info)
         }
     }

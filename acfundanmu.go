@@ -308,7 +308,8 @@ func Login(username, password string) (cookies []string, err error) {
 	return cookies, nil
 }
 
-// Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有太大区别
+// Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有太大区别。
+// uid为0时仅获取没有LiveID的TokenInfo。
 func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
@@ -353,12 +354,18 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 
 // StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，调用StartDanmu()后最好调用GetDanmu()或WriteASS()以清空弹幕队列
 func (dq *DanmuQueue) StartDanmu(ctx context.Context) {
+	if dq.t.uid == 0 {
+		return
+	}
 	dq.q = queue.New(queueLen)
 	go dq.wsStart(ctx)
 }
 
 // GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu()
 func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
+	if dq.t.uid == 0 {
+		return nil
+	}
 	if (*queue.Queue)(dq.q).Disposed() {
 		return nil
 	}

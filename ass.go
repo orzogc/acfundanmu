@@ -93,6 +93,10 @@ func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, ne
 		}
 	}()
 
+	if dq.t.uid == 0 {
+		return
+	}
+
 	if (*queue.Queue)(dq.q).Disposed() {
 		return
 	}

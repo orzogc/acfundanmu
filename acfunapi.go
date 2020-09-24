@@ -1,9 +1,18 @@
 package acfundanmu
 
 import (
+	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/binary"
 	"fmt"
+	"math/rand"
 	"strconv"
+	"strings"
+	"time"
 
+	"facette.io/natsort"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
@@ -41,6 +50,16 @@ type MedalDetail struct {
 type LuckyUser struct {
 	UserInfo
 	GrabAmount int // 抢红包抢到的AC币
+}
+
+// PlayBack 就是直播回放的相关信息
+type PlayBack struct {
+	Duration  int64  // 录播视频时长，单位是毫秒
+	URL       string // 直播源链接
+	BackupURL string // 备份直播源链接
+	M3U8Slice string // m3u8
+	Width     int    // 录播视频宽度
+	Height    int    // 录播视频高度
 }
 
 // 获取直播间排名前50的在线观众信息列表
@@ -292,6 +311,114 @@ func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 	return luckyList, nil
 }
 
+// 获取直播回放的相关信息
+func (t *token) getPlayBack(liveID string) (playBack PlayBack, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("playBack() error: %w", err)
+		}
+	}()
+
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("liveId", liveID)
+	url := fmt.Sprintf(playBackURL, t.userID, t.deviceID)
+	clientSign, err := t.genClientSign(url, form)
+	checkErr(err)
+	form.Set("__clientSign", clientSign)
+	cookie := fasthttp.AcquireCookie()
+	defer fasthttp.ReleaseCookie(cookie)
+	if len(t.cookies) != 0 {
+		cookie.SetKey(midgroundSt)
+	} else {
+		cookie.SetKey(visitorSt)
+	}
+	cookie.SetValue(t.serviceToken)
+	client := &httpClient{
+		client:      t.client,
+		url:         url,
+		body:        form.QueryString(),
+		method:      "POST",
+		cookies:     []*fasthttp.Cookie{cookie},
+		contentType: formContentType,
+	}
+	resp, err := client.doRequest()
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("获取直播回放的相关信息失败，响应为 %s", string(body)))
+	}
+	adaptiveManifest := v.GetStringBytes("data", "adaptiveManifest")
+	v, err = p.ParseBytes(adaptiveManifest)
+	checkErr(err)
+	v = v.Get("adaptationSet", "0")
+	duration := v.GetInt64("duration")
+	v = v.Get("representation", "0")
+	playBack = PlayBack{
+		Duration:  duration,
+		URL:       string(v.GetStringBytes("url")),
+		BackupURL: string(v.GetStringBytes("backupUrl", "0")),
+		M3U8Slice: string(v.GetStringBytes("m3u8Slice")),
+		Width:     v.GetInt("width"),
+		Height:    v.GetInt("height"),
+	}
+
+	return playBack, nil
+}
+
+// 生成client sign
+func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign string, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("genClientSign() error: %w", err)
+		}
+	}()
+
+	uri := fasthttp.AcquireURI()
+	defer fasthttp.ReleaseURI(uri)
+	err := uri.Parse(nil, []byte(url))
+	checkErr(err)
+	path := string(uri.Path())
+	urlParams := uri.QueryArgs()
+	var paramsStr []string
+	// 应该要忽略以__开头的key
+	urlParams.VisitAll(func(key, value []byte) {
+		paramsStr = append(paramsStr, string(key)+"="+string(value))
+	})
+	form.VisitAll(func(key, value []byte) {
+		paramsStr = append(paramsStr, string(key)+"="+string(value))
+	})
+	// 实际上这里应该是比较key
+	natsort.Sort(paramsStr)
+
+	minute := time.Now().Unix() / 60
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Int31()
+	var nonce int64 = minute | (int64(randomNum) << 32)
+	nonceStr := strconv.FormatInt(nonce, 10)
+
+	key, err := base64.StdEncoding.DecodeString(t.securityKey)
+	checkErr(err)
+	needSigned := "POST&" + path + "&" + strings.Join(paramsStr, "&") + "&" + nonceStr
+	mac := hmac.New(sha256.New, key)
+	mac.Write([]byte(needSigned))
+	hashed := mac.Sum(nil)
+
+	buf := new(bytes.Buffer)
+	err = binary.Write(buf, binary.BigEndian, nonce)
+	checkErr(err)
+	signedBytes := buf.Bytes()
+	signedBytes = append(signedBytes, hashed...)
+	clientSign = base64.RawURLEncoding.EncodeToString(signedBytes)
+
+	return clientSign, nil
+}
+
 // GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetWatchingList() ([]WatchingUser, error) {
 	return dq.t.getWatchingList()
@@ -315,4 +442,9 @@ func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 // GetLuckList 返回抢到红包的用户列表，需要调用Login()登陆AcFun帐号，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 	return dq.t.getLuckList(redpack)
+}
+
+// GetPlayBack 返回直播回放的相关信息，需要liveID，可以先调用Init(0)
+func (dq *DanmuQueue) GetPlayBack(liveID string) (PlayBack, error) {
+	return dq.t.getPlayBack(liveID)
 }

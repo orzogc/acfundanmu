@@ -237,6 +237,15 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 		play = fmt.Sprintf(playURL, userID, deviceID, visitorSt, serviceToken)
 	}
 
+	t.userID = userID
+	t.securityKey = securityKey
+	t.serviceToken = serviceToken
+	t.deviceID = deviceID
+
+	if t.uid == 0 {
+		return stream, nil
+	}
+
 	form = fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	// authorId就是主播的uid
@@ -270,9 +279,6 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 		tickets[i] = string(ticket.GetStringBytes())
 	}
 
-	t.userID = userID
-	t.securityKey = securityKey
-	t.serviceToken = serviceToken
 	t.liveID = liveID
 	t.enterRoomAttach = enterRoomAttach
 	t.tickets = tickets
@@ -282,7 +288,6 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 	t.headerSeqID = 1
 	t.heartbeatSeqID = 1
 	t.ticketIndex = 0
-	t.deviceID = deviceID
 
 	err = t.updateGiftList()
 	checkErr(err)
