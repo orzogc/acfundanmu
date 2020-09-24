@@ -230,11 +230,11 @@ type ChatInfo struct {
 
 // TokenInfo 就是AcFun直播的token相关信息
 type TokenInfo struct {
-	UserID       int64  // 登陆模式或游客模式的uid
-	SecurityKey  string // 密钥
-	ServiceToken string // token
-	LiveID       string // 直播ID
-	DeviceID     string // 设备ID
+	UserID       int64    // 登陆模式或游客模式的uid
+	SecurityKey  string   // 密钥
+	ServiceToken string   // token
+	DeviceID     string   // 设备ID
+	Cookies      []string // AcFun帐号的cookies
 }
 
 // StreamURL 就是直播源相关信息
@@ -247,6 +247,7 @@ type StreamURL struct {
 
 // StreamInfo 就是直播的一部分信息
 type StreamInfo struct {
+	LiveID        string      // 直播ID
 	Title         string      // 直播间标题
 	LiveStartTime int64       // 直播开始的时间，是以毫秒为单位的Unix time
 	Panoramic     bool        // 是否全景直播
@@ -309,7 +310,7 @@ func Login(username, password string) (cookies []string, err error) {
 }
 
 // Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有太大区别。
-// uid为0时仅获取没有LiveID的TokenInfo。
+// uid为0时仅获取TokenInfo，可以调用GetTokenInfo()获取。
 func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
@@ -345,8 +346,46 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 		UserID:       dq.t.userID,
 		SecurityKey:  dq.t.securityKey,
 		ServiceToken: dq.t.serviceToken,
-		LiveID:       dq.t.liveID,
 		DeviceID:     dq.t.deviceID,
+		Cookies:      dq.t.cookies,
+	}
+
+	return dq, nil
+}
+
+// InitWithToken 利用tokenInfo初始化，uid为主播的uid
+func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
+	dq = new(DanmuQueue)
+	dq.t = &token{
+		uid:      uid,
+		livePage: fmt.Sprintf(liveURL, uid),
+		client: &fasthttp.Client{
+			MaxIdleConnDuration: 90 * time.Second,
+			ReadTimeout:         10 * time.Second,
+			WriteTimeout:        10 * time.Second,
+		},
+		userID:       tokenInfo.UserID,
+		securityKey:  tokenInfo.SecurityKey,
+		serviceToken: tokenInfo.ServiceToken,
+		deviceID:     tokenInfo.DeviceID,
+		cookies:      tokenInfo.Cookies,
+	}
+	dq.info = new(liveInfo)
+	dq.info.TokenInfo = tokenInfo
+
+	for retry := 0; retry < 3; retry++ {
+		dq.info.StreamInfo, err = dq.t.getLiveToken()
+		if err != nil {
+			if retry == 2 {
+				log.Printf("初始化失败，停止获取弹幕：%v", err)
+				return nil, fmt.Errorf("InitWithToken() error: 初始化失败，主播可能不在直播：%w", err)
+			}
+			log.Printf("初始化出现错误：%v", err)
+			log.Println("尝试重新初始化")
+		} else {
+			break
+		}
+		time.Sleep(10 * time.Second)
 	}
 
 	return dq, nil

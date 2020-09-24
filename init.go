@@ -155,11 +155,11 @@ func login(username, password string) (cookies []string, e error) {
 	return cookies, nil
 }
 
-// 获取相应的token
-func (t *token) getToken() (stream StreamInfo, e error) {
+// 获取AcFun帐号的token
+func (t *token) getAcFunToken() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getToken() error: %w", err)
+			e = fmt.Errorf("getAcFunToken() error: %w", err)
 		}
 	}()
 
@@ -225,16 +225,13 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 
 	// 获取userId和对应的令牌
 	userID := v.GetInt64("userId")
-	var play, serviceToken, securityKey string
+	var serviceToken, securityKey string
 	if len(t.cookies) != 0 {
 		securityKey = string(v.GetStringBytes("ssecurity"))
 		serviceToken = string(v.GetStringBytes(midgroundSt))
-		// 需要userId、deviceID和serviceToken
-		play = fmt.Sprintf(playURL, userID, deviceID, midgroundSt, serviceToken)
 	} else {
 		securityKey = string(v.GetStringBytes("acSecurity"))
 		serviceToken = string(v.GetStringBytes(visitorSt))
-		play = fmt.Sprintf(playURL, userID, deviceID, visitorSt, serviceToken)
 	}
 
 	t.userID = userID
@@ -242,16 +239,35 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 	t.serviceToken = serviceToken
 	t.deviceID = deviceID
 
+	return nil
+}
+
+// 获取直播间的token
+func (t *token) getLiveToken() (stream StreamInfo, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getLiveToken() error: %w", err)
+		}
+	}()
+
 	if t.uid == 0 {
 		return stream, nil
 	}
 
-	form = fasthttp.AcquireArgs()
+	var play string
+	if len(t.cookies) != 0 {
+		// 需要userId、deviceID和serviceToken
+		play = fmt.Sprintf(playURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
+	} else {
+		play = fmt.Sprintf(playURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
+	}
+
+	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	// authorId就是主播的uid
 	form.Set("authorId", strconv.FormatInt(t.uid, 10))
 	form.Set("pullStreamType", "FLV")
-	client = &httpClient{
+	client := &httpClient{
 		client:      t.client,
 		url:         play,
 		body:        form.QueryString(),
@@ -259,12 +275,13 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 		contentType: formContentType,
 		referer:     t.livePage, // 会验证 Referer
 	}
-	resp, err = client.doRequest()
+	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body = resp.Body()
+	body := resp.Body()
 
-	v, err = p.ParseBytes(body)
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
 		panic(fmt.Errorf("获取直播详细信息失败，响应为 %s", string(body)))
@@ -293,6 +310,7 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 	checkErr(err)
 
 	stream = StreamInfo{
+		LiveID:        liveID,
 		Title:         string(v.GetStringBytes("caption")),
 		LiveStartTime: v.GetInt64("liveStartTime"),
 		Panoramic:     v.GetBool("panoramic"),
@@ -311,6 +329,22 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 			QualityName: string(r.GetStringBytes("name")),
 		}
 	}
+
+	return stream, nil
+}
+
+// 获取全部token
+func (t *token) getToken() (stream StreamInfo, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getToken() error: %w", err)
+		}
+	}()
+
+	err := t.getAcFunToken()
+	checkErr(err)
+	stream, err = t.getLiveToken()
+	checkErr(err)
 
 	return stream, nil
 }
