@@ -393,7 +393,7 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 	form.VisitAll(func(key, value []byte) {
 		paramsStr = append(paramsStr, string(key)+"="+string(value))
 	})
-	// 实际上这里应该是比较key
+	// 实际上这里应该要比较key
 	natsort.Sort(paramsStr)
 
 	minute := time.Now().Unix() / 60
@@ -444,7 +444,7 @@ func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 	return dq.t.getLuckList(redpack)
 }
 
-// GetPlayBack 返回直播回放的相关信息，需要liveID，可以先调用Init(0)
+// GetPlayBack 返回直播回放的相关信息，需要liveID，可以先调用Init(0)再调用GetPlayBack()，目前部分直播没有回放
 func (dq *DanmuQueue) GetPlayBack(liveID string) (PlayBack, error) {
 	return dq.t.getPlayBack(liveID)
 }
