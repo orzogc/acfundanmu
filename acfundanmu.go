@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Workiva/go-datastructures/queue"
-	"github.com/valyala/fasthttp"
 )
 
 // 队列长度
@@ -316,11 +315,6 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	dq.t = &token{
 		uid:      uid,
 		livePage: fmt.Sprintf(liveURL, uid),
-		client: &fasthttp.Client{
-			MaxIdleConnDuration: 90 * time.Second,
-			ReadTimeout:         10 * time.Second,
-			WriteTimeout:        10 * time.Second,
-		},
 	}
 	if len(cookies) == 1 && len(cookies[0]) != 0 {
 		dq.t.cookies = cookies[0]
@@ -357,13 +351,8 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
-		uid:      uid,
-		livePage: fmt.Sprintf(liveURL, uid),
-		client: &fasthttp.Client{
-			MaxIdleConnDuration: 90 * time.Second,
-			ReadTimeout:         10 * time.Second,
-			WriteTimeout:        10 * time.Second,
-		},
+		uid:          uid,
+		livePage:     fmt.Sprintf(liveURL, uid),
 		userID:       tokenInfo.UserID,
 		securityKey:  tokenInfo.SecurityKey,
 		serviceToken: tokenInfo.ServiceToken,

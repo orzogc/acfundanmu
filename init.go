@@ -19,6 +19,12 @@ type httpClient struct {
 	referer     string
 }
 
+var defaultClient = &fasthttp.Client{
+	MaxIdleConnDuration: 90 * time.Second,
+	ReadTimeout:         10 * time.Second,
+	WriteTimeout:        10 * time.Second,
+}
+
 // http请求，调用后需要 defer fasthttp.ReleaseResponse(resp)
 func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	defer func() {
@@ -33,11 +39,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	resp = fasthttp.AcquireResponse()
 
 	if c.client == nil {
-		c.client = &fasthttp.Client{
-			MaxIdleConnDuration: 90 * time.Second,
-			ReadTimeout:         10 * time.Second,
-			WriteTimeout:        10 * time.Second,
-		}
+		c.client = defaultClient
 	}
 
 	if c.url != "" {
@@ -97,14 +99,7 @@ func login(username, password string) (cookies []string, e error) {
 	form.Set("key", "")
 	form.Set("captcha", "")
 
-	c := &fasthttp.Client{
-		MaxIdleConnDuration: 90 * time.Second,
-		ReadTimeout:         10 * time.Second,
-		WriteTimeout:        10 * time.Second,
-	}
-
 	client := &httpClient{
-		client:      c,
 		url:         acfunSignInURL,
 		body:        form.QueryString(),
 		method:      "POST",
@@ -129,7 +124,6 @@ func login(username, password string) (cookies []string, e error) {
 	userID := v.GetInt("userId")
 	content := fmt.Sprintf(safetyIDContent, userID)
 	client = &httpClient{
-		client: c,
 		url:    acfunSafetyIDURL,
 		body:   []byte(content),
 		method: "POST",
@@ -164,7 +158,6 @@ func (t *token) getAcFunToken() (e error) {
 	}()
 
 	client := &httpClient{
-		client: t.client,
 		url:    t.livePage,
 		method: "GET",
 	}
@@ -175,12 +168,10 @@ func (t *token) getAcFunToken() (e error) {
 	// 获取did（device ID）
 	didCookie := fasthttp.AcquireCookie()
 	defer fasthttp.ReleaseCookie(didCookie)
-	resp.Header.VisitAllCookie(func(key, value []byte) {
-		if string(key) == "_did" {
-			err = didCookie.ParseBytes(value)
-			checkErr(err)
-		}
-	})
+	didCookie.SetKey("_did")
+	if !resp.Header.Cookie(didCookie) {
+		panic("无法获取didCookie")
+	}
 	deviceID := string(didCookie.Value())
 
 	form := fasthttp.AcquireArgs()
@@ -208,7 +199,6 @@ func (t *token) getAcFunToken() (e error) {
 			cookies: []*fasthttp.Cookie{didCookie},
 		}
 	}
-	client.client = t.client
 	client.method = "POST"
 	client.contentType = formContentType
 	resp, err = client.doRequest()
@@ -268,7 +258,6 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	form.Set("authorId", strconv.FormatInt(t.uid, 10))
 	form.Set("pullStreamType", "FLV")
 	client := &httpClient{
-		client:      t.client,
 		url:         play,
 		body:        form.QueryString(),
 		method:      "POST",
@@ -412,7 +401,6 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args) (*fasthttp.Res
 		form.Set("liveId", t.liveID)
 	}
 	client := &httpClient{
-		client:      t.client,
 		url:         apiURL,
 		body:        form.QueryString(),
 		method:      "POST",

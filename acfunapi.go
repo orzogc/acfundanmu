@@ -55,11 +55,13 @@ type LuckyUser struct {
 // PlayBack 就是直播回放的相关信息
 type PlayBack struct {
 	Duration  int64  // 录播视频时长，单位是毫秒
-	URL       string // 直播源链接
+	URL       string // 直播源链接，目前分为阿里云和腾讯云两种
 	BackupURL string // 备份直播源链接
 	M3U8Slice string // m3u8
 	Width     int    // 录播视频宽度
 	Height    int    // 录播视频高度
+	AliURL    string // 阿里云直播源链接，目前阿里云的下载速度比较快
+	TxURL     string // 腾讯云直播源链接
 }
 
 // 获取直播间排名前50的在线观众信息列表
@@ -132,7 +134,6 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 	}
 	cookie.SetValue(t.serviceToken)
 	client := &httpClient{
-		client:      t.client,
 		url:         fmt.Sprintf(billboardURL, t.userID, t.deviceID),
 		body:        form.QueryString(),
 		method:      "POST",
@@ -207,62 +208,6 @@ func (t *token) getSummary() (summary Summary, e error) {
 	return summary, nil
 }
 
-// 获取登陆帐号的守护徽章和指定主播守护徽章的名字
-func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, e error) {
-	defer func() {
-		if err := recover(); err != nil {
-			e = fmt.Errorf("getMedalInfo() error: %w", err)
-		}
-	}()
-
-	var httpCookies []*fasthttp.Cookie
-	for _, c := range cookies {
-		cookie := fasthttp.AcquireCookie()
-		defer fasthttp.ReleaseCookie(cookie)
-		err := cookie.Parse(c)
-		checkErr(err)
-		httpCookies = append(httpCookies, cookie)
-	}
-	client := &httpClient{
-		url:     fmt.Sprintf(medalInfoURL, uid),
-		method:  "GET",
-		cookies: httpCookies,
-	}
-	resp, err := client.doRequest()
-	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
-
-	var p fastjson.Parser
-	v, err := p.ParseBytes(body)
-	checkErr(err)
-	if !v.Exists("result") || v.GetInt("result") != 0 {
-		panic(fmt.Errorf("获取登陆帐号的守护徽章和指定主播守护徽章的名字失败，响应为 %s", string(body)))
-	}
-
-	clubName = string(v.GetStringBytes("clubName"))
-
-	medalArray := v.GetArray("medalList")
-	medalList = make([]MedalDetail, len(medalArray))
-	for i, medal := range medalArray {
-		medalList[i] = MedalDetail{
-			MedalInfo: MedalInfo{
-				UperID:   medal.GetInt64("uperId"),
-				ClubName: string(medal.GetStringBytes("clubName")),
-				Level:    medal.GetInt("level"),
-			},
-			UperName:           string(medal.GetStringBytes("uperName")),
-			UperAvatar:         string(medal.GetStringBytes("uperHeadUrl")),
-			WearMedal:          medal.GetBool("wearMedal"),
-			FriendshipDegree:   medal.GetInt("friendshipDegree"),
-			JoinClubTime:       medal.GetInt64("joinClubTime"),
-			CurrentDegreeLimit: medal.GetInt("currentDegreeLimit"),
-		}
-	}
-
-	return medalList, clubName, nil
-}
-
 // 获取抢到红包的用户列表
 func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 	defer func() {
@@ -335,7 +280,6 @@ func (t *token) getPlayBack(liveID string) (playBack PlayBack, e error) {
 	}
 	cookie.SetValue(t.serviceToken)
 	client := &httpClient{
-		client:      t.client,
 		url:         url,
 		body:        form.QueryString(),
 		method:      "POST",
@@ -366,6 +310,14 @@ func (t *token) getPlayBack(liveID string) (playBack PlayBack, e error) {
 		M3U8Slice: string(v.GetStringBytes("m3u8Slice")),
 		Width:     v.GetInt("width"),
 		Height:    v.GetInt("height"),
+	}
+
+	if strings.Contains(playBack.URL, "alivod") && strings.Contains(playBack.BackupURL, "txvod") {
+		playBack.AliURL = playBack.URL
+		playBack.TxURL = playBack.BackupURL
+	} else if strings.Contains(playBack.BackupURL, "alivod") && strings.Contains(playBack.URL, "txvod") {
+		playBack.AliURL = playBack.BackupURL
+		playBack.TxURL = playBack.URL
 	}
 
 	return playBack, nil
@@ -419,6 +371,93 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 	return clientSign, nil
 }
 
+// 获取登陆帐号的守护徽章和指定主播守护徽章的名字
+func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getMedalInfo() error: %w", err)
+		}
+	}()
+
+	var httpCookies []*fasthttp.Cookie
+	for _, c := range cookies {
+		cookie := fasthttp.AcquireCookie()
+		defer fasthttp.ReleaseCookie(cookie)
+		err := cookie.Parse(c)
+		checkErr(err)
+		httpCookies = append(httpCookies, cookie)
+	}
+	client := &httpClient{
+		url:     fmt.Sprintf(medalInfoURL, uid),
+		method:  "GET",
+		cookies: httpCookies,
+	}
+	resp, err := client.doRequest()
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取登陆帐号的守护徽章和指定主播守护徽章的名字失败，响应为 %s", string(body)))
+	}
+
+	clubName = string(v.GetStringBytes("clubName"))
+
+	medalArray := v.GetArray("medalList")
+	medalList = make([]MedalDetail, len(medalArray))
+	for i, medal := range medalArray {
+		medalList[i] = MedalDetail{
+			MedalInfo: MedalInfo{
+				UperID:   medal.GetInt64("uperId"),
+				ClubName: string(medal.GetStringBytes("clubName")),
+				Level:    medal.GetInt("level"),
+			},
+			UperName:           string(medal.GetStringBytes("uperName")),
+			UperAvatar:         string(medal.GetStringBytes("uperHeadUrl")),
+			WearMedal:          medal.GetBool("wearMedal"),
+			FriendshipDegree:   medal.GetInt("friendshipDegree"),
+			JoinClubTime:       medal.GetInt64("joinClubTime"),
+			CurrentDegreeLimit: medal.GetInt("currentDegreeLimit"),
+		}
+	}
+
+	return medalList, clubName, nil
+}
+
+// 获取正在直播的直播间列表
+func getLiveList() (body string, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getLiveList() error: %w", err)
+		}
+	}()
+
+	for count := 1000; count < 1e8; count *= 10 {
+		client := httpClient{
+			url:    fmt.Sprintf(liveListURL, count),
+			method: "GET",
+		}
+		resp, err := client.doRequest()
+		checkErr(err)
+		defer fasthttp.ReleaseResponse(resp)
+		respBody := resp.Body()
+
+		var p fastjson.Parser
+		v, err := p.ParseBytes(respBody)
+		checkErr(err)
+		cursor := string(v.GetStringBytes("channelListData", "pcursor"))
+		if cursor == "no_more" {
+			body = string(respBody)
+			break
+		}
+	}
+
+	return body, nil
+}
+
 // GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetWatchingList() ([]WatchingUser, error) {
 	return dq.t.getWatchingList()
@@ -434,11 +473,6 @@ func (dq *DanmuQueue) GetSummary() (Summary, error) {
 	return dq.t.getSummary()
 }
 
-// GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName
-func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, e error) {
-	return getMedalInfo(uid, cookies)
-}
-
 // GetLuckList 返回抢到红包的用户列表，需要调用Login()登陆AcFun帐号，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 	return dq.t.getLuckList(redpack)
@@ -447,4 +481,14 @@ func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 // GetPlayBack 返回直播回放的相关信息，需要liveID，可以先调用Init(0)再调用GetPlayBack()，目前部分直播没有回放
 func (dq *DanmuQueue) GetPlayBack(liveID string) (PlayBack, error) {
 	return dq.t.getPlayBack(liveID)
+}
+
+// GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName
+func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, err error) {
+	return getMedalInfo(uid, cookies)
+}
+
+// GetLiveList 获取正在直播的直播间列表
+func GetLiveList() (string, error) {
+	return getLiveList()
 }

@@ -3,7 +3,6 @@ package acfundanmu
 import (
 	"sync"
 
-	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
 
@@ -45,6 +44,7 @@ const (
 	billboardURL       = "https://api.kuaishouzt.com/rest/zt/live/billboard?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s"
 	playBackURL        = "https://api.kuaishouzt.com/rest/zt/live/playBack/startPlay?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s"
 	medalInfoURL       = "https://api-new.app.acfun.cn/rest/app/fansClub/live/medalInfo?uperId=%d"
+	liveListURL        = "https://live.acfun.cn/api/channel/list?count=%d"
 )
 
 type token struct {
@@ -65,7 +65,6 @@ type token struct {
 	gifts           map[int64]GiftDetail
 	uid             int64 // 主播uid
 	livePage        string
-	client          *fasthttp.Client
 	cookies         []string
 	medalParser     fastjson.ParserPool
 	watchParser     fastjson.ParserPool
