@@ -52,8 +52,8 @@ type LuckyUser struct {
 	GrabAmount int // 抢红包抢到的AC币
 }
 
-// PlayBack 就是直播回放的相关信息
-type PlayBack struct {
+// Playback 就是直播回放的相关信息
+type Playback struct {
 	Duration  int64  // 录播视频时长，单位是毫秒
 	URL       string // 录播源链接，目前分为阿里云和腾讯云两种
 	BackupURL string // 备份录播源链接
@@ -259,17 +259,17 @@ func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 }
 
 // 获取直播回放的相关信息
-func (t *token) getPlayBack(liveID string) (playBack PlayBack, e error) {
+func (t *token) getPlayback(liveID string) (playback Playback, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("playBack() error: %w", err)
+			e = fmt.Errorf("getPlayback() error: %w", err)
 		}
 	}()
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("liveId", liveID)
-	url := fmt.Sprintf(playBackURL, t.userID, t.deviceID)
+	url := fmt.Sprintf(playbackURL, t.userID, t.deviceID)
 	clientSign, err := t.genClientSign(url, form)
 	checkErr(err)
 	form.Set("__clientSign", clientSign)
@@ -305,7 +305,7 @@ func (t *token) getPlayBack(liveID string) (playBack PlayBack, e error) {
 	v = v.Get("adaptationSet", "0")
 	duration := v.GetInt64("duration")
 	v = v.Get("representation", "0")
-	playBack = PlayBack{
+	playback = Playback{
 		Duration:  duration,
 		URL:       string(v.GetStringBytes("url")),
 		BackupURL: string(v.GetStringBytes("backupUrl", "0")),
@@ -314,15 +314,15 @@ func (t *token) getPlayBack(liveID string) (playBack PlayBack, e error) {
 		Height:    v.GetInt("height"),
 	}
 
-	if strings.Contains(playBack.URL, "alivod") && strings.Contains(playBack.BackupURL, "txvod") {
-		playBack.AliURL = playBack.URL
-		playBack.TxURL = playBack.BackupURL
-	} else if strings.Contains(playBack.BackupURL, "alivod") && strings.Contains(playBack.URL, "txvod") {
-		playBack.AliURL = playBack.BackupURL
-		playBack.TxURL = playBack.URL
+	if strings.Contains(playback.URL, "alivod") && strings.Contains(playback.BackupURL, "txvod") {
+		playback.AliURL = playback.URL
+		playback.TxURL = playback.BackupURL
+	} else if strings.Contains(playback.BackupURL, "alivod") && strings.Contains(playback.URL, "txvod") {
+		playback.AliURL = playback.BackupURL
+		playback.TxURL = playback.URL
 	}
 
-	return playBack, nil
+	return playback, nil
 }
 
 // 生成client sign
@@ -485,9 +485,9 @@ func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 	return dq.t.getLuckList(redpack)
 }
 
-// GetPlayBack 返回直播回放的相关信息，需要liveID，可以先调用Init(0)再调用GetPlayBack()，目前部分直播没有回放
-func (dq *DanmuQueue) GetPlayBack(liveID string) (PlayBack, error) {
-	return dq.t.getPlayBack(liveID)
+// GetPlayback 返回直播回放的相关信息，需要liveID，可以先调用Init(0)再调用GetPlayBack()，目前部分直播没有回放
+func (dq *DanmuQueue) GetPlayback(liveID string) (Playback, error) {
+	return dq.t.getPlayback(liveID)
 }
 
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName
