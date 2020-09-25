@@ -55,14 +55,16 @@ type LuckyUser struct {
 // PlayBack 就是直播回放的相关信息
 type PlayBack struct {
 	Duration  int64  // 录播视频时长，单位是毫秒
-	URL       string // 直播源链接，目前分为阿里云和腾讯云两种
-	BackupURL string // 备份直播源链接
+	URL       string // 录播源链接，目前分为阿里云和腾讯云两种
+	BackupURL string // 备份录播源链接
 	M3U8Slice string // m3u8
 	Width     int    // 录播视频宽度
 	Height    int    // 录播视频高度
-	AliURL    string // 阿里云直播源链接，目前阿里云的下载速度比较快
-	TxURL     string // 腾讯云直播源链接
+	AliURL    string // 阿里云录播源链接，目前阿里云的下载速度比较快
+	TxURL     string // 腾讯云录播源链接
 }
+
+var liveListParser fastjson.ParserPool
 
 // 获取直播间排名前50的在线观众信息列表
 func (t *token) getWatchingList() (watchingList []WatchingUser, e error) {
@@ -445,10 +447,15 @@ func getLiveList() (body string, e error) {
 		defer fasthttp.ReleaseResponse(resp)
 		respBody := resp.Body()
 
-		var p fastjson.Parser
+		p := liveListParser.Get()
+		defer liveListParser.Put(p)
 		v, err := p.ParseBytes(respBody)
 		checkErr(err)
-		cursor := string(v.GetStringBytes("channelListData", "pcursor"))
+		v = v.Get("channelListData")
+		if !v.Exists("result") || v.GetInt("result") != 0 {
+			panic(fmt.Errorf("获取正在直播的直播间列表失败"))
+		}
+		cursor := string(v.GetStringBytes("pcursor"))
 		if cursor == "no_more" {
 			body = string(respBody)
 			break
@@ -488,7 +495,7 @@ func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 	return getMedalInfo(uid, cookies)
 }
 
-// GetLiveList 获取正在直播的直播间列表
+// GetLiveList 获取正在直播的直播间列表，半成品，慎用
 func GetLiveList() (string, error) {
 	return getLiveList()
 }
