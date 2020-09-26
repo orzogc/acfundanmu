@@ -376,6 +376,40 @@ func (t *token) getAllGift() (e error) {
 	return nil
 }
 
+// 获取拥有的香蕉和钱包里AC币的数量
+func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getWalletBalance() error: %w", err)
+		}
+	}()
+
+	if len(t.cookies) == 0 {
+		panic(fmt.Errorf("获取拥有的香蕉和钱包里AC币的数量需要登陆AcFun帐号"))
+	}
+
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	resp, err := t.fetchKuaiShouAPI(walletBalanceURL, form)
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("获取拥有的香蕉和钱包里AC币的数量失败，响应为 %s", string(body)))
+	}
+
+	v = v.Get("data", "payWalletTypeToBalance")
+	accoins = v.GetInt("1")
+	bananas = v.GetInt("2")
+
+	return accoins, bananas, nil
+}
+
 // 生成client sign
 func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign string, e error) {
 	defer func() {
@@ -536,9 +570,14 @@ func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 	return dq.t.getLuckList(redpack)
 }
 
-// GetPlayback 返回直播回放的相关信息，需要liveID，可以先调用Init(0)再调用GetPlayBack()，目前部分直播没有回放
+// GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0)，目前部分直播没有回放
 func (dq *DanmuQueue) GetPlayback(liveID string) (Playback, error) {
 	return dq.t.getPlayback(liveID)
+}
+
+// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要调用Login()登陆AcFun帐号，可以调用Init(0, cookies)
+func (dq *DanmuQueue) GetWalletBalance() (accoins int, bananas int, e error) {
+	return dq.t.getWalletBalance()
 }
 
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName
