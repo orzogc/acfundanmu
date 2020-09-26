@@ -350,8 +350,8 @@ func (t *token) getPlayURL() (e error) {
 	return nil
 }
 
-// 获取全部礼物的列表
-func (t *token) getAllGift() (e error) {
+// 获取全部礼物的数据
+func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getAllGift() error: %w", err)
@@ -370,13 +370,15 @@ func (t *token) getAllGift() (e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		panic(fmt.Errorf("获取全部礼物的列表失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("获取全部礼物的数据失败，响应为 %s", string(body)))
 	}
 
-	return nil
+	gifts = updateGiftList(v)
+
+	return gifts, nil
 }
 
-// 获取拥有的香蕉和钱包里AC币的数量
+// 获取钱包里AC币和拥有的香蕉的数量
 func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -385,7 +387,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	}()
 
 	if len(t.cookies) == 0 {
-		panic(fmt.Errorf("获取拥有的香蕉和钱包里AC币的数量需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取钱包里AC币和拥有的香蕉的数量需要登陆AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -570,12 +572,17 @@ func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 	return dq.t.getLuckList(redpack)
 }
 
-// GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0)，目前部分直播没有回放
+// GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0)，不需要调用StartDanmu()，目前部分直播没有回放
 func (dq *DanmuQueue) GetPlayback(liveID string) (Playback, error) {
 	return dq.t.getPlayback(liveID)
 }
 
-// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要调用Login()登陆AcFun帐号，可以调用Init(0, cookies)
+// GetAllGift 返回全部礼物的数据，可以调用Init(0)，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetAllGift() (map[int64]GiftDetail, error) {
+	return dq.t.getAllGift()
+}
+
+// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要调用Login()登陆AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetWalletBalance() (accoins int, bananas int, e error) {
 	return dq.t.getWalletBalance()
 }
@@ -583,9 +590,4 @@ func (dq *DanmuQueue) GetWalletBalance() (accoins int, bananas int, e error) {
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName
 func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, err error) {
 	return getMedalInfo(uid, cookies)
-}
-
-// GetLiveList 获取正在直播的直播间列表，半成品，慎用
-func GetLiveList() (string, error) {
-	return getLiveList()
 }

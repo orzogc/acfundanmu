@@ -295,7 +295,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	t.heartbeatSeqID = 1
 	t.ticketIndex = 0
 
-	err = t.updateGiftList()
+	err = t.getGiftList()
 	checkErr(err)
 
 	stream = StreamInfo{
@@ -338,8 +338,8 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 	return stream, nil
 }
 
-// 更新礼物列表
-func (t *token) updateGiftList() (e error) {
+// 获取礼物列表
+func (t *token) getGiftList() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("updateGiftList() error: %w", err)
@@ -355,10 +355,17 @@ func (t *token) updateGiftList() (e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		panic(fmt.Errorf("获取礼物列表失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("获取直播间的礼物列表失败，响应为 %s", string(body)))
 	}
 
-	t.gifts = make(map[int64]GiftDetail)
+	t.gifts = updateGiftList(v)
+
+	return nil
+}
+
+// 返回礼物数据
+func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
+	gifts := make(map[int64]GiftDetail)
 	for _, gift := range v.GetArray("data", "giftList") {
 		g := GiftDetail{
 			GiftID:        gift.GetInt64("giftId"),
@@ -379,10 +386,10 @@ func (t *token) updateGiftList() (e error) {
 		for i, num := range list {
 			g.AllowBatchSendSizeList[i] = num.GetInt()
 		}
-		t.gifts[g.GiftID] = g
+		gifts[g.GiftID] = g
 	}
 
-	return nil
+	return gifts
 }
 
 // 通过快手API获取数据，form为nil时采用默认form，调用后需要 defer fasthttp.ReleaseResponse(resp)
