@@ -325,6 +325,57 @@ func (t *token) getPlayback(liveID string) (playback Playback, e error) {
 	return playback, nil
 }
 
+// 获取直播源信息，和getLiveToken()重复了
+func (t *token) getPlayURL() (e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getPlayURL() error: %w", err)
+		}
+	}()
+
+	resp, err := t.fetchKuaiShouAPI(getPlayURL, nil)
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("获取直播源信息失败，响应为 %s", string(body)))
+	}
+
+	//videoPlayRes := string(v.GetStringBytes("data", "videoPlayRes"))
+
+	return nil
+}
+
+// 获取全部礼物的列表
+func (t *token) getAllGift() (e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getAllGift() error: %w", err)
+		}
+	}()
+
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	resp, err := t.fetchKuaiShouAPI(allGiftURL, form)
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("获取全部礼物的列表失败，响应为 %s", string(body)))
+	}
+
+	return nil
+}
+
 // 生成client sign
 func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign string, e error) {
 	defer func() {

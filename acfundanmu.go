@@ -310,6 +310,7 @@ func Login(username, password string) (cookies []string, err error) {
 
 // Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有太大区别。
 // uid为0时仅获取TokenInfo，可以调用GetTokenInfo()获取。
+// 应该尽可能复用返回的 *DanmuQueue 。
 func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
