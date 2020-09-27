@@ -55,13 +55,11 @@ type LuckyUser struct {
 // Playback 就是直播回放的相关信息
 type Playback struct {
 	Duration  int64  // 录播视频时长，单位是毫秒
-	URL       string // 录播源链接，目前分为阿里云和腾讯云两种
+	URL       string // 录播源链接，目前分为阿里云和腾讯云两种，目前阿里云的下载速度比较快
 	BackupURL string // 备份录播源链接
 	M3U8Slice string // m3u8
 	Width     int    // 录播视频宽度
 	Height    int    // 录播视频高度
-	AliURL    string // 阿里云录播源链接，目前阿里云的下载速度比较快
-	TxURL     string // 腾讯云录播源链接
 }
 
 var liveListParser fastjson.ParserPool
@@ -314,14 +312,6 @@ func (t *token) getPlayback(liveID string) (playback Playback, e error) {
 		Height:    v.GetInt("height"),
 	}
 
-	if strings.Contains(playback.URL, "alivod") && strings.Contains(playback.BackupURL, "txvod") {
-		playback.AliURL = playback.URL
-		playback.TxURL = playback.BackupURL
-	} else if strings.Contains(playback.BackupURL, "alivod") && strings.Contains(playback.URL, "txvod") {
-		playback.AliURL = playback.BackupURL
-		playback.TxURL = playback.URL
-	}
-
 	return playback, nil
 }
 
@@ -550,6 +540,27 @@ func getLiveList() (body string, e error) {
 	}
 
 	return body, nil
+}
+
+// Distinguish 返回阿里云和腾讯云链接，目前阿里云的下载速度比较快
+func (pb *Playback) Distinguish() (aliURL, txURL string) {
+	switch {
+	case strings.Contains(pb.URL, "alivod"):
+		aliURL = pb.URL
+	case strings.Contains(pb.URL, "txvod"):
+		txURL = pb.URL
+	default:
+	}
+
+	switch {
+	case strings.Contains(pb.BackupURL, "alivod"):
+		aliURL = pb.BackupURL
+	case strings.Contains(pb.BackupURL, "txvod"):
+		txURL = pb.BackupURL
+	default:
+	}
+
+	return aliURL, txURL
 }
 
 // GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
