@@ -381,6 +381,16 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 	return dq, nil
 }
 
+// ReInit 利用已有的 DanmuQueue 重新初始化，返回新的 *DanmuQueue
+func (dq *DanmuQueue) ReInit(uid int64) (newDQ *DanmuQueue, err error) {
+	tokenInfo := dq.GetTokenInfo()
+	newDQ, err = InitWithToken(uid, tokenInfo)
+	if err != nil {
+		return nil, err
+	}
+	return newDQ, nil
+}
+
 // StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，调用StartDanmu()后最好调用GetDanmu()或WriteASS()以清空弹幕队列
 func (dq *DanmuQueue) StartDanmu(ctx context.Context) {
 	if dq.t.uid == 0 {
