@@ -318,7 +318,7 @@ func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
 		livePage: fmt.Sprintf(liveURL, uid),
 	}
 	if len(cookies) == 1 && len(cookies[0]) != 0 {
-		dq.t.cookies = cookies[0]
+		dq.t.cookies = append([]string{}, cookies[0]...)
 	}
 	dq.info = new(liveInfo)
 
@@ -358,7 +358,7 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 		securityKey:  tokenInfo.SecurityKey,
 		serviceToken: tokenInfo.ServiceToken,
 		deviceID:     tokenInfo.DeviceID,
-		cookies:      tokenInfo.Cookies,
+		cookies:      append([]string{}, tokenInfo.Cookies...),
 	}
 	dq.info = new(liveInfo)
 	dq.info.TokenInfo = tokenInfo
@@ -432,7 +432,9 @@ func (dq *DanmuQueue) GetLiveInfo() (info LiveInfo) {
 }
 
 // GetTokenInfo 返回直播间token相关信息，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetTokenInfo() TokenInfo {
+func (dq *DanmuQueue) GetTokenInfo() (info TokenInfo) {
+	info = dq.info.TokenInfo
+	info.Cookies = append([]string{}, dq.info.Cookies...)
 	return dq.info.TokenInfo
 }
 
