@@ -169,7 +169,7 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 					}
 					dq.t.getMoreInfo(&d.UserInfo, comment.UserInfo)
 					if event {
-						dq.dispatchEvent(commentType, d)
+						dq.dispatchEvent(commentDanmu, d)
 					} else {
 						mu.Lock()
 						danmu = append(danmu, d)
@@ -188,7 +188,7 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 					}
 					dq.t.getMoreInfo(&d.UserInfo, like.UserInfo)
 					if event {
-						dq.dispatchEvent(likeType, d)
+						dq.dispatchEvent(likeDanmu, d)
 					} else {
 						mu.Lock()
 						danmu = append(danmu, d)
@@ -207,7 +207,7 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 					}
 					dq.t.getMoreInfo(&d.UserInfo, enter.UserInfo)
 					if event {
-						dq.dispatchEvent(enterRoomType, d)
+						dq.dispatchEvent(enterRoomDanmu, d)
 					} else {
 						mu.Lock()
 						danmu = append(danmu, d)
@@ -226,7 +226,7 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 					}
 					dq.t.getMoreInfo(&d.UserInfo, follow.UserInfo)
 					if event {
-						dq.dispatchEvent(followAuthorType, d)
+						dq.dispatchEvent(followAuthorDanmu, d)
 					} else {
 						mu.Lock()
 						danmu = append(danmu, d)
@@ -255,7 +255,7 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 						BananaCount: int(banana.Count),
 					}
 					if event {
-						dq.dispatchEvent(throwBananaType, d)
+						dq.dispatchEvent(throwBananaDanmu, d)
 					} else {
 						mu.Lock()
 						danmu = append(danmu, d)
@@ -306,7 +306,7 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 						}
 					}
 					if event {
-						dq.dispatchEvent(giftType, d)
+						dq.dispatchEvent(giftDanmu, d)
 					} else {
 						mu.Lock()
 						danmu = append(danmu, d)
@@ -351,7 +351,7 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 						}
 					}
 					if event {
-						dq.dispatchEvent(richTextType, d)
+						dq.dispatchEvent(richTextDanmu, d)
 					} else {
 						mu.Lock()
 						danmu = append(danmu, d)

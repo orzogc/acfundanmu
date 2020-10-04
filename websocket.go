@@ -50,7 +50,9 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool) {
 		}
 	}()
 
-	if !event {
+	if event {
+		defer dq.dispatchEvent(liveOff, "停止获取弹幕")
+	} else {
 		defer dq.q.Dispose()
 	}
 

@@ -401,7 +401,7 @@ func (dq *DanmuQueue) StartDanmu(ctx context.Context, event bool) {
 	}
 	if event {
 		dq.handlerMap = new(handlerMap)
-		dq.handlerMap.listMap = make(map[danmuType][]eventHandler)
+		dq.handlerMap.listMap = make(map[eventType][]eventHandler)
 	} else {
 		dq.q = queue.New(queueLen)
 	}
