@@ -93,10 +93,14 @@ func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, ne
 		}
 	}()
 
-	if dq.t.uid == 0 {
+	if dq.q == nil {
+		log.Println("需要先调用StartDanmu()，event不能为true")
 		return
 	}
-
+	if dq.t.uid == 0 {
+		log.Println("主播uid不能为0")
+		return
+	}
 	if (*queue.Queue)(dq.q).Disposed() {
 		return
 	}

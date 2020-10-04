@@ -279,9 +279,10 @@ type liveInfo struct {
 
 // DanmuQueue 就是直播间弹幕系统相关信息
 type DanmuQueue struct {
-	q    *queue.Queue // DanmuMessage的队列
-	info *liveInfo    // 直播间的相关信息状态
-	t    *token       // 令牌相关信息
+	q          *queue.Queue // DanmuMessage的队列
+	info       *liveInfo    // 直播间的相关信息状态
+	t          *token       // 令牌相关信息
+	handlerMap *handlerMap  // 事件handler的map
 }
 
 // Login 登陆AcFun帐号，username为帐号邮箱或手机号，password为帐号密码
@@ -308,17 +309,17 @@ func Login(username, password string) (cookies []string, err error) {
 	return cookies, nil
 }
 
-// Init 初始化，uid为主播的uid，cookies可以利用Login()获取，没有时为游客模式，目前登陆模式和游客模式并没有太大区别。
+// Init 初始化，uid为主播的uid，cookies可以利用Login()获取，为nil时为游客模式，目前登陆模式和游客模式并没有太大区别。
 // uid为0时仅获取TokenInfo，可以调用GetTokenInfo()获取。
 // 应该尽可能复用返回的 *DanmuQueue 。
-func Init(uid int64, cookies ...[]string) (dq *DanmuQueue, err error) {
+func Init(uid int64, cookies []string) (dq *DanmuQueue, err error) {
 	dq = new(DanmuQueue)
 	dq.t = &token{
 		uid:      uid,
 		livePage: fmt.Sprintf(liveURL, uid),
 	}
-	if len(cookies) == 1 && len(cookies[0]) != 0 {
-		dq.t.cookies = append([]string{}, cookies[0]...)
+	if len(cookies) != 0 {
+		dq.t.cookies = append([]string{}, cookies...)
 	}
 	dq.info = new(liveInfo)
 
@@ -381,7 +382,7 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 	return dq, nil
 }
 
-// ReInit 利用已有的 DanmuQueue 重新初始化，返回新的 *DanmuQueue
+// ReInit 利用已有的 *DanmuQueue 重新初始化，返回新的 *DanmuQueue
 func (dq *DanmuQueue) ReInit(uid int64) (newDQ *DanmuQueue, err error) {
 	tokenInfo := dq.GetTokenInfo()
 	newDQ, err = InitWithToken(uid, tokenInfo)
@@ -391,18 +392,30 @@ func (dq *DanmuQueue) ReInit(uid int64) (newDQ *DanmuQueue, err error) {
 	return newDQ, nil
 }
 
-// StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，调用StartDanmu()后最好调用GetDanmu()或WriteASS()以清空弹幕队列
-func (dq *DanmuQueue) StartDanmu(ctx context.Context) {
+// StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，event为true时采用事件模式。
+// event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
+func (dq *DanmuQueue) StartDanmu(ctx context.Context, event bool) {
 	if dq.t.uid == 0 {
+		log.Println("主播uid不能为0")
 		return
 	}
-	dq.q = queue.New(queueLen)
-	go dq.wsStart(ctx)
+	if event {
+		dq.handlerMap = new(handlerMap)
+		dq.handlerMap.listMap = make(map[danmuType][]eventHandler)
+	} else {
+		dq.q = queue.New(queueLen)
+	}
+	go dq.wsStart(ctx, event)
 }
 
 // GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu()
 func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
+	if dq.q == nil {
+		log.Println("需要先调用StartDanmu()，event不能为true")
+		return nil
+	}
 	if dq.t.uid == 0 {
+		log.Println("主播uid不能为0")
 		return nil
 	}
 	if (*queue.Queue)(dq.q).Disposed() {

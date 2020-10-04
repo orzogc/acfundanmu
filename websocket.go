@@ -42,14 +42,17 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, hb chan int6
 }
 
 // 启动websocket
-func (dq *DanmuQueue) wsStart(ctx context.Context) {
+func (dq *DanmuQueue) wsStart(ctx context.Context, event bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("Recovering from panic in wsStart(), the error is:  %v", err)
 			log.Println("停止获取弹幕")
 		}
 	}()
-	defer dq.q.Dispose()
+
+	if !event {
+		defer dq.q.Dispose()
+	}
 
 	conn, err := fastws.Dial(host)
 	checkErr(err)
@@ -125,7 +128,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context) {
 	go func() {
 		defer wg.Done()
 		for stream := range payloadCh {
-			err := dq.t.handleCommand(conn, stream, dq.q, dq.info, hb)
+			err := dq.handleCommand(conn, stream, hb, event)
 			if err != nil {
 				log.Printf("处理接收到的数据出现错误：%v", err)
 			}
