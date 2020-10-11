@@ -408,7 +408,7 @@ func (dq *DanmuQueue) StartDanmu(ctx context.Context, event bool) {
 	go dq.wsStart(ctx, event)
 }
 
-// GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu()
+// GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu(ctx, false)
 func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	if dq.q == nil {
 		log.Println("需要先调用StartDanmu()，event不能为true")

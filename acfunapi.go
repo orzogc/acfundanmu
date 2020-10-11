@@ -583,12 +583,12 @@ func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 	return dq.t.getLuckList(redpack)
 }
 
-// GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0)，不需要调用StartDanmu()，目前部分直播没有回放
+// GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()，目前部分直播没有回放
 func (dq *DanmuQueue) GetPlayback(liveID string) (Playback, error) {
 	return dq.t.getPlayback(liveID)
 }
 
-// GetAllGift 返回全部礼物的数据，可以调用Init(0)，不需要调用StartDanmu()
+// GetAllGift 返回全部礼物的数据，可以调用Init(0, nil)，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetAllGift() (map[int64]GiftDetail, error) {
 	return dq.t.getAllGift()
 }
@@ -598,7 +598,7 @@ func (dq *DanmuQueue) GetWalletBalance() (accoins int, bananas int, e error) {
 	return dq.t.getWalletBalance()
 }
 
-// GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName
+// GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName，利用Login()获取AcFun帐号的cookies
 func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, err error) {
 	return getMedalInfo(uid, cookies)
 }
