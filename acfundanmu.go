@@ -322,6 +322,8 @@ func Init(uid int64, cookies []string) (dq *DanmuQueue, err error) {
 		dq.t.cookies = append([]string{}, cookies...)
 	}
 	dq.info = new(liveInfo)
+	dq.handlerMap = new(handlerMap)
+	dq.handlerMap.listMap = make(map[eventType][]eventHandler)
 
 	for retry := 0; retry < 3; retry++ {
 		dq.info.StreamInfo, err = dq.t.getToken()
@@ -363,6 +365,9 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 	}
 	dq.info = new(liveInfo)
 	dq.info.TokenInfo = tokenInfo
+	dq.info.TokenInfo.Cookies = append([]string{}, tokenInfo.Cookies...)
+	dq.handlerMap = new(handlerMap)
+	dq.handlerMap.listMap = make(map[eventType][]eventHandler)
 
 	for retry := 0; retry < 3; retry++ {
 		dq.info.StreamInfo, err = dq.t.getLiveToken()
@@ -399,10 +404,7 @@ func (dq *DanmuQueue) StartDanmu(ctx context.Context, event bool) {
 		log.Println("主播uid不能为0")
 		return
 	}
-	if event {
-		dq.handlerMap = new(handlerMap)
-		dq.handlerMap.listMap = make(map[eventType][]eventHandler)
-	} else {
+	if !event {
 		dq.q = queue.New(queueLen)
 	}
 	go dq.wsStart(ctx, event)
