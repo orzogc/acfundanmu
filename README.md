@@ -85,7 +85,7 @@ defer cancel()
 dq.StartDanmu(ctx, true)
 // 做其他事情
 ```
-#### 获取直播间状态信息
+#### 获取直播间状态信息（非事件模式）
 ```go
 // uid为主播的uid
 dq, err := acfundanmu.Init(uid, nil)

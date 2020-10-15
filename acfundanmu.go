@@ -479,7 +479,7 @@ func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 	return danmu
 }
 
-// GetLiveInfo 返回直播间的状态信息，需要先调用StartDanmu()
+// GetLiveInfo 返回直播间的状态信息，需要先调用StartDanmu(ctx, false)
 func (dq *DanmuQueue) GetLiveInfo() (info LiveInfo) {
 	dq.info.Lock()
 	defer dq.info.Unlock()
