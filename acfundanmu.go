@@ -223,6 +223,7 @@ type Redpack struct {
 }
 
 // ChatInfo 连麦信息
+/*
 type ChatInfo struct {
 	ChatID          string        // 连麦ID
 	LiveID          string        // 直播ID
@@ -230,6 +231,34 @@ type ChatInfo struct {
 	Guest           UserInfo      // 被连麦的帐号信息，目前没有房管类型
 	MediaType       ChatMediaType // 连麦类型
 	EndType         ChatEndType   // 连麦结束类型
+}
+*/
+
+// ChatCall 主播发起连麦
+type ChatCall struct {
+	ChatID          string // 连麦ID
+	LiveID          string // 直播ID
+	CallTimestampMs int64  // 连麦发起时间
+}
+
+// ChatAccept 用户接受连麦？一般不会出现这个信号
+type ChatAccept struct {
+	ChatID          string        // 连麦ID
+	MediaType       ChatMediaType // 连麦类型
+	ArraySignalInfo string
+}
+
+// ChatReady 用户接受连麦的信息
+type ChatReady struct {
+	ChatID    string        // 连麦ID
+	Guest     UserInfo      // 被连麦的帐号信息，目前没有房管类型
+	MediaType ChatMediaType // 连麦类型
+}
+
+// ChatEnd 连麦结束
+type ChatEnd struct {
+	ChatID  string      // 连麦ID
+	EndType ChatEndType // 连麦结束类型
 }
 
 // TokenInfo 就是AcFun直播的token相关信息
@@ -259,18 +288,23 @@ type StreamInfo struct {
 	StreamName    string      // 直播源名字（ID）
 }
 
+// DisplayInfo 就是直播间的一些数据
+type DisplayInfo struct {
+	WatchingCount string // 直播间在线观众数量
+	LikeCount     string // 直播间点赞总数
+	LikeDelta     int    // 点赞增加数量
+}
+
 // LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
 	KickedOut        string       // 被踢理由？
 	ViolationAlert   string       // 直播间警告？
-	LiveManagerState ManagerState // 登陆帐号的房管状态？
+	LiveManagerState ManagerState // 登陆帐号的房管状态
 	AllBananaCount   string       // 直播间香蕉总数
-	WatchingCount    string       // 直播间在线观众数量
-	LikeCount        string       // 直播间点赞总数
-	LikeDelta        int          // 点赞增加数量？
-	TopUsers         []TopUser    // 礼物榜在线前三
-	RedpackList      []Redpack    // 红包列表
-	Chat             ChatInfo     // 连麦信息
+	DisplayInfo
+	TopUsers      []TopUser // 礼物榜在线前三
+	RecentComment []Comment // APP进直播间时显示的最近发的弹幕
+	RedpackList   []Redpack // 红包列表
 }
 
 // 带锁的LiveInfo
@@ -279,7 +313,6 @@ type liveInfo struct {
 	LiveInfo
 	TokenInfo
 	StreamInfo
-	RecentComment []Comment // APP进直播间时显示的最近发的弹幕
 }
 
 // DanmuQueue 就是直播间弹幕系统相关信息
@@ -392,7 +425,7 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 	return dq, nil
 }
 
-// ReInit 利用已有的 *DanmuQueue 重新初始化，返回新的 *DanmuQueue，事件模式下clearHandlers为true时需要重新运行OnComment等函数
+// ReInit 利用已有的 *DanmuQueue 重新初始化，返回新的 *DanmuQueue，事件模式下clearHandlers为true时需要重新调用OnComment等函数
 func (dq *DanmuQueue) ReInit(uid int64, clearHandlers bool) (newDQ *DanmuQueue, err error) {
 	tokenInfo := dq.GetTokenInfo()
 	newDQ, err = InitWithToken(uid, tokenInfo)
@@ -452,6 +485,7 @@ func (dq *DanmuQueue) GetLiveInfo() (info LiveInfo) {
 	defer dq.info.Unlock()
 	info = dq.info.LiveInfo
 	info.TopUsers = append([]TopUser{}, dq.info.TopUsers...)
+	info.RecentComment = append([]Comment{}, dq.info.RecentComment...)
 	info.RedpackList = append([]Redpack{}, dq.info.RedpackList...)
 	return info
 }
@@ -468,12 +502,4 @@ func (dq *DanmuQueue) GetStreamInfo() (info StreamInfo) {
 	info = dq.info.StreamInfo
 	info.StreamList = append([]StreamURL{}, dq.info.StreamList...)
 	return info
-}
-
-// GetRecentComment 返回进直播间时直播间里最近发的十条弹幕，需要先调用StartDanmu()
-func (dq *DanmuQueue) GetRecentComment() (comments []Comment) {
-	dq.info.Lock()
-	defer dq.info.Unlock()
-	comments = append([]Comment{}, dq.info.RecentComment...)
-	return comments
 }

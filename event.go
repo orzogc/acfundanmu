@@ -17,6 +17,18 @@ const (
 	throwBananaDanmu
 	giftDanmu
 	richTextDanmu
+	bananaCountInfo
+	displayInfo
+	topUsersInfo
+	recentCommentInfo
+	chatCallInfo
+	chatAcceptInfo
+	chatReadyInfo
+	chatEndInfo
+	redpackListInfo
+	kickedOutInfo
+	violationAlertInfo
+	managerStateInfo
 )
 
 // 事件handler
@@ -55,65 +67,141 @@ func (dq *DanmuQueue) dispatchEvent(t eventType, i interface{}) {
 }
 
 // OnLiveOff 处理直播结束信号，handler需要支持并行处理
-func (dq *DanmuQueue) OnLiveOff(handler func(*DanmuQueue, string)) {
-	f := func(dq *DanmuQueue, i interface{}) {
+func (dq *DanmuQueue) OnLiveOff(handler func(dq *DanmuQueue, reason string)) {
+	dq.handlerMap.add(liveOff, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(string))
-	}
-	dq.handlerMap.add(liveOff, f)
+	})
 }
 
 // OnComment 处理评论弹幕，handler需要支持并行处理
 func (dq *DanmuQueue) OnComment(handler func(*DanmuQueue, *Comment)) {
-	f := func(dq *DanmuQueue, i interface{}) {
+	dq.handlerMap.add(commentDanmu, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*Comment))
-	}
-	dq.handlerMap.add(commentDanmu, f)
+	})
 }
 
 // OnLike 处理点赞弹幕，handler需要支持并行处理
 func (dq *DanmuQueue) OnLike(handler func(*DanmuQueue, *Like)) {
-	f := func(dq *DanmuQueue, i interface{}) {
+	dq.handlerMap.add(likeDanmu, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*Like))
-	}
-	dq.handlerMap.add(likeDanmu, f)
+	})
 }
 
 // OnEnterRoom 处理用户进场，handler需要支持并行处理
 func (dq *DanmuQueue) OnEnterRoom(handler func(*DanmuQueue, *EnterRoom)) {
-	f := func(dq *DanmuQueue, i interface{}) {
+	dq.handlerMap.add(enterRoomDanmu, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*EnterRoom))
-	}
-	dq.handlerMap.add(enterRoomDanmu, f)
+	})
 }
 
 // OnFollowAuthor 处理用户关注主播，handler需要支持并行处理
 func (dq *DanmuQueue) OnFollowAuthor(handler func(*DanmuQueue, *FollowAuthor)) {
-	f := func(dq *DanmuQueue, i interface{}) {
+	dq.handlerMap.add(followAuthorDanmu, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*FollowAuthor))
-	}
-	dq.handlerMap.add(followAuthorDanmu, f)
+	})
 }
 
 // OnThrowBanana 处理用户投蕉，现在基本用 OnGift 代替，handler需要支持并行处理
 func (dq *DanmuQueue) OnThrowBanana(handler func(*DanmuQueue, *ThrowBanana)) {
-	f := func(dq *DanmuQueue, i interface{}) {
+	dq.handlerMap.add(throwBananaDanmu, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*ThrowBanana))
-	}
-	dq.handlerMap.add(throwBananaDanmu, f)
+	})
 }
 
 // OnGift 处理用户赠送礼物，handler需要支持并行处理
 func (dq *DanmuQueue) OnGift(handler func(*DanmuQueue, *Gift)) {
-	f := func(dq *DanmuQueue, i interface{}) {
+	dq.handlerMap.add(giftDanmu, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*Gift))
-	}
-	dq.handlerMap.add(giftDanmu, f)
+	})
 }
 
 // OnRichText 处理富文本，handler需要支持并行处理
 func (dq *DanmuQueue) OnRichText(handler func(*DanmuQueue, *RichText)) {
-	f := func(dq *DanmuQueue, i interface{}) {
+	dq.handlerMap.add(richTextDanmu, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*RichText))
-	}
-	dq.handlerMap.add(richTextDanmu, f)
+	})
+}
+
+// OnBananaCount 处理直播间获得的香蕉数
+func (dq *DanmuQueue) OnBananaCount(handler func(dq *DanmuQueue, allBananaCount string)) {
+	dq.handlerMap.add(bananaCountInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(string))
+	})
+}
+
+// OnDisplayInfo 处理直播间的一些数据
+func (dq *DanmuQueue) OnDisplayInfo(handler func(*DanmuQueue, *DisplayInfo)) {
+	dq.handlerMap.add(displayInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(*DisplayInfo))
+	})
+}
+
+// OnTopUsers 处理直播间礼物榜在线前三的信息
+func (dq *DanmuQueue) OnTopUsers(handler func(*DanmuQueue, []TopUser)) {
+	dq.handlerMap.add(topUsersInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.([]TopUser))
+	})
+}
+
+// OnRecentComment 处理APP进直播间时显示的最近发的弹幕
+func (dq *DanmuQueue) OnRecentComment(handler func(*DanmuQueue, []Comment)) {
+	dq.handlerMap.add(recentCommentInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.([]Comment))
+	})
+}
+
+// OnChatCall 处理主播发起连麦
+func (dq *DanmuQueue) OnChatCall(handler func(*DanmuQueue, *ChatCall)) {
+	dq.handlerMap.add(chatCallInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(*ChatCall))
+	})
+}
+
+// OnChatAccept 处理用户接受连麦？一般不会出现这个信号
+func (dq *DanmuQueue) OnChatAccept(handler func(*DanmuQueue, *ChatAccept)) {
+	dq.handlerMap.add(chatAcceptInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(*ChatAccept))
+	})
+}
+
+// OnChatReady 处理用户接受连麦的信息
+func (dq *DanmuQueue) OnChatReady(handler func(*DanmuQueue, *ChatReady)) {
+	dq.handlerMap.add(chatReadyInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(*ChatReady))
+	})
+}
+
+// OnChatEnd 处理连麦结束
+func (dq *DanmuQueue) OnChatEnd(handler func(*DanmuQueue, *ChatEnd)) {
+	dq.handlerMap.add(chatEndInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(*ChatEnd))
+	})
+}
+
+// OnRedpackList 处理直播间的红包列表
+func (dq *DanmuQueue) OnRedpackList(handler func(*DanmuQueue, []Redpack)) {
+	dq.handlerMap.add(redpackListInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.([]Redpack))
+	})
+}
+
+// OnKickedOut 处理被踢出直播间
+func (dq *DanmuQueue) OnKickedOut(handler func(dq *DanmuQueue, kickedOutReason string)) {
+	dq.handlerMap.add(kickedOutInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(string))
+	})
+}
+
+// OnViolationAlert 处理直播间警告
+func (dq *DanmuQueue) OnViolationAlert(handler func(dq *DanmuQueue, violationContent string)) {
+	dq.handlerMap.add(violationAlertInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(string))
+	})
+}
+
+// OnManagerState 处理登陆帐号的房管状态
+func (dq *DanmuQueue) OnManagerState(handler func(*DanmuQueue, ManagerState)) {
+	dq.handlerMap.add(managerStateInfo, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(ManagerState))
+	})
 }
