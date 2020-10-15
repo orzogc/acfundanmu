@@ -54,7 +54,7 @@ func (dq *DanmuQueue) dispatchEvent(t eventType, i interface{}) {
 	}
 }
 
-// OnLiveOff 处理直播结束信号
+// OnLiveOff 处理直播结束信号，handler需要支持并行处理
 func (dq *DanmuQueue) OnLiveOff(handler func(*DanmuQueue, string)) {
 	f := func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(string))
@@ -62,7 +62,7 @@ func (dq *DanmuQueue) OnLiveOff(handler func(*DanmuQueue, string)) {
 	dq.handlerMap.add(liveOff, f)
 }
 
-// OnComment 处理评论弹幕
+// OnComment 处理评论弹幕，handler需要支持并行处理
 func (dq *DanmuQueue) OnComment(handler func(*DanmuQueue, *Comment)) {
 	f := func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*Comment))
@@ -70,7 +70,7 @@ func (dq *DanmuQueue) OnComment(handler func(*DanmuQueue, *Comment)) {
 	dq.handlerMap.add(commentDanmu, f)
 }
 
-// OnLike 处理点赞弹幕
+// OnLike 处理点赞弹幕，handler需要支持并行处理
 func (dq *DanmuQueue) OnLike(handler func(*DanmuQueue, *Like)) {
 	f := func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*Like))
@@ -78,7 +78,7 @@ func (dq *DanmuQueue) OnLike(handler func(*DanmuQueue, *Like)) {
 	dq.handlerMap.add(likeDanmu, f)
 }
 
-// OnEnterRoom 处理用户进场
+// OnEnterRoom 处理用户进场，handler需要支持并行处理
 func (dq *DanmuQueue) OnEnterRoom(handler func(*DanmuQueue, *EnterRoom)) {
 	f := func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*EnterRoom))
@@ -86,7 +86,7 @@ func (dq *DanmuQueue) OnEnterRoom(handler func(*DanmuQueue, *EnterRoom)) {
 	dq.handlerMap.add(enterRoomDanmu, f)
 }
 
-// OnFollowAuthor 处理用户关注主播
+// OnFollowAuthor 处理用户关注主播，handler需要支持并行处理
 func (dq *DanmuQueue) OnFollowAuthor(handler func(*DanmuQueue, *FollowAuthor)) {
 	f := func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*FollowAuthor))
@@ -94,7 +94,7 @@ func (dq *DanmuQueue) OnFollowAuthor(handler func(*DanmuQueue, *FollowAuthor)) {
 	dq.handlerMap.add(followAuthorDanmu, f)
 }
 
-// OnThrowBanana 处理用户投蕉，现在基本用 OnGift 代替
+// OnThrowBanana 处理用户投蕉，现在基本用 OnGift 代替，handler需要支持并行处理
 func (dq *DanmuQueue) OnThrowBanana(handler func(*DanmuQueue, *ThrowBanana)) {
 	f := func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*ThrowBanana))
@@ -102,7 +102,7 @@ func (dq *DanmuQueue) OnThrowBanana(handler func(*DanmuQueue, *ThrowBanana)) {
 	dq.handlerMap.add(throwBananaDanmu, f)
 }
 
-// OnGift 处理用户赠送礼物
+// OnGift 处理用户赠送礼物，handler需要支持并行处理
 func (dq *DanmuQueue) OnGift(handler func(*DanmuQueue, *Gift)) {
 	f := func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*Gift))
@@ -110,7 +110,7 @@ func (dq *DanmuQueue) OnGift(handler func(*DanmuQueue, *Gift)) {
 	dq.handlerMap.add(giftDanmu, f)
 }
 
-// OnRichText 处理富文本
+// OnRichText 处理富文本，handler需要支持并行处理
 func (dq *DanmuQueue) OnRichText(handler func(*DanmuQueue, *RichText)) {
 	f := func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*RichText))

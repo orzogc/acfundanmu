@@ -387,12 +387,17 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 	return dq, nil
 }
 
-// ReInit 利用已有的 *DanmuQueue 重新初始化，返回新的 *DanmuQueue
-func (dq *DanmuQueue) ReInit(uid int64) (newDQ *DanmuQueue, err error) {
+// ReInit 利用已有的 *DanmuQueue 重新初始化，返回新的 *DanmuQueue，事件模式下clearHandlers为true时需要重新运行OnComment等函数
+func (dq *DanmuQueue) ReInit(uid int64, clearHandlers bool) (newDQ *DanmuQueue, err error) {
 	tokenInfo := dq.GetTokenInfo()
 	newDQ, err = InitWithToken(uid, tokenInfo)
 	if err != nil {
 		return nil, err
+	}
+	if !clearHandlers {
+		for k, v := range dq.handlerMap.listMap {
+			newDQ.handlerMap.listMap[k] = v
+		}
 	}
 	return newDQ, nil
 }
