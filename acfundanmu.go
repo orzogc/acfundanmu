@@ -131,6 +131,11 @@ type MedalInfo struct {
 	Level    int    // 守护徽章等级
 }
 
+// RichTextSegment 副文本片段的接口
+type RichTextSegment interface {
+	RichTextType() string
+}
+
 // RichTextUserInfo 富文本里的用户信息
 type RichTextUserInfo struct {
 	UserInfo
@@ -198,8 +203,8 @@ type Gift struct {
 
 // RichText 富文本，目前是用于发红包和抢红包的相关消息
 type RichText struct {
-	SendTime int64         // 弹幕发送时间，是以纳秒为单位的Unix时间
-	Segments []interface{} // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
+	SendTime int64             // 弹幕发送时间，是以纳秒为单位的Unix时间
+	Segments []RichTextSegment // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
 }
 
 // TopUser 就是礼物榜在线前三，目前没有Medal和ManagerType

@@ -277,11 +277,11 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 				d := &RichText{
 					SendTime: richText.SendTimeMs,
 				}
-				d.Segments = make([]interface{}, len(richText.Segments))
+				d.Segments = make([]RichTextSegment, len(richText.Segments))
 				for i, segment := range richText.Segments {
 					switch segment := segment.Segment.(type) {
 					case *acproto.CommonActionSignalRichText_RichTextSegment_UserInfo:
-						userInfo := RichTextUserInfo{
+						userInfo := &RichTextUserInfo{
 							UserInfo: UserInfo{
 								UserID:   segment.UserInfo.User.UserId,
 								Nickname: segment.UserInfo.User.Nickname,
@@ -291,13 +291,13 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 						dq.t.getMoreInfo(&userInfo.UserInfo, segment.UserInfo.User)
 						d.Segments[i] = userInfo
 					case *acproto.CommonActionSignalRichText_RichTextSegment_Plain:
-						plain := RichTextPlain{
+						plain := &RichTextPlain{
 							Text:  segment.Plain.Text,
 							Color: segment.Plain.Color,
 						}
 						d.Segments[i] = plain
 					case *acproto.CommonActionSignalRichText_RichTextSegment_Image:
-						image := RichTextImage{
+						image := &RichTextImage{
 							AlternativeText:  segment.Image.AlternativeText,
 							AlternativeColor: segment.Image.AlternativeColor,
 						}

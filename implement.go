@@ -68,9 +68,24 @@ func (d *RichText) GetSendTime() int64 {
 // GetUserInfo 获取弹幕的用户信息，返回第一个RichTextUserInfo的UserInfo，否则返回空的UserInfo
 func (d *RichText) GetUserInfo() UserInfo {
 	for _, segment := range d.Segments {
-		if u, ok := segment.(RichTextUserInfo); ok {
+		if u, ok := segment.(*RichTextUserInfo); ok {
 			return u.UserInfo
 		}
 	}
 	return UserInfo{}
+}
+
+// RichTextType 返回RichText的类型，也就是 "RichTextUserInfo"
+func (*RichTextUserInfo) RichTextType() string {
+	return "RichTextUserInfo"
+}
+
+// RichTextType 返回RichText的类型，也就是 "RichTextPlain"
+func (*RichTextPlain) RichTextType() string {
+	return "RichTextPlain"
+}
+
+// RichTextType 返回RichText的类型，也就是 "RichTextImage"
+func (*RichTextImage) RichTextType() string {
+	return "RichTextImage"
 }

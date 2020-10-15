@@ -33,11 +33,11 @@ for {
             case *acfundanmu.RichText:
                 for _, r := range d.Segments {
                     switch r := r.(type) {
-                    case acfundanmu.RichTextUserInfo:
-                        log.Printf("富文本用户信息：%+v\n", r)
-                    case acfundanmu.RichTextPlain:
+                    case *acfundanmu.RichTextUserInfo:
+                        log.Printf("富文本用户信息：%+v\n", *r)
+                    case *acfundanmu.RichTextPlain:
                         log.Printf("富文本文字：%s，颜色：%s\n", r.Text, r.Color)
-                    case acfundanmu.RichTextImage:
+                    case *acfundanmu.RichTextImage:
                         for _, image := range r.Pictures {
                             log.Printf("富文本图片：%s\n", image)
                         }
