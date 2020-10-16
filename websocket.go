@@ -104,7 +104,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool) {
 			if err != nil {
 				if !errors.Is(err, fastws.EOF) {
 					log.Printf("websocket接收数据出现错误：%v", err)
-					log.Println("停止获取弹幕")
+					log.Printf("停止获取uid为%d的主播的直播弹幕", dq.t.uid)
 				}
 				break
 			}
