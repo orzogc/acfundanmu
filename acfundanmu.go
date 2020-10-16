@@ -503,3 +503,12 @@ func (dq *DanmuQueue) GetStreamInfo() (info StreamInfo) {
 	info.StreamList = append([]StreamURL{}, dq.info.StreamList...)
 	return info
 }
+
+// GetTokenInfo 返回TokenInfo，相当于调用 Init(0, cookies) 后返回对应的TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
+func GetTokenInfo(cookies []string) (TokenInfo, error) {
+	dq, err := Init(0, cookies)
+	if err != nil {
+		return TokenInfo{}, err
+	}
+	return dq.GetTokenInfo(), nil
+}
