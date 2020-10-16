@@ -504,6 +504,11 @@ func (dq *DanmuQueue) GetStreamInfo() (info StreamInfo) {
 	return info
 }
 
+// GetUID 返回主播的uid，有可能是0
+func (dq *DanmuQueue) GetUID() int64 {
+	return dq.t.uid
+}
+
 // GetTokenInfo 返回TokenInfo，相当于调用 Init(0, cookies) 后返回对应的TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
 func GetTokenInfo(cookies []string) (TokenInfo, error) {
 	dq, err := Init(0, cookies)
