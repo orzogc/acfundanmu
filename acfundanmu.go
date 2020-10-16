@@ -494,7 +494,7 @@ func (dq *DanmuQueue) GetLiveInfo() (info LiveInfo) {
 func (dq *DanmuQueue) GetTokenInfo() (info TokenInfo) {
 	info = dq.info.TokenInfo
 	info.Cookies = append([]string{}, dq.info.Cookies...)
-	return dq.info.TokenInfo
+	return info
 }
 
 // GetStreamInfo 返回直播的一些信息，不需要调用StartDanmu()
