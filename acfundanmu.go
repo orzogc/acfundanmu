@@ -442,15 +442,19 @@ func (dq *DanmuQueue) ReInit(uid int64, clearHandlers bool) (newDQ *DanmuQueue, 
 
 // StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，event为true时采用事件模式。
 // event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
-func (dq *DanmuQueue) StartDanmu(ctx context.Context, event bool) {
+func (dq *DanmuQueue) StartDanmu(ctx context.Context, event bool) <-chan error {
+	ch := make(chan error, 1)
 	if dq.t.uid == 0 {
-		log.Println("主播uid不能为0")
-		return
+		err := fmt.Errorf("主播uid不能为0")
+		log.Println(err)
+		ch <- err
+		return ch
 	}
 	if !event {
 		dq.q = queue.New(queueLen)
 	}
-	go dq.wsStart(ctx, event)
+	go dq.wsStart(ctx, event, ch)
+	return ch
 }
 
 // GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu(ctx, false)

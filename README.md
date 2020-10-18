@@ -13,7 +13,7 @@ if err != nil {
 }
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
-dq.StartDanmu(ctx, false)
+ch := dq.StartDanmu(ctx, false)
 for {
     if danmu := dq.GetDanmu(); danmu != nil {
         for _, d := range danmu {
@@ -47,8 +47,11 @@ for {
             }
         }
     } else {
-        log.Println("直播结束")
-        break
+        if err = <-ch; err != nil {
+            log.Panicln(err)
+        } else {
+            log.Println("直播结束")
+        }
     }
 }
 ```
@@ -82,8 +85,12 @@ dq.OnGift(func(dq *acfundanmu.DanmuQueue, d *acfundanmu.Gift) {
 })
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
-dq.StartDanmu(ctx, true)
-// 做其他事情
+ch := dq.StartDanmu(ctx, true)
+if err = <-ch; err != nil {
+    log.Panicln(err)
+} else {
+    log.Println("直播结束")
+}
 ```
 #### 获取直播间状态信息（非事件模式）
 ```go
@@ -94,21 +101,23 @@ if err != nil {
 }
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
-dq.StartDanmu(ctx, false)
-go func() {
-    for {
-        select {
-        case <-ctx.Done():
-            return
-        default:
-            // 循环获取info并处理
-            time.Sleep(5 * time.Second)
-            info := dq.GetLiveInfo()
-            log.Printf("%+v\n", info)
-        }
+ch := dq.StartDanmu(ctx, false)
+for {
+    select {
+    case <-ctx.Done():
+        return
+    default:
+        // 循环获取info并处理
+        time.Sleep(5 * time.Second)
+        info := dq.GetLiveInfo()
+        log.Printf("%+v\n", info)
     }
-}()
-// 做其他事情
+}
+if err = <-ch; err != nil {
+    log.Panicln(err)
+} else {
+    log.Println("直播结束")
+}
 ```
 #### 获取直播间排名前50的在线观众信息列表
 ```go
@@ -146,7 +155,7 @@ if err != nil {
 }
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
-dq.StartDanmu(ctx, false)
+ch := dq.StartDanmu(ctx, false)
 dq.WriteASS(ctx, acfundanmu.SubConfig{
     Title:     "foo",
     PlayResX:  1280, // 直播录播视频的分辨率
@@ -154,4 +163,9 @@ dq.WriteASS(ctx, acfundanmu.SubConfig{
     FontSize:  40,
     StartTime: time.Now().UnixNano()}, // 这里应该是开始录播的时间
     "foo.ass", true)
+if err = <-ch; err != nil {
+    log.Panicln(err)
+} else {
+    log.Println("直播结束")
+}
 ```

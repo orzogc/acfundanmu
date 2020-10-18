@@ -42,11 +42,12 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, hb chan int6
 }
 
 // 启动websocket
-func (dq *DanmuQueue) wsStart(ctx context.Context, event bool) {
+func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- error) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("Recovering from panic in wsStart(), the error is:  %v", err)
 			log.Println("停止获取弹幕")
+			errCh <- err.(error)
 		}
 	}()
 
@@ -92,6 +93,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool) {
 
 	msgCh := make(chan []byte, 100)
 	payloadCh := make(chan *acproto.DownstreamPayload, 100)
+	hasError := false
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -105,6 +107,8 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool) {
 				if !errors.Is(err, fastws.EOF) {
 					log.Printf("websocket接收数据出现错误：%v", err)
 					log.Printf("停止获取uid为%d的主播的直播弹幕", dq.t.uid)
+					hasError = true
+					errCh <- err
 				}
 				break
 			}
@@ -138,6 +142,9 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool) {
 	}()
 
 	wg.Wait()
+	if !hasError {
+		errCh <- nil
+	}
 }
 
 // 停止websocket
