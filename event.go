@@ -67,9 +67,9 @@ func (dq *DanmuQueue) dispatchEvent(t eventType, i interface{}) {
 }
 
 // OnLiveOff 处理直播结束信号，有可能是网络原因导致连接超时，直播不一定真的结束，可以多次调用
-func (dq *DanmuQueue) OnLiveOff(handler func(dq *DanmuQueue, reason string)) {
+func (dq *DanmuQueue) OnLiveOff(handler func(*DanmuQueue, error)) {
 	dq.handlerMap.add(liveOff, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(string))
+		handler(dq, i.(error))
 	})
 }
 

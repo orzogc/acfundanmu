@@ -62,8 +62,12 @@ dq, err := acfundanmu.Init(uid, nil)
 if err != nil {
     log.Panicln(err)
 }
-dq.OnLiveOff(func(dq *acfundanmu.DanmuQueue, s string) {
-    log.Println(s)
+dq.OnLiveOff(func(dq *acfundanmu.DanmuQueue, err error) {
+    if err != nil {
+        log.Println(err)
+    } else {
+        log.Println("直播结束")
+    }
 })
 dq.OnComment(func(dq *acfundanmu.DanmuQueue, d *acfundanmu.Comment) {
     log.Printf("%s（%d）：%s\n", d.Nickname, d.UserID, d.Content)
@@ -85,12 +89,8 @@ dq.OnGift(func(dq *acfundanmu.DanmuQueue, d *acfundanmu.Gift) {
 })
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
-ch := dq.StartDanmu(ctx, true)
-if err = <-ch; err != nil {
-    log.Panicln(err)
-} else {
-    log.Println("直播结束")
-}
+_ = dq.StartDanmu(ctx, true)
+// 做其他事情
 ```
 #### 获取直播间状态信息（非事件模式）
 ```go

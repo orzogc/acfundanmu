@@ -48,12 +48,13 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 			log.Printf("Recovering from panic in wsStart(), the error is:  %v", err)
 			log.Println("停止获取弹幕")
 			errCh <- err.(error)
+			if event {
+				dq.dispatchEvent(liveOff, err.(error))
+			}
 		}
 	}()
 
-	if event {
-		defer dq.dispatchEvent(liveOff, "停止获取弹幕")
-	} else {
+	if !event {
 		defer dq.q.Dispose()
 	}
 
@@ -109,6 +110,9 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 					log.Printf("停止获取uid为%d的主播的直播弹幕", dq.t.uid)
 					hasError = true
 					errCh <- err
+					if event {
+						dq.dispatchEvent(liveOff, err)
+					}
 				}
 				break
 			}
@@ -144,6 +148,9 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 	wg.Wait()
 	if !hasError {
 		errCh <- nil
+		if event {
+			dq.dispatchEvent(liveOff, nil)
+		}
 	}
 }
 
