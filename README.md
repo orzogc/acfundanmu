@@ -44,6 +44,8 @@ for {
                         log.Printf("富文本图片另外的文字：%s，颜色：%s\n", r.AlternativeText, r.AlternativeColor)
                     }
                 }
+            case *acfundanmu.JoinClub:
+                log.Printf("%s（%d）加入主播%s（%d）的守护团", d.FansInfo.Nickname, d.FansInfo.UserID, d.UperInfo.Nickname, d.UperInfo.UserID)
             }
         }
     } else {
@@ -86,6 +88,9 @@ dq.OnThrowBanana(func(dq *acfundanmu.DanmuQueue, d *acfundanmu.ThrowBanana) {
 })
 dq.OnGift(func(dq *acfundanmu.DanmuQueue, d *acfundanmu.Gift) {
     log.Printf("%s（%d）送出礼物 %s * %d，连击数：%d\n", d.Nickname, d.UserID, d.GiftName, d.Count, d.Combo)
+})
+dq.OnJoinClub(func(dq *acfundanmu.DanmuQueue, d *acfundanmu.JoinClub) {
+    log.Printf("%s（%d）加入主播%s（%d）的守护团", d.FansInfo.Nickname, d.FansInfo.UserID, d.UperInfo.Nickname, d.UperInfo.UserID)
 })
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()

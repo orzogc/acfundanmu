@@ -207,19 +207,26 @@ type RichText struct {
 	Segments []RichTextSegment // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
 }
 
+// JoinClub 用户加入主播的守护团，FansInfo和UperInfo都没有Avatar、Medal和ManagerType
+type JoinClub struct {
+	JoinTime int64    // 用户加入守护团的时间，是以纳秒为单位的Unix时间
+	FansInfo UserInfo // 用户的信息
+	UperInfo UserInfo // 主播的信息
+}
+
 // TopUser 就是礼物榜在线前三，目前没有Medal和ManagerType
 type TopUser WatchingUser
 
 // Redpack 红包信息
 type Redpack struct {
-	UserInfo                                  // 发红包的用户
-	DisplayStatus        RedpackDisplayStatus // 红包的状态
-	GrabBeginTimeMs      int64                // 抢红包的开始时间
-	GetTokenLatestTimeMs int64                // 抢红包的用户获得token的最晚时间？
-	RedPackID            string               // 红包ID
-	RedpackBizUnit       string               // 一般是"ztLiveAcfunRedpackGift"
-	RedpackAmount        int64                // 红包的总价值，单位是AC币
-	SettleBeginTime      int64                // 抢红包的结束时间
+	UserInfo                                // 发红包的用户
+	DisplayStatus      RedpackDisplayStatus // 红包的状态
+	GrabBeginTime      int64                // 抢红包的开始时间，是以纳秒为单位的Unix时间
+	GetTokenLatestTime int64                // 抢红包的用户获得token的最晚时间？是以纳秒为单位的Unix时间
+	RedPackID          string               // 红包ID
+	RedpackBizUnit     string               // 一般是"ztLiveAcfunRedpackGift"
+	RedpackAmount      int64                // 红包的总价值，单位是AC币
+	SettleBeginTime    int64                // 抢红包的结束时间，是以纳秒为单位的Unix时间
 }
 
 // ChatInfo 连麦信息
@@ -236,9 +243,9 @@ type ChatInfo struct {
 
 // ChatCall 主播发起连麦
 type ChatCall struct {
-	ChatID          string // 连麦ID
-	LiveID          string // 直播ID
-	CallTimestampMs int64  // 连麦发起时间
+	ChatID   string // 连麦ID
+	LiveID   string // 直播ID
+	CallTime int64  // 连麦发起时间，是以纳秒为单位的Unix时间
 }
 
 // ChatAccept 用户接受连麦？一般不会出现这个信号

@@ -75,6 +75,16 @@ func (d *RichText) GetUserInfo() UserInfo {
 	return UserInfo{}
 }
 
+// GetSendTime 获取弹幕发送时间，实际上返回的是用户加入守护团的时间
+func (d *JoinClub) GetSendTime() int64 {
+	return d.JoinTime
+}
+
+// GetUserInfo 获取弹幕的用户信息，实际上返回的是加入守护团的用户的信息
+func (d *JoinClub) GetUserInfo() UserInfo {
+	return d.FansInfo
+}
+
 // RichTextType 返回RichText的类型，也就是 "RichTextUserInfo"
 func (*RichTextUserInfo) RichTextType() string {
 	return "RichTextUserInfo"

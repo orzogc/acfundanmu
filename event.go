@@ -17,6 +17,7 @@ const (
 	throwBananaDanmu
 	giftDanmu
 	richTextDanmu
+	joinClubDanmu
 	bananaCountInfo
 	displayInfo
 	topUsersInfo
@@ -119,6 +120,13 @@ func (dq *DanmuQueue) OnGift(handler func(*DanmuQueue, *Gift)) {
 func (dq *DanmuQueue) OnRichText(handler func(*DanmuQueue, *RichText)) {
 	dq.handlerMap.add(richTextDanmu, func(dq *DanmuQueue, i interface{}) {
 		handler(dq, i.(*RichText))
+	})
+}
+
+// OnJoinClub 处理用户加入主播守护团，handler需要支持并行处理，可以多次调用
+func (dq *DanmuQueue) OnJoinClub(handler func(*DanmuQueue, *JoinClub)) {
+	dq.handlerMap.add(joinClubDanmu, func(dq *DanmuQueue, i interface{}) {
+		handler(dq, i.(*JoinClub))
 	})
 }
 

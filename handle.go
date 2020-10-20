@@ -275,7 +275,7 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 				err := proto.Unmarshal(pl, richText)
 				checkErr(err)
 				d := &RichText{
-					SendTime: richText.SendTimeMs,
+					SendTime: richText.SendTimeMs * 1e6,
 				}
 				d.Segments = make([]RichTextSegment, len(richText.Segments))
 				for i, segment := range richText.Segments {
@@ -309,6 +309,22 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 					}
 				}
 				danmu = append(danmu, d)
+			case "AcfunActionSignalJoinClub":
+				join := &acproto.AcfunActionSignalJoinClub{}
+				err := proto.Unmarshal(pl, join)
+				checkErr(err)
+				d := &JoinClub{
+					JoinTime: join.JoinTimeMs * 1e6,
+					FansInfo: UserInfo{
+						UserID:   join.FansInfo.UserId,
+						Nickname: join.FansInfo.Name,
+					},
+					UperInfo: UserInfo{
+						UserID:   join.UperInfo.UserId,
+						Nickname: join.UperInfo.Name,
+					},
+				}
+				danmu = append(danmu, d)
 			default:
 				log.Printf("未知的Action Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 					item.SignalType,
@@ -340,6 +356,8 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 				dq.dispatchEvent(giftDanmu, d)
 			case *RichText:
 				dq.dispatchEvent(richTextDanmu, d)
+			case *JoinClub:
+				dq.dispatchEvent(joinClubDanmu, d)
 			}
 		} else {
 			err = dq.q.Put(d)
@@ -440,9 +458,9 @@ func (dq *DanmuQueue) handleStateSignal(payload *[]byte, event bool) {
 			checkErr(err)
 			if event {
 				dq.dispatchEvent(chatCallInfo, &ChatCall{
-					ChatID:          chatCall.ChatId,
-					LiveID:          chatCall.LiveId,
-					CallTimestampMs: chatCall.CallTimestampMs,
+					ChatID:   chatCall.ChatId,
+					LiveID:   chatCall.LiveId,
+					CallTime: chatCall.CallTimestampMs * 1e6,
 				})
 			}
 		case "CommonStateSignalChatAccept":
@@ -494,13 +512,13 @@ func (dq *DanmuQueue) handleStateSignal(payload *[]byte, event bool) {
 						UserID:   redpack.Sender.UserId,
 						Nickname: redpack.Sender.Nickname,
 					},
-					DisplayStatus:        RedpackDisplayStatus(redpack.DisplayStatus),
-					GrabBeginTimeMs:      redpack.GrabBeginTimeMs,
-					GetTokenLatestTimeMs: redpack.GetTokenLatestTimeMs,
-					RedPackID:            redpack.RedPackId,
-					RedpackBizUnit:       redpack.RedpackBizUnit,
-					RedpackAmount:        redpack.RedpackAmount,
-					SettleBeginTime:      redpack.SettleBeginTime,
+					DisplayStatus:      RedpackDisplayStatus(redpack.DisplayStatus),
+					GrabBeginTime:      redpack.GrabBeginTimeMs * 1e6,
+					GetTokenLatestTime: redpack.GetTokenLatestTimeMs * 1e6,
+					RedPackID:          redpack.RedPackId,
+					RedpackBizUnit:     redpack.RedpackBizUnit,
+					RedpackAmount:      redpack.RedpackAmount,
+					SettleBeginTime:    redpack.SettleBeginTime * 1e6,
 				}
 				dq.t.getMoreInfo(&r.UserInfo, redpack.Sender)
 				redpacks[i] = r
