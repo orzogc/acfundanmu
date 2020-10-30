@@ -412,7 +412,7 @@ func (t *token) getAuthorKickHistory() (e error) {
 	}()
 
 	if len(t.cookies) == 0 {
-		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
 	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, nil)
@@ -427,6 +427,35 @@ func (t *token) getAuthorKickHistory() (e error) {
 		panic(fmt.Errorf("获取主播踢人的历史记录失败，响应为 %s", string(body)))
 	} else {
 		log.Printf("获取主播踢人的历史记录的响应为 %s", string(body))
+	}
+
+	return nil
+}
+
+// 获取主播的房管列表
+func (t *token) getAuthorManagerList() (e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getAuthorManagerList() error: %w", err)
+		}
+	}()
+
+	if len(t.cookies) == 0 {
+		panic(fmt.Errorf("获取主播的房管列表需要登陆主播的AcFun帐号"))
+	}
+
+	resp, err := t.fetchKuaiShouAPI(authorManagerListURL, nil)
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("获取主播的房管列表失败，响应为 %s", string(body)))
+	} else {
+		log.Printf("获取主播的房管列表的响应为 %s", string(body))
 	}
 
 	return nil
@@ -628,9 +657,14 @@ func (dq *DanmuQueue) GetWalletBalance() (accoins int, bananas int, e error) {
 	return dq.t.getWalletBalance()
 }
 
-// GetAuthorKickHistory 返回主播踢人的历史记录，不需要调用StartDanmu()，未测试
+// GetAuthorKickHistory 返回主播踢人的历史记录，需要调用Login()登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
 func (dq *DanmuQueue) GetAuthorKickHistory() (e error) {
 	return dq.t.getAuthorKickHistory()
+}
+
+// GetAuthorManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
+func (dq *DanmuQueue) GetAuthorManagerList() (e error) {
+	return dq.t.getAuthorManagerList()
 }
 
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName，利用Login()获取AcFun帐号的cookies
