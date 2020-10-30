@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -402,6 +403,35 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	return accoins, bananas, nil
 }
 
+// 获取主播踢人的历史记录
+func (t *token) getAuthorKickHistory() (e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getAuthorKickHistory() error: %w", err)
+		}
+	}()
+
+	if len(t.cookies) == 0 {
+		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆AcFun帐号"))
+	}
+
+	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, nil)
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("获取主播踢人的历史记录失败，响应为 %s", string(body)))
+	} else {
+		log.Printf("获取主播踢人的历史记录的响应为 %s", string(body))
+	}
+
+	return nil
+}
+
 // 生成client sign
 func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign string, e error) {
 	defer func() {
@@ -596,6 +626,11 @@ func (dq *DanmuQueue) GetAllGift() (map[int64]GiftDetail, error) {
 // GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要调用Login()登陆AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
 func (dq *DanmuQueue) GetWalletBalance() (accoins int, bananas int, e error) {
 	return dq.t.getWalletBalance()
+}
+
+// GetAuthorKickHistory 返回主播踢人的历史记录，不需要调用StartDanmu()，未测试
+func (dq *DanmuQueue) GetAuthorKickHistory() (e error) {
+	return dq.t.getAuthorKickHistory()
 }
 
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName，利用Login()获取AcFun帐号的cookies

@@ -322,7 +322,7 @@ type liveInfo struct {
 	StreamInfo
 }
 
-// DanmuQueue 就是直播间弹幕系统相关信息
+// DanmuQueue 就是直播间弹幕系统相关信息，支持并行
 type DanmuQueue struct {
 	q          *queue.Queue // DanmuMessage的队列
 	info       *liveInfo    // 直播间的相关信息状态
