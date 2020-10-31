@@ -43,7 +43,7 @@ type MedalDetail struct {
 	UperAvatar         string // UP主的头像
 	WearMedal          bool   // 是否正在佩戴该守护徽章
 	FriendshipDegree   int    // 目前守护徽章的亲密度
-	JoinClubTime       int64  // 加入守护团的时间，单位为毫秒
+	JoinClubTime       int64  // 加入守护团的时间，是以纳秒为单位的Unix时间
 	CurrentDegreeLimit int    // 守护徽章目前等级的亲密度的上限
 }
 
@@ -97,26 +97,24 @@ func (t *token) getWatchingList() (watchingList []WatchingUser, e error) {
 	watchingList = make([]WatchingUser, len(watchArray))
 	for i, watch := range watchArray {
 		o := watch.GetObject()
-		w := WatchingUser{}
 		o.Visit(func(k []byte, v *fastjson.Value) {
 			switch string(k) {
 			case "userId":
-				w.UserID = v.GetInt64()
+				watchingList[i].UserID = v.GetInt64()
 			case "nickname":
-				w.Nickname = string(v.GetStringBytes())
+				watchingList[i].Nickname = string(v.GetStringBytes())
 			case "avatar":
-				w.Avatar = string(v.GetStringBytes("0", "url"))
+				watchingList[i].Avatar = string(v.GetStringBytes("0", "url"))
 			case "anonymousUser":
-				w.AnonymousUser = v.GetBool()
+				watchingList[i].AnonymousUser = v.GetBool()
 			case "displaySendAmount":
-				w.DisplaySendAmount = string(v.GetStringBytes())
+				watchingList[i].DisplaySendAmount = string(v.GetStringBytes())
 			case "customWatchingListData":
-				w.CustomData = string(v.GetStringBytes())
+				watchingList[i].CustomData = string(v.GetStringBytes())
 			case "managerType":
-				w.ManagerType = ManagerType(v.GetInt())
+				watchingList[i].ManagerType = ManagerType(v.GetInt())
 			}
 		})
-		watchingList[i] = w
 	}
 
 	return watchingList, nil
@@ -165,22 +163,20 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 	billboard = make([]BillboardUser, len(billboardArray))
 	for i, user := range billboardArray {
 		o := user.GetObject()
-		b := BillboardUser{}
 		o.Visit(func(k []byte, v *fastjson.Value) {
 			switch string(k) {
 			case "userId":
-				b.UserID = v.GetInt64()
+				billboard[i].UserID = v.GetInt64()
 			case "nickname":
-				b.Nickname = string(v.GetStringBytes())
+				billboard[i].Nickname = string(v.GetStringBytes())
 			case "avatar":
-				b.Avatar = string(v.GetStringBytes("0", "url"))
+				billboard[i].Avatar = string(v.GetStringBytes("0", "url"))
 			case "displaySendAmount":
-				b.DisplaySendAmount = string(v.GetStringBytes())
+				billboard[i].DisplaySendAmount = string(v.GetStringBytes())
 			case "customData":
-				b.CustomData = string(v.GetStringBytes())
+				billboard[i].CustomData = string(v.GetStringBytes())
 			}
 		})
-		billboard[i] = b
 	}
 
 	return billboard, nil
@@ -568,19 +564,29 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 	medalArray := v.GetArray("medalList")
 	medalList = make([]MedalDetail, len(medalArray))
 	for i, medal := range medalArray {
-		medalList[i] = MedalDetail{
-			MedalInfo: MedalInfo{
-				UperID:   medal.GetInt64("uperId"),
-				ClubName: string(medal.GetStringBytes("clubName")),
-				Level:    medal.GetInt("level"),
-			},
-			UperName:           string(medal.GetStringBytes("uperName")),
-			UperAvatar:         string(medal.GetStringBytes("uperHeadUrl")),
-			WearMedal:          medal.GetBool("wearMedal"),
-			FriendshipDegree:   medal.GetInt("friendshipDegree"),
-			JoinClubTime:       medal.GetInt64("joinClubTime"),
-			CurrentDegreeLimit: medal.GetInt("currentDegreeLimit"),
-		}
+		o := medal.GetObject()
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "uperId":
+				medalList[i].UperID = v.GetInt64()
+			case "clubName":
+				medalList[i].ClubName = string(v.GetStringBytes())
+			case "level":
+				medalList[i].Level = v.GetInt()
+			case "uperName":
+				medalList[i].UperName = string(v.GetStringBytes())
+			case "uperHeadUrl":
+				medalList[i].UperAvatar = string(v.GetStringBytes())
+			case "wearMedal":
+				medalList[i].WearMedal = v.GetBool()
+			case "friendshipDegree":
+				medalList[i].FriendshipDegree = v.GetInt()
+			case "joinClubTime":
+				medalList[i].JoinClubTime = v.GetInt64() * 1e6
+			case "currentDegreeLimit":
+				medalList[i].CurrentDegreeLimit = v.GetInt()
+			}
+		})
 	}
 
 	return medalList, clubName, nil
@@ -666,6 +672,15 @@ func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 // GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()，目前部分直播没有回放
 func (dq *DanmuQueue) GetPlayback(liveID string) (Playback, error) {
 	return dq.t.getPlayback(liveID)
+}
+
+// GetGiftList 返回指定主播直播间的礼物数据，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetGiftList() map[int64]GiftDetail {
+	gifts := make(map[int64]GiftDetail)
+	for k, v := range dq.t.gifts {
+		gifts[k] = v
+	}
+	return gifts
 }
 
 // GetAllGift 返回全部礼物的数据，可以调用Init(0, nil)，不需要调用StartDanmu()

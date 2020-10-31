@@ -367,25 +367,42 @@ func (t *token) getGiftList() (e error) {
 func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
 	gifts := make(map[int64]GiftDetail)
 	for _, gift := range v.GetArray("data", "giftList") {
-		g := GiftDetail{
-			GiftID:        gift.GetInt64("giftId"),
-			GiftName:      string(gift.GetStringBytes("giftName")),
-			ARLiveName:    string(gift.GetStringBytes("arLiveName")),
-			PayWalletType: gift.GetInt("payWalletType"),
-			Price:         gift.GetInt("giftPrice"),
-			WebpPic:       string(gift.GetStringBytes("webpPicList", "0", "url")),
-			PngPic:        string(gift.GetStringBytes("pngPicList", "0", "url")),
-			SmallPngPic:   string(gift.GetStringBytes("smallPngPicList", "0", "url")),
-			CanCombo:      gift.GetBool("canCombo"),
-			MagicFaceID:   gift.GetInt("magicFaceId"),
-			Description:   string(gift.GetStringBytes("description")),
-			RedpackPrice:  gift.GetInt("redpackPrice"),
-		}
-		list := gift.GetArray("allowBatchSendSizeList")
-		g.AllowBatchSendSizeList = make([]int, len(list))
-		for i, num := range list {
-			g.AllowBatchSendSizeList[i] = num.GetInt()
-		}
+		o := gift.GetObject()
+		g := GiftDetail{}
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "giftId":
+				g.GiftID = v.GetInt64()
+			case "giftName":
+				g.GiftName = string(v.GetStringBytes())
+			case "arLiveName":
+				g.ARLiveName = string(v.GetStringBytes())
+			case "payWalletType":
+				g.PayWalletType = v.GetInt()
+			case "giftPrice":
+				g.Price = v.GetInt()
+			case "webpPicList":
+				g.WebpPic = string(v.GetStringBytes("0", "url"))
+			case "pngPicList":
+				g.PngPic = string(v.GetStringBytes("0", "url"))
+			case "smallPngPicList":
+				g.SmallPngPic = string(v.GetStringBytes("0", "url"))
+			case "allowBatchSendSizeList":
+				list := v.GetArray()
+				g.AllowBatchSendSizeList = make([]int, len(list))
+				for i, num := range list {
+					g.AllowBatchSendSizeList[i] = num.GetInt()
+				}
+			case "canCombo":
+				g.CanCombo = v.GetBool()
+			case "magicFaceId":
+				g.MagicFaceID = v.GetInt()
+			case "description":
+				g.Description = string(v.GetStringBytes())
+			case "redpackPrice":
+				g.RedpackPrice = v.GetInt()
+			}
+		})
 		gifts[g.GiftID] = g
 	}
 
