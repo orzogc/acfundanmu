@@ -63,6 +63,13 @@ type Playback struct {
 	Height    int    // 录播视频高度
 }
 
+// Manager 就是房管的用户信息，目前没有Medal和ManagerType
+type Manager struct {
+	UserInfo          // 用户信息
+	CustomData string // 用户的一些额外信息，格式为json
+	Online     bool   // 是否直播间在线？
+}
+
 var liveListParser fastjson.ParserPool
 
 // 获取直播间排名前50的在线观众信息列表
@@ -415,10 +422,7 @@ func (t *token) getAuthorKickHistory() (e error) {
 		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
-	form := fasthttp.AcquireArgs()
-	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, form)
+	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, nil)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -436,7 +440,7 @@ func (t *token) getAuthorKickHistory() (e error) {
 }
 
 // 获取主播的房管列表
-func (t *token) getAuthorManagerList() (e error) {
+func (t *token) getAuthorManagerList() (managerList []Manager, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getAuthorManagerList() error: %w", err)
@@ -447,7 +451,10 @@ func (t *token) getAuthorManagerList() (e error) {
 		panic(fmt.Errorf("获取主播的房管列表需要登陆主播的AcFun帐号"))
 	}
 
-	resp, err := t.fetchKuaiShouAPI(authorManagerListURL, nil)
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	resp, err := t.fetchKuaiShouAPI(authorManagerListURL, form)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -457,11 +464,22 @@ func (t *token) getAuthorManagerList() (e error) {
 	checkErr(err)
 	if v.GetInt("result") != 1 {
 		panic(fmt.Errorf("获取主播的房管列表失败，响应为 %s", string(body)))
-	} else {
-		log.Printf("获取主播的房管列表的响应为 %s", string(body))
+	}
+	list := v.GetArray("data", "list")
+	managerList = make([]Manager, len(list))
+	for i, m := range list {
+		managerList[i] = Manager{
+			UserInfo: UserInfo{
+				UserID:   m.GetInt64("userId"),
+				Nickname: string(m.GetStringBytes("nickname")),
+				Avatar:   string(m.GetStringBytes("avatar", "0", "url")),
+			},
+			CustomData: string(m.GetStringBytes("customData")),
+			Online:     m.GetBool("online"),
+		}
 	}
 
-	return nil
+	return managerList, nil
 }
 
 // 生成client sign
@@ -665,8 +683,8 @@ func (dq *DanmuQueue) GetAuthorKickHistory() (e error) {
 	return dq.t.getAuthorKickHistory()
 }
 
-// GetAuthorManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()，未测试
-func (dq *DanmuQueue) GetAuthorManagerList() (e error) {
+// GetAuthorManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
+func (dq *DanmuQueue) GetAuthorManagerList() ([]Manager, error) {
 	return dq.t.getAuthorManagerList()
 }
 
