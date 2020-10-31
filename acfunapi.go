@@ -415,7 +415,10 @@ func (t *token) getAuthorKickHistory() (e error) {
 		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
-	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, nil)
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, form)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -662,7 +665,7 @@ func (dq *DanmuQueue) GetAuthorKickHistory() (e error) {
 	return dq.t.getAuthorKickHistory()
 }
 
-// GetAuthorManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
+// GetAuthorManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()，未测试
 func (dq *DanmuQueue) GetAuthorManagerList() (e error) {
 	return dq.t.getAuthorManagerList()
 }
