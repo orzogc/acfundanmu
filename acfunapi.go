@@ -206,12 +206,21 @@ func (t *token) getSummary() (summary Summary, e error) {
 		panic(fmt.Errorf("获取直播总结信息失败，响应为 %s", string(body)))
 	}
 
-	v = v.Get("data")
-	summary.LiveDurationMs = v.GetInt64("liveDurationMs")
-	summary.LikeCount, err = strconv.Atoi(string(v.GetStringBytes("likeCount")))
-	checkErr(err)
-	summary.WatchCount, err = strconv.Atoi(string(v.GetStringBytes("watchCount")))
-	checkErr(err)
+	o := v.GetObject("data")
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "liveDurationMs":
+			summary.LiveDurationMs = v.GetInt64()
+		case "likeCount":
+			summary.LikeCount, err = strconv.Atoi(string(v.GetStringBytes()))
+			checkErr(err)
+		case "watchCount":
+			summary.WatchCount, err = strconv.Atoi(string(v.GetStringBytes()))
+			checkErr(err)
+		default:
+			log.Printf("直播总结信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+		}
+	})
 
 	return summary, nil
 }
@@ -250,15 +259,29 @@ func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 	luckyArray := v.GetArray("data", "luckyList")
 	luckyList = make([]LuckyUser, len(luckyArray))
 	for i, user := range luckyArray {
-		v := user.Get("simpleUserInfo")
-		luckyList[i] = LuckyUser{
-			UserInfo: UserInfo{
-				UserID:   v.GetInt64("userId"),
-				Nickname: string(v.GetStringBytes("nickname")),
-				Avatar:   string(v.GetStringBytes("headPic", "0", "url")),
-			},
-			GrabAmount: user.GetInt("grabAmount"),
-		}
+		o := user.GetObject()
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "simpleUserInfo":
+				o := v.GetObject()
+				o.Visit(func(k []byte, v *fastjson.Value) {
+					switch string(k) {
+					case "userId":
+						luckyList[i].UserID = v.GetInt64()
+					case "nickname":
+						luckyList[i].Nickname = string(v.GetStringBytes())
+					case "headPic":
+						luckyList[i].Avatar = string(v.GetStringBytes("0", "url"))
+					default:
+						log.Printf("抢到红包的用户列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+					}
+				})
+			case "grabAmount":
+				luckyList[i].GrabAmount = v.GetInt()
+			default:
+				log.Printf("抢到红包的用户列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+			}
+		})
 	}
 
 	return luckyList, nil
@@ -403,9 +426,17 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 		panic(fmt.Errorf("获取拥有的香蕉和钱包里AC币的数量失败，响应为 %s", string(body)))
 	}
 
-	v = v.Get("data", "payWalletTypeToBalance")
-	accoins = v.GetInt("1")
-	bananas = v.GetInt("2")
+	o := v.GetObject("data", "payWalletTypeToBalance")
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "1":
+			accoins = v.GetInt()
+		case "2":
+			bananas = v.GetInt()
+		default:
+			log.Printf("用户钱包里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+		}
+	})
 
 	return accoins, bananas, nil
 }
@@ -465,18 +496,27 @@ func (t *token) getAuthorManagerList() (managerList []Manager, e error) {
 	if v.GetInt("result") != 1 {
 		panic(fmt.Errorf("获取主播的房管列表失败，响应为 %s", string(body)))
 	}
+
 	list := v.GetArray("data", "list")
 	managerList = make([]Manager, len(list))
 	for i, m := range list {
-		managerList[i] = Manager{
-			UserInfo: UserInfo{
-				UserID:   m.GetInt64("userId"),
-				Nickname: string(m.GetStringBytes("nickname")),
-				Avatar:   string(m.GetStringBytes("avatar", "0", "url")),
-			},
-			CustomData: string(m.GetStringBytes("customData")),
-			Online:     m.GetBool("online"),
-		}
+		o := m.GetObject()
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "userId":
+				managerList[i].UserID = v.GetInt64()
+			case "nickname":
+				managerList[i].Nickname = string(v.GetStringBytes())
+			case "avatar":
+				managerList[i].Avatar = string(v.GetStringBytes("0", "url"))
+			case "customData":
+				managerList[i].CustomData = string(v.GetStringBytes())
+			case "online":
+				managerList[i].Online = v.GetBool()
+			default:
+				log.Printf("主播的房管列表出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+			}
+		})
 	}
 
 	return managerList, nil
