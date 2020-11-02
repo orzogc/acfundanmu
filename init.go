@@ -366,8 +366,9 @@ func (t *token) getGiftList() (e error) {
 
 // 返回礼物数据
 func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
-	gifts := make(map[int64]GiftDetail)
-	for _, gift := range v.GetArray("data", "giftList") {
+	list := v.GetArray("data", "giftList")
+	gifts := make(map[int64]GiftDetail, len(list))
+	for _, gift := range list {
 		o := gift.GetObject()
 		g := GiftDetail{}
 		o.Visit(func(k []byte, v *fastjson.Value) {
@@ -396,6 +397,8 @@ func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
 				}
 			case "canCombo":
 				g.CanCombo = v.GetBool()
+			case "canDraw":
+				g.CanDraw = v.GetBool()
 			case "magicFaceId":
 				g.MagicFaceID = v.GetInt()
 			case "description":
@@ -403,7 +406,7 @@ func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
 			case "redpackPrice":
 				g.RedpackPrice = v.GetInt()
 			default:
-				log.Printf("礼物列表里出现未处理的key：%s", string(k))
+				log.Printf("礼物列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 			}
 		})
 		gifts[g.GiftID] = g

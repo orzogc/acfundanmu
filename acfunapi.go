@@ -114,7 +114,7 @@ func (t *token) getWatchingList() (watchingList []WatchingUser, e error) {
 			case "managerType":
 				watchingList[i].ManagerType = ManagerType(v.GetInt())
 			default:
-				log.Printf("在线观众列表里出现未处理的key：%s", string(k))
+				log.Printf("在线观众列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 			}
 		})
 	}
@@ -178,7 +178,7 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 			case "customData":
 				billboard[i].CustomData = string(v.GetStringBytes())
 			default:
-				log.Printf("礼物贡献榜里出现未处理的key：%s", string(k))
+				log.Printf("礼物贡献榜里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 			}
 		})
 	}
@@ -590,7 +590,7 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 			case "currentDegreeLimit":
 				medalList[i].CurrentDegreeLimit = v.GetInt()
 			default:
-				log.Printf("登陆帐号的守护徽章里出现未处理的key：%s", string(k))
+				log.Printf("登陆帐号的守护徽章里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 			}
 		})
 	}

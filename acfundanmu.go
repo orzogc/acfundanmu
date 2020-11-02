@@ -95,6 +95,7 @@ type GiftDetail struct {
 	SmallPngPic            string // 礼物的png格式图片（小）
 	AllowBatchSendSizeList []int  // 网页或APP单次能够赠送的礼物数量列表
 	CanCombo               bool   // 是否能连击，一般免费礼物（香蕉）不能连击，其余能连击
+	CanDraw                bool   // 是否能涂鸦？
 	MagicFaceID            int
 	Description            string // 礼物的描述
 	RedpackPrice           int    // 礼物红包价格总额，单位为AC币
@@ -127,6 +128,7 @@ type UserInfo struct {
 // MedalInfo 就是守护徽章信息
 type MedalInfo struct {
 	UperID   int64  // UP主的uid
+	UserID   int64  // 用户的uid
 	ClubName string // 守护徽章名字
 	Level    int    // 守护徽章等级
 }
