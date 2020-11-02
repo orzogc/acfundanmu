@@ -306,6 +306,8 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 							image.Pictures[j] = picture.Url
 						}
 						d.Segments[i] = image
+					default:
+						log.Println("出现未处理的RichText Segment")
 					}
 				}
 				danmu = append(danmu, d)
@@ -358,6 +360,8 @@ func (dq *DanmuQueue) handleActionSignal(payload *[]byte, event bool) {
 				dq.dispatchEvent(richTextDanmu, d)
 			case *JoinClub:
 				dq.dispatchEvent(joinClubDanmu, d)
+			default:
+				log.Println("出现未处理的DanmuMessage")
 			}
 		} else {
 			err = dq.q.Put(d)
@@ -609,6 +613,8 @@ func (t *token) getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
 				user.Medal.ClubName = string(v.GetStringBytes())
 			case "level":
 				user.Medal.Level = v.GetInt()
+			default:
+				log.Printf("守护徽章里出现未处理的key：%s", string(k))
 			}
 		})
 	}

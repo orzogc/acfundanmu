@@ -1,5 +1,15 @@
 package acfundanmu
 
+// 验证是否实现了DanmuMessage接口
+var _ DanmuMessage = (*Comment)(nil)
+var _ DanmuMessage = (*Like)(nil)
+var _ DanmuMessage = (*EnterRoom)(nil)
+var _ DanmuMessage = (*FollowAuthor)(nil)
+var _ DanmuMessage = (*ThrowBanana)(nil)
+var _ DanmuMessage = (*Gift)(nil)
+var _ DanmuMessage = (*RichText)(nil)
+var _ DanmuMessage = (*JoinClub)(nil)
+
 // GetSendTime 获取弹幕发送时间
 func (d *Comment) GetSendTime() int64 {
 	return d.SendTime
@@ -84,6 +94,11 @@ func (d *JoinClub) GetSendTime() int64 {
 func (d *JoinClub) GetUserInfo() UserInfo {
 	return d.FansInfo
 }
+
+// 验证是否实现了RichTextSegment接口
+var _ RichTextSegment = (*RichTextUserInfo)(nil)
+var _ RichTextSegment = (*RichTextPlain)(nil)
+var _ RichTextSegment = (*RichTextImage)(nil)
 
 // RichTextType 返回RichText的类型，也就是 "RichTextUserInfo"
 func (*RichTextUserInfo) RichTextType() string {

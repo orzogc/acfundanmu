@@ -2,6 +2,7 @@ package acfundanmu
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -401,6 +402,8 @@ func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
 				g.Description = string(v.GetStringBytes())
 			case "redpackPrice":
 				g.RedpackPrice = v.GetInt()
+			default:
+				log.Printf("礼物列表里出现未处理的key：%s", string(k))
 			}
 		})
 		gifts[g.GiftID] = g

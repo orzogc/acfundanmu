@@ -113,6 +113,8 @@ func (t *token) getWatchingList() (watchingList []WatchingUser, e error) {
 				watchingList[i].CustomData = string(v.GetStringBytes())
 			case "managerType":
 				watchingList[i].ManagerType = ManagerType(v.GetInt())
+			default:
+				log.Printf("在线观众列表里出现未处理的key：%s", string(k))
 			}
 		})
 	}
@@ -175,6 +177,8 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 				billboard[i].DisplaySendAmount = string(v.GetStringBytes())
 			case "customData":
 				billboard[i].CustomData = string(v.GetStringBytes())
+			default:
+				log.Printf("礼物贡献榜里出现未处理的key：%s", string(k))
 			}
 		})
 	}
@@ -534,13 +538,13 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 		}
 	}()
 
-	var httpCookies []*fasthttp.Cookie
-	for _, c := range cookies {
+	httpCookies := make([]*fasthttp.Cookie, len(cookies))
+	for i, c := range cookies {
 		cookie := fasthttp.AcquireCookie()
 		defer fasthttp.ReleaseCookie(cookie)
 		err := cookie.Parse(c)
 		checkErr(err)
-		httpCookies = append(httpCookies, cookie)
+		httpCookies[i] = cookie
 	}
 	client := &httpClient{
 		url:     fmt.Sprintf(medalInfoURL, uid),
@@ -585,6 +589,8 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 				medalList[i].JoinClubTime = v.GetInt64() * 1e6
 			case "currentDegreeLimit":
 				medalList[i].CurrentDegreeLimit = v.GetInt()
+			default:
+				log.Printf("登陆帐号的守护徽章里出现未处理的key：%s", string(k))
 			}
 		})
 	}
@@ -636,6 +642,7 @@ func (pb *Playback) Distinguish() (aliURL, txURL string) {
 	case strings.Contains(pb.URL, "txvod"):
 		txURL = pb.URL
 	default:
+		log.Printf("未能识别的录播链接：%s", pb.URL)
 	}
 
 	switch {
@@ -644,6 +651,7 @@ func (pb *Playback) Distinguish() (aliURL, txURL string) {
 	case strings.Contains(pb.BackupURL, "txvod"):
 		txURL = pb.BackupURL
 	default:
+		log.Printf("未能识别的录播链接：%s", pb.BackupURL)
 	}
 
 	return aliURL, txURL
