@@ -36,7 +36,7 @@ type Summary struct {
 	WatchCount     int   // 观看过直播的人数总数
 }
 
-// MedalDetail 就是登陆帐号守护徽章的详细信息
+// MedalDetail 就是登陆帐号守护徽章的详细信息，没有UserID
 type MedalDetail struct {
 	MedalInfo
 	UperName           string // UP主的名字
@@ -514,7 +514,7 @@ func (t *token) getAuthorManagerList() (managerList []Manager, e error) {
 			case "online":
 				managerList[i].Online = v.GetBool()
 			default:
-				log.Printf("主播的房管列表出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+				log.Printf("主播的房管列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 			}
 		})
 	}

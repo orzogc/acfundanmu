@@ -376,7 +376,7 @@ func Init(uid int64, cookies []string) (dq *DanmuQueue, err error) {
 		dq.info.StreamInfo, err = dq.t.getToken()
 		if err != nil {
 			if retry == 2 {
-				log.Printf("初始化失败，停止获取弹幕：%v", err)
+				log.Printf("初始化失败：%v", err)
 				return nil, fmt.Errorf("Init() error: 初始化失败，主播可能不在直播：%w", err)
 			}
 			log.Printf("初始化出现错误：%v", err)
@@ -420,7 +420,7 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 		dq.info.StreamInfo, err = dq.t.getLiveToken()
 		if err != nil {
 			if retry == 2 {
-				log.Printf("初始化失败，停止获取弹幕：%v", err)
+				log.Printf("初始化失败：%v", err)
 				return nil, fmt.Errorf("InitWithToken() error: 初始化失败，主播可能不在直播：%w", err)
 			}
 			log.Printf("初始化出现错误：%v", err)
