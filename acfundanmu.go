@@ -159,8 +159,8 @@ type RichTextImage struct {
 
 // DanmuMessage 弹幕的接口
 type DanmuMessage interface {
-	GetSendTime() int64    // 获取弹幕发送时间
-	GetUserInfo() UserInfo // 获取UserInfo
+	GetSendTime() int64     // 获取弹幕发送时间
+	GetUserInfo() *UserInfo // 获取UserInfo
 }
 
 // DanmuCommon 弹幕通用部分
@@ -437,7 +437,7 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 // ReInit 利用已有的 *DanmuQueue 重新初始化，返回新的 *DanmuQueue，事件模式下clearHandlers为true时需要重新调用OnComment等函数
 func (dq *DanmuQueue) ReInit(uid int64, clearHandlers bool) (newDQ *DanmuQueue, err error) {
 	tokenInfo := dq.GetTokenInfo()
-	newDQ, err = InitWithToken(uid, tokenInfo)
+	newDQ, err = InitWithToken(uid, *tokenInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -493,28 +493,28 @@ func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 }
 
 // GetLiveInfo 返回直播间的状态信息，需要先调用StartDanmu(ctx, false)
-func (dq *DanmuQueue) GetLiveInfo() (info LiveInfo) {
+func (dq *DanmuQueue) GetLiveInfo() *LiveInfo {
 	dq.info.Lock()
 	defer dq.info.Unlock()
-	info = dq.info.LiveInfo
+	info := dq.info.LiveInfo
 	info.TopUsers = append([]TopUser{}, dq.info.TopUsers...)
 	info.RecentComment = append([]Comment{}, dq.info.RecentComment...)
 	info.RedpackList = append([]Redpack{}, dq.info.RedpackList...)
-	return info
+	return &info
 }
 
 // GetTokenInfo 返回直播间token相关信息，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetTokenInfo() (info TokenInfo) {
-	info = dq.info.TokenInfo
+func (dq *DanmuQueue) GetTokenInfo() *TokenInfo {
+	info := dq.info.TokenInfo
 	info.Cookies = append([]string{}, dq.info.Cookies...)
-	return info
+	return &info
 }
 
 // GetStreamInfo 返回直播的一些信息，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetStreamInfo() (info StreamInfo) {
-	info = dq.info.StreamInfo
+func (dq *DanmuQueue) GetStreamInfo() *StreamInfo {
+	info := dq.info.StreamInfo
 	info.StreamList = append([]StreamURL{}, dq.info.StreamList...)
-	return info
+	return &info
 }
 
 // GetUID 返回主播的uid，有可能是0
@@ -523,10 +523,10 @@ func (dq *DanmuQueue) GetUID() int64 {
 }
 
 // GetTokenInfo 返回TokenInfo，相当于调用 Init(0, cookies) 后返回对应的TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
-func GetTokenInfo(cookies []string) (TokenInfo, error) {
+func GetTokenInfo(cookies []string) (*TokenInfo, error) {
 	dq, err := Init(0, cookies)
 	if err != nil {
-		return TokenInfo{}, err
+		return nil, err
 	}
 	return dq.GetTokenInfo(), nil
 }

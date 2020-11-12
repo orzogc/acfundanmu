@@ -187,7 +187,7 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 }
 
 // 获取直播总结信息
-func (t *token) getSummary() (summary Summary, e error) {
+func (t *token) getSummary() (summary *Summary, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getSummary() error: %w", err)
@@ -206,6 +206,7 @@ func (t *token) getSummary() (summary Summary, e error) {
 		panic(fmt.Errorf("获取直播总结信息失败，响应为 %s", string(body)))
 	}
 
+	summary = &Summary{}
 	o := v.GetObject("data")
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
@@ -288,7 +289,7 @@ func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 }
 
 // 获取直播回放的相关信息
-func (t *token) getPlayback(liveID string) (playback Playback, e error) {
+func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getPlayback() error: %w", err)
@@ -340,7 +341,7 @@ func (t *token) getPlayback(liveID string) (playback Playback, e error) {
 		log.Println("representation列表长度大于1，请报告issue")
 	}
 	v = v.Get("representation", "0")
-	playback = Playback{
+	playback = &Playback{
 		Duration:  duration,
 		URL:       string(v.GetStringBytes("url")),
 		BackupURL: string(v.GetStringBytes("backupUrl", "0")),
@@ -717,7 +718,7 @@ func (dq *DanmuQueue) GetBillboard() ([]BillboardUser, error) {
 }
 
 // GetSummary 返回直播总结信息，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetSummary() (Summary, error) {
+func (dq *DanmuQueue) GetSummary() (*Summary, error) {
 	return dq.t.getSummary()
 }
 
@@ -727,7 +728,7 @@ func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
 }
 
 // GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()，目前部分直播没有回放
-func (dq *DanmuQueue) GetPlayback(liveID string) (Playback, error) {
+func (dq *DanmuQueue) GetPlayback(liveID string) (*Playback, error) {
 	return dq.t.getPlayback(liveID)
 }
 

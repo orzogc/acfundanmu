@@ -16,8 +16,9 @@ func (d *Comment) GetSendTime() int64 {
 }
 
 // GetUserInfo 获取弹幕的用户信息
-func (d *Comment) GetUserInfo() UserInfo {
-	return d.UserInfo
+func (d *Comment) GetUserInfo() *UserInfo {
+	info := d.UserInfo
+	return &info
 }
 
 // GetSendTime 获取弹幕发送时间
@@ -26,8 +27,9 @@ func (d *Like) GetSendTime() int64 {
 }
 
 // GetUserInfo 获取弹幕的用户信息
-func (d *Like) GetUserInfo() UserInfo {
-	return d.UserInfo
+func (d *Like) GetUserInfo() *UserInfo {
+	info := d.UserInfo
+	return &info
 }
 
 // GetSendTime 获取弹幕发送时间
@@ -36,8 +38,9 @@ func (d *EnterRoom) GetSendTime() int64 {
 }
 
 // GetUserInfo 获取弹幕的用户信息
-func (d *EnterRoom) GetUserInfo() UserInfo {
-	return d.UserInfo
+func (d *EnterRoom) GetUserInfo() *UserInfo {
+	info := d.UserInfo
+	return &info
 }
 
 // GetSendTime 获取弹幕发送时间
@@ -46,8 +49,9 @@ func (d *FollowAuthor) GetSendTime() int64 {
 }
 
 // GetUserInfo 获取弹幕的用户信息
-func (d *FollowAuthor) GetUserInfo() UserInfo {
-	return d.UserInfo
+func (d *FollowAuthor) GetUserInfo() *UserInfo {
+	info := d.UserInfo
+	return &info
 }
 
 // GetSendTime 获取弹幕发送时间
@@ -56,8 +60,9 @@ func (d *ThrowBanana) GetSendTime() int64 {
 }
 
 // GetUserInfo 获取弹幕的用户信息
-func (d *ThrowBanana) GetUserInfo() UserInfo {
-	return d.UserInfo
+func (d *ThrowBanana) GetUserInfo() *UserInfo {
+	info := d.UserInfo
+	return &info
 }
 
 // GetSendTime 获取弹幕发送时间
@@ -66,8 +71,9 @@ func (d *Gift) GetSendTime() int64 {
 }
 
 // GetUserInfo 获取弹幕的用户信息
-func (d *Gift) GetUserInfo() UserInfo {
-	return d.UserInfo
+func (d *Gift) GetUserInfo() *UserInfo {
+	info := d.UserInfo
+	return &info
 }
 
 // GetSendTime 获取弹幕发送时间
@@ -75,14 +81,15 @@ func (d *RichText) GetSendTime() int64 {
 	return d.SendTime
 }
 
-// GetUserInfo 获取弹幕的用户信息，返回第一个RichTextUserInfo的UserInfo，否则返回空的UserInfo
-func (d *RichText) GetUserInfo() UserInfo {
+// GetUserInfo 获取弹幕的用户信息，返回第一个RichTextUserInfo的UserInfo，否则返回nil
+func (d *RichText) GetUserInfo() *UserInfo {
 	for _, segment := range d.Segments {
 		if u, ok := segment.(*RichTextUserInfo); ok {
-			return u.UserInfo
+			info := u.UserInfo
+			return &info
 		}
 	}
-	return UserInfo{}
+	return nil
 }
 
 // GetSendTime 获取弹幕发送时间，实际上返回的是用户加入守护团的时间
@@ -91,8 +98,9 @@ func (d *JoinClub) GetSendTime() int64 {
 }
 
 // GetUserInfo 获取弹幕的用户信息，实际上返回的是加入守护团的用户的信息
-func (d *JoinClub) GetUserInfo() UserInfo {
-	return d.FansInfo
+func (d *JoinClub) GetUserInfo() *UserInfo {
+	info := d.FansInfo
+	return &info
 }
 
 // 验证是否实现了RichTextSegment接口
