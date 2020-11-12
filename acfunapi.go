@@ -331,8 +331,14 @@ func (t *token) getPlayback(liveID string) (playback Playback, e error) {
 	adaptiveManifest := v.GetStringBytes("data", "adaptiveManifest")
 	v, err = p.ParseBytes(adaptiveManifest)
 	checkErr(err)
+	if len(v.GetArray("adaptationSet")) > 1 {
+		log.Println("adaptationSet列表长度大于1，请报告issue")
+	}
 	v = v.Get("adaptationSet", "0")
 	duration := v.GetInt64("duration")
+	if len(v.GetArray("representation")) > 1 {
+		log.Println("representation列表长度大于1，请报告issue")
+	}
 	v = v.Get("representation", "0")
 	playback = Playback{
 		Duration:  duration,
@@ -341,6 +347,9 @@ func (t *token) getPlayback(liveID string) (playback Playback, e error) {
 		M3U8Slice: string(v.GetStringBytes("m3u8Slice")),
 		Width:     v.GetInt("width"),
 		Height:    v.GetInt("height"),
+	}
+	if len(v.GetArray("backupUrl")) > 1 {
+		log.Println("backupUrl列表长度大于1，请报告issue")
 	}
 
 	return playback, nil
