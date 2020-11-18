@@ -345,8 +345,8 @@ func Login(username, password string) (cookies []string, err error) {
 				log.Printf("登陆AcFun帐号失败：%v", err)
 				return nil, fmt.Errorf("Login() error: 登陆AcFun帐号失败：%w", err)
 			}
-			log.Printf("登陆AcFun帐号出现错误：%v", err)
-			log.Println("尝试重新登陆AcFun帐号")
+			//log.Printf("登陆AcFun帐号出现错误：%v", err)
+			//log.Println("尝试重新登陆AcFun帐号")
 		} else {
 			break
 		}
@@ -379,8 +379,8 @@ func Init(uid int64, cookies []string) (dq *DanmuQueue, err error) {
 				log.Printf("初始化失败：%v", err)
 				return nil, fmt.Errorf("Init() error: 初始化失败，主播可能不在直播：%w", err)
 			}
-			log.Printf("初始化出现错误：%v", err)
-			log.Println("尝试重新初始化")
+			//log.Printf("初始化出现错误：%v", err)
+			//log.Println("尝试重新初始化")
 		} else {
 			break
 		}
@@ -423,8 +423,8 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 				log.Printf("初始化失败：%v", err)
 				return nil, fmt.Errorf("InitWithToken() error: 初始化失败，主播可能不在直播：%w", err)
 			}
-			log.Printf("初始化出现错误：%v", err)
-			log.Println("尝试重新初始化")
+			//log.Printf("初始化出现错误：%v", err)
+			//log.Println("尝试重新初始化")
 		} else {
 			break
 		}

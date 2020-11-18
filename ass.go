@@ -14,6 +14,8 @@ import (
 
 // ass文件的Script Info
 const scriptInfo = `[Script Info]
+; LiveID: %s
+; StreamName: %s
 Title: %s
 ScriptType: v4.00+
 Collisions: Normal
@@ -112,7 +114,7 @@ func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, ne
 		checkErr(err)
 		defer f.Close()
 
-		info := fmt.Sprintf(scriptInfo, s.Title, s.PlayResX, s.PlayResY)
+		info := fmt.Sprintf(scriptInfo, dq.info.LiveID, dq.info.StreamName, s.Title, s.PlayResX, s.PlayResY)
 		style := fmt.Sprintf(sytles, s.FontSize)
 
 		_, err = f.WriteString(info)

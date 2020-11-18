@@ -71,8 +71,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.register())
 	checkErr(err)
-	var msg []byte
-	_, msg, err = conn.ReadMessage(msg[:0])
+	_, msg, err := conn.ReadMessage(nil)
 	checkErr(err)
 	registerDown, err := dq.t.decode(msg)
 	checkErr(err)
