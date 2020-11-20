@@ -31,6 +31,7 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, hb chan int6
 	for {
 		select {
 		case <-ctx.Done():
+			close(hb)
 			return
 		case <-ticker.C:
 			_, err := conn.WriteMessage(fastws.ModeBinary, t.heartbeat())
@@ -48,6 +49,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 			log.Printf("Recovering from panic in wsStart(), the error is:  %v", err)
 			log.Println("停止获取弹幕")
 			errCh <- err.(error)
+			close(errCh)
 			if event {
 				dq.dispatchEvent(liveOff, err.(error))
 			}
@@ -109,6 +111,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 					log.Printf("停止获取uid为%d的主播的直播弹幕", dq.t.uid)
 					hasError = true
 					errCh <- err
+					close(errCh)
 					if event {
 						dq.dispatchEvent(liveOff, err)
 					}
@@ -147,6 +150,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 	wg.Wait()
 	if !hasError {
 		errCh <- nil
+		close(errCh)
 		if event {
 			dq.dispatchEvent(liveOff, nil)
 		}
