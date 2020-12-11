@@ -122,31 +122,6 @@ func login(username, password string) (cookies []string, e error) {
 		cookies = append(cookies, string(value))
 	})
 
-	userID := v.GetInt("userId")
-	content := fmt.Sprintf(safetyIDContent, userID)
-	client = &httpClient{
-		url:    acfunSafetyIDURL,
-		body:   []byte(content),
-		method: "POST",
-	}
-	resp, err = client.doRequest()
-	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body = resp.Body()
-
-	v, err = p.ParseBytes(body)
-	checkErr(err)
-	if !v.Exists("code") || v.GetInt("code") != 0 {
-		panic(fmt.Errorf("获取safetyid失败，响应为 %s", string(body)))
-	}
-
-	cookie := fasthttp.AcquireCookie()
-	defer fasthttp.ReleaseCookie(cookie)
-	cookie.SetKey("safety_id")
-	cookie.SetValueBytes(v.GetStringBytes("safety_id"))
-	cookie.SetDomain(".acfun.cn")
-	cookies = append(cookies, cookie.String())
-
 	return cookies, nil
 }
 

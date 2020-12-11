@@ -99,7 +99,7 @@ func (t *token) register() []byte {
 		TokenType: acproto.TokenInfo_kServiceToken,
 		Token:     []byte(t.serviceToken),
 	}
-	t.seqID++
+	_ = atomic.AddInt64(&t.seqID, 1)
 
 	return t.encode(header, body)
 }
@@ -161,7 +161,7 @@ func (t *token) keepAlive(increase bool) []byte {
 	header := t.genHeader(len(body))
 
 	if increase {
-		t.seqID++
+		_ = atomic.AddInt64(&t.seqID, 1)
 	}
 
 	return t.encode(header, body)

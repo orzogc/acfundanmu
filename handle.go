@@ -3,6 +3,7 @@ package acfundanmu
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -18,7 +19,7 @@ import (
 )
 
 // 处理接受到的数据里的命令
-func (dq *DanmuQueue) handleCommand(conn *fastws.Conn, stream *acproto.DownstreamPayload, hb chan<- int64, event bool) (e error) {
+func (dq *DanmuQueue) handleCommand(ctx context.Context, conn *fastws.Conn, stream *acproto.DownstreamPayload, event bool) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("handleCommand() error: %w", err)
@@ -40,9 +41,9 @@ func (dq *DanmuQueue) handleCommand(conn *fastws.Conn, stream *acproto.Downstrea
 			err = proto.Unmarshal(cmd.Payload, enterRoom)
 			checkErr(err)
 			if enterRoom.HeartbeatIntervalMs > 0 {
-				hb <- enterRoom.HeartbeatIntervalMs
+				go dq.t.wsHeartbeat(ctx, conn, enterRoom.HeartbeatIntervalMs)
 			} else {
-				hb <- 10000
+				go dq.t.wsHeartbeat(ctx, conn, 10000)
 			}
 		case "ZtLiveCsHeartbeatAck":
 			heartbeat := &acproto.ZtLiveCsHeartbeatAck{}
@@ -70,7 +71,7 @@ func (dq *DanmuQueue) handleCommand(conn *fastws.Conn, stream *acproto.Downstrea
 		unregister := &acproto.UnregisterResponse{}
 		err := proto.Unmarshal(stream.PayloadData, unregister)
 		checkErr(err)
-		conn.CloseString("Unregister")
+		_ = conn.CloseString("Unregister")
 	case "Push.ZtLiveInteractive.Message":
 		_, err := conn.WriteMessage(fastws.ModeBinary, dq.t.pushMessage())
 		checkErr(err)

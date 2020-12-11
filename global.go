@@ -5,17 +5,14 @@ import (
 )
 
 const (
-	visitorSt        = "acfun.api.visitor_st"
-	midgroundSt      = "acfun.midground.api_st"
-	acfunSignInURL   = "https://id.app.acfun.cn/rest/web/login/signin"
-	acfunSafetyIDURL = "https://sec-cdn.gifshow.com/safetyid"
-	liveURL          = "https://live.acfun.cn/live/%d"
-	loginURL         = "https://id.app.acfun.cn/rest/app/visitor/login"
-	getTokenURL      = "https://id.app.acfun.cn/rest/web/token/get"
-	playURL          = "https://api.kuaishouzt.com/rest/zt/live/web/startPlay?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	giftURL          = "https://api.kuaishouzt.com/rest/zt/live/web/gift/list?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-
-	safetyIDContent = "{\"platform\":5,\"app_version\":\"2.0.32\",\"device_id\":\"null\",\"user_id\":\"%d\"}"
+	visitorSt      = "acfun.api.visitor_st"
+	midgroundSt    = "acfun.midground.api_st"
+	acfunSignInURL = "https://id.app.acfun.cn/rest/web/login/signin"
+	liveURL        = "https://live.acfun.cn/live/%d"
+	loginURL       = "https://id.app.acfun.cn/rest/app/visitor/login"
+	getTokenURL    = "https://id.app.acfun.cn/rest/web/token/get"
+	playURL        = "https://api.kuaishouzt.com/rest/zt/live/web/startPlay?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	giftURL        = "https://api.kuaishouzt.com/rest/zt/live/web/gift/list?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 
 	sid       = "sid"
 	visitor   = "acfun.api.visitor"
@@ -51,7 +48,7 @@ const (
 )
 
 type token struct {
-	//sync.Mutex             // seqID、headerSeqID和ticketIndex的锁
+	//sync.Mutex           // seqID、headerSeqID和ticketIndex的锁
 	userID          int64  // AcFun帐号uid
 	securityKey     string // 第一次发送ws信息时所用密钥
 	serviceToken    string

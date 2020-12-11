@@ -14,24 +14,21 @@ import (
 )
 
 // 定时发送heartbeat和keepalive数据
-func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, hb chan int64) {
+func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, interval int64) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("Recovering from panic in wsHeartbeat(), the error is: %v", err)
 			// 重新启动wsHeartbeat()
 			time.Sleep(2 * time.Second)
-			hb <- 10000
-			t.wsHeartbeat(ctx, conn, hb)
+			t.wsHeartbeat(ctx, conn, interval)
 		}
 	}()
 
-	b := <-hb
-	ticker := time.NewTicker(time.Duration(b) * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(interval) * time.Millisecond)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			close(hb)
 			return
 		case <-ticker.C:
 			_, err := conn.WriteMessage(fastws.ModeBinary, t.heartbeat())
@@ -68,7 +65,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 	defer wsCancel()
 	go func() {
 		<-wsCtx.Done()
-		conn.Close()
+		_ = conn.Close()
 	}()
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.register())
@@ -89,9 +86,6 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.enterRoom())
 	checkErr(err)
-
-	hb := make(chan int64, 10)
-	go dq.t.wsHeartbeat(wsCtx, conn, hb)
 
 	msgCh := make(chan []byte, 100)
 	payloadCh := make(chan *acproto.DownstreamPayload, 100)
@@ -140,7 +134,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 	go func() {
 		defer wg.Done()
 		for stream := range payloadCh {
-			err := dq.handleCommand(conn, stream, hb, event)
+			err := dq.handleCommand(wsCtx, conn, stream, event)
 			if err != nil {
 				log.Printf("处理接收到的数据出现错误：%v", err)
 			}
@@ -163,5 +157,5 @@ func (t *token) wsStop(conn *fastws.Conn, message string) {
 	checkErr(err)
 	_, err = conn.WriteMessage(fastws.ModeBinary, t.unregister())
 	checkErr(err)
-	conn.CloseString(message)
+	_ = conn.CloseString(message)
 }
