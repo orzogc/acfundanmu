@@ -1,8 +1,6 @@
 package acfundanmu
 
 import (
-	"sync"
-
 	"github.com/valyala/fastjson"
 )
 
@@ -53,7 +51,7 @@ const (
 )
 
 type token struct {
-	sync.Mutex             // seqID、headerSeqID和ticketIndex的锁
+	//sync.Mutex             // seqID、headerSeqID和ticketIndex的锁
 	userID          int64  // AcFun帐号uid
 	securityKey     string // 第一次发送ws信息时所用密钥
 	serviceToken    string
@@ -65,7 +63,7 @@ type token struct {
 	seqID           int64
 	headerSeqID     int64
 	heartbeatSeqID  int64
-	ticketIndex     int
+	ticketIndex     uint32
 	deviceID        string
 	gifts           map[int64]GiftDetail
 	uid             int64 // 主播uid

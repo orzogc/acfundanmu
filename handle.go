@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"sort"
+	"sync/atomic"
 
 	"github.com/dgrr/fastws"
 	"github.com/orzogc/acfundanmu/acproto"
@@ -103,9 +104,8 @@ func (dq *DanmuQueue) handleCommand(conn *fastws.Conn, stream *acproto.Downstrea
 			ticketInvalid := &acproto.ZtLiveScTicketInvalid{}
 			err := proto.Unmarshal(payload, ticketInvalid)
 			checkErr(err)
-			dq.t.Lock()
-			dq.t.ticketIndex = (dq.t.ticketIndex + 1) % len(dq.t.tickets)
-			dq.t.Unlock()
+			index := atomic.LoadUint32(&dq.t.ticketIndex)
+			_ = atomic.CompareAndSwapUint32(&dq.t.ticketIndex, index, (index+1)%uint32(len(dq.t.tickets)))
 			_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.enterRoom())
 			checkErr(err)
 		default:

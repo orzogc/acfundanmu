@@ -200,7 +200,7 @@ type Gift struct {
 	ComboID               string // 礼物连击ID
 	SlotDisplayDurationMs int64  // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
 	ExpireDurationMs      int64
-	DrawGiftInfo          DrawGiftInfo // 目前好像都没有这部分
+	DrawGiftInfo          DrawGiftInfo // 礼物涂鸦
 }
 
 // RichText 富文本，目前是用于发红包和抢红包的相关消息
