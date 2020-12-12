@@ -2,7 +2,6 @@ package acfundanmu
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"log"
 	"sync"
@@ -78,7 +77,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 	err = proto.Unmarshal(registerDown.PayloadData, regResp)
 	checkErr(err)
 	ac.t.instanceID = regResp.InstanceId
-	ac.t.sessionKey = base64.StdEncoding.EncodeToString(regResp.SessKey)
+	ac.t.sessionKey = regResp.SessKey
 	//lz4CompressionThreshold = regResp.SdkOption.Lz4CompressionThresholdBytes
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.keepAlive(true))

@@ -265,7 +265,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	t.enterRoomAttach = enterRoomAttach
 	t.tickets = tickets
 	t.instanceID = 0
-	t.sessionKey = ""
+	t.sessionKey = nil
 	t.seqID = 1
 	t.headerSeqID = 1
 	t.heartbeatSeqID = 1

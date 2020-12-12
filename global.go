@@ -56,7 +56,7 @@ type token struct {
 	enterRoomAttach string
 	tickets         []string
 	instanceID      int64
-	sessionKey      string // 除第一次外发送ws信息时所用密钥
+	sessionKey      []byte // 除第一次外发送ws信息时所用密钥
 	seqID           int64
 	headerSeqID     int64
 	heartbeatSeqID  int64

@@ -217,7 +217,8 @@ func (t *token) encode(header *acproto.PacketHeader, body []byte) []byte {
 	// 选择密钥
 	key := t.sessionKey
 	if header.EncryptionMode == acproto.PacketHeader_kEncryptionServiceToken {
-		key = t.securityKey
+		key, err = base64.StdEncoding.DecodeString(t.securityKey)
+		checkErr(err)
 	}
 	encrypted := encrypt(key, body)
 
@@ -237,12 +238,10 @@ func (t *token) encode(header *acproto.PacketHeader, body []byte) []byte {
 }
 
 // 根据密钥加密body，加密方式为aes-128-cbc
-func encrypt(key string, body []byte) []byte {
-	keyBytes, err := base64.StdEncoding.DecodeString(key)
-	checkErr(err)
+func encrypt(key []byte, body []byte) []byte {
 	body = padding(body, aes.BlockSize)
 
-	block, err := aes.NewCipher(keyBytes)
+	block, err := aes.NewCipher(key)
 	checkErr(err)
 	cipherText := make([]byte, len(body))
 	iv := make([]byte, aes.BlockSize)
@@ -264,21 +263,23 @@ func padding(cipherText []byte, blockSize int) []byte {
 }
 
 // 将body/payload从数据中分离出来
-func (t *token) decode(byt []byte) (downstream *acproto.DownstreamPayload, e error) {
+func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("decode() error: %w", err)
 		}
 	}()
 
-	header, payloadBytes := decodeResponse(byt)
+	header, payloadBytes := decodeResponse(b)
 	atomic.StoreInt64(&t.headerSeqID, header.SeqId)
 
 	payload := payloadBytes
 	if header.EncryptionMode != acproto.PacketHeader_kEncryptionNone {
 		key := t.sessionKey
+		var err error
 		if header.EncryptionMode == acproto.PacketHeader_kEncryptionServiceToken {
-			key = t.securityKey
+			key, err = base64.StdEncoding.DecodeString(t.securityKey)
+			checkErr(err)
 		}
 		payload = decrypt(payloadBytes, key)
 	}
@@ -295,8 +296,8 @@ func (t *token) decode(byt []byte) (downstream *acproto.DownstreamPayload, e err
 }
 
 // 分离header和body/payload
-func decodeResponse(byt []byte) (*acproto.PacketHeader, []byte) {
-	reader := bytes.NewReader(byt)
+func decodeResponse(b []byte) (*acproto.PacketHeader, []byte) {
+	reader := bytes.NewReader(b)
 
 	// 具体数据格式看https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu
 	length := make([]byte, 4)
@@ -330,22 +331,20 @@ func decodeResponse(byt []byte) (*acproto.PacketHeader, []byte) {
 }
 
 // 解密数据，解密方式为aes-128-cbc
-func decrypt(byt []byte, key string) []byte {
-	keyBytes, err := base64.StdEncoding.DecodeString(key)
-	checkErr(err)
-	block, err := aes.NewCipher(keyBytes)
+func decrypt(ciphertext []byte, key []byte) []byte {
+	block, err := aes.NewCipher(key)
 	checkErr(err)
 
-	if len(byt) < aes.BlockSize {
-		log.Println("decrypt(): Ciphertext block size is too short!")
+	if len(ciphertext) < aes.BlockSize {
+		log.Println("decrypt(): the length of ciphertext is less than block size")
 		return nil
 	}
 
-	iv := byt[:aes.BlockSize]
-	cipherText := byt[aes.BlockSize:]
+	iv := ciphertext[:aes.BlockSize]
+	cipherText := ciphertext[aes.BlockSize:]
 
 	if len(cipherText)%aes.BlockSize != 0 {
-		panic(fmt.Errorf("decrypt(): cipherText is not a multiple of the block size"))
+		panic(fmt.Errorf("decrypt(): the length of ciphertext is not a multiple of the block size"))
 	}
 
 	mode := cipher.NewCBCDecrypter(block, iv)

@@ -54,6 +54,7 @@ for {
         } else {
             log.Println("直播结束")
         }
+        break
     }
 }
 ```
