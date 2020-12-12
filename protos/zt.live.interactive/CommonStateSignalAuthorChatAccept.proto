@@ -5,6 +5,6 @@ option go_package = ".;acproto";
 package AcFunDanmu;
 
 message CommonStateSignalAuthorChatAccept {
-	string a = 1;
-	string b = 2;
+	string authorChatId = 1;
+	string aryaSignalInfo = 2;
 }

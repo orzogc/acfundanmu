@@ -20,66 +20,66 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type CommonStateSignalAuthorChatChangesSoundConfig_Unknown int32
+type CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType int32
 
 const (
-	CommonStateSignalAuthorChatChangesSoundConfig_c CommonStateSignalAuthorChatChangesSoundConfig_Unknown = 0
-	CommonStateSignalAuthorChatChangesSoundConfig_d CommonStateSignalAuthorChatChangesSoundConfig_Unknown = 1
-	CommonStateSignalAuthorChatChangesSoundConfig_e CommonStateSignalAuthorChatChangesSoundConfig_Unknown = 2
+	CommonStateSignalAuthorChatChangeSoundConfig_UNKNOWN     CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType = 0
+	CommonStateSignalAuthorChatChangeSoundConfig_OPEN_SOUND  CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType = 1
+	CommonStateSignalAuthorChatChangeSoundConfig_CLOSE_SOUND CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType = 2
 )
 
-// Enum value maps for CommonStateSignalAuthorChatChangesSoundConfig_Unknown.
+// Enum value maps for CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType.
 var (
-	CommonStateSignalAuthorChatChangesSoundConfig_Unknown_name = map[int32]string{
-		0: "c",
-		1: "d",
-		2: "e",
+	CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType_name = map[int32]string{
+		0: "UNKNOWN",
+		1: "OPEN_SOUND",
+		2: "CLOSE_SOUND",
 	}
-	CommonStateSignalAuthorChatChangesSoundConfig_Unknown_value = map[string]int32{
-		"c": 0,
-		"d": 1,
-		"e": 2,
+	CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType_value = map[string]int32{
+		"UNKNOWN":     0,
+		"OPEN_SOUND":  1,
+		"CLOSE_SOUND": 2,
 	}
 )
 
-func (x CommonStateSignalAuthorChatChangesSoundConfig_Unknown) Enum() *CommonStateSignalAuthorChatChangesSoundConfig_Unknown {
-	p := new(CommonStateSignalAuthorChatChangesSoundConfig_Unknown)
+func (x CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType) Enum() *CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType {
+	p := new(CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType)
 	*p = x
 	return p
 }
 
-func (x CommonStateSignalAuthorChatChangesSoundConfig_Unknown) String() string {
+func (x CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (CommonStateSignalAuthorChatChangesSoundConfig_Unknown) Descriptor() protoreflect.EnumDescriptor {
+func (CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType) Descriptor() protoreflect.EnumDescriptor {
 	return file_CommonStateSignalAuthorChatChangeSoundConfig_proto_enumTypes[0].Descriptor()
 }
 
-func (CommonStateSignalAuthorChatChangesSoundConfig_Unknown) Type() protoreflect.EnumType {
+func (CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType) Type() protoreflect.EnumType {
 	return &file_CommonStateSignalAuthorChatChangeSoundConfig_proto_enumTypes[0]
 }
 
-func (x CommonStateSignalAuthorChatChangesSoundConfig_Unknown) Number() protoreflect.EnumNumber {
+func (x CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use CommonStateSignalAuthorChatChangesSoundConfig_Unknown.Descriptor instead.
-func (CommonStateSignalAuthorChatChangesSoundConfig_Unknown) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType.Descriptor instead.
+func (CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType) EnumDescriptor() ([]byte, []int) {
 	return file_CommonStateSignalAuthorChatChangeSoundConfig_proto_rawDescGZIP(), []int{0, 0}
 }
 
-type CommonStateSignalAuthorChatChangesSoundConfig struct {
+type CommonStateSignalAuthorChatChangeSoundConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	A string                                                `protobuf:"bytes,1,opt,name=a,proto3" json:"a,omitempty"`
-	B CommonStateSignalAuthorChatChangesSoundConfig_Unknown `protobuf:"varint,2,opt,name=b,proto3,enum=AcFunDanmu.CommonStateSignalAuthorChatChangesSoundConfig_Unknown" json:"b,omitempty"`
+	AuthorChatId          string                                                             `protobuf:"bytes,1,opt,name=authorChatId,proto3" json:"authorChatId,omitempty"`
+	SoundConfigChangeType CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType `protobuf:"varint,2,opt,name=soundConfigChangeType,proto3,enum=AcFunDanmu.CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType" json:"soundConfigChangeType,omitempty"`
 }
 
-func (x *CommonStateSignalAuthorChatChangesSoundConfig) Reset() {
-	*x = CommonStateSignalAuthorChatChangesSoundConfig{}
+func (x *CommonStateSignalAuthorChatChangeSoundConfig) Reset() {
+	*x = CommonStateSignalAuthorChatChangeSoundConfig{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_CommonStateSignalAuthorChatChangeSoundConfig_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -87,13 +87,13 @@ func (x *CommonStateSignalAuthorChatChangesSoundConfig) Reset() {
 	}
 }
 
-func (x *CommonStateSignalAuthorChatChangesSoundConfig) String() string {
+func (x *CommonStateSignalAuthorChatChangeSoundConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CommonStateSignalAuthorChatChangesSoundConfig) ProtoMessage() {}
+func (*CommonStateSignalAuthorChatChangeSoundConfig) ProtoMessage() {}
 
-func (x *CommonStateSignalAuthorChatChangesSoundConfig) ProtoReflect() protoreflect.Message {
+func (x *CommonStateSignalAuthorChatChangeSoundConfig) ProtoReflect() protoreflect.Message {
 	mi := &file_CommonStateSignalAuthorChatChangeSoundConfig_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -105,23 +105,23 @@ func (x *CommonStateSignalAuthorChatChangesSoundConfig) ProtoReflect() protorefl
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CommonStateSignalAuthorChatChangesSoundConfig.ProtoReflect.Descriptor instead.
-func (*CommonStateSignalAuthorChatChangesSoundConfig) Descriptor() ([]byte, []int) {
+// Deprecated: Use CommonStateSignalAuthorChatChangeSoundConfig.ProtoReflect.Descriptor instead.
+func (*CommonStateSignalAuthorChatChangeSoundConfig) Descriptor() ([]byte, []int) {
 	return file_CommonStateSignalAuthorChatChangeSoundConfig_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CommonStateSignalAuthorChatChangesSoundConfig) GetA() string {
+func (x *CommonStateSignalAuthorChatChangeSoundConfig) GetAuthorChatId() string {
 	if x != nil {
-		return x.A
+		return x.AuthorChatId
 	}
 	return ""
 }
 
-func (x *CommonStateSignalAuthorChatChangesSoundConfig) GetB() CommonStateSignalAuthorChatChangesSoundConfig_Unknown {
+func (x *CommonStateSignalAuthorChatChangeSoundConfig) GetSoundConfigChangeType() CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType {
 	if x != nil {
-		return x.B
+		return x.SoundConfigChangeType
 	}
-	return CommonStateSignalAuthorChatChangesSoundConfig_c
+	return CommonStateSignalAuthorChatChangeSoundConfig_UNKNOWN
 }
 
 var File_CommonStateSignalAuthorChatChangeSoundConfig_proto protoreflect.FileDescriptor
@@ -131,19 +131,26 @@ var file_CommonStateSignalAuthorChatChangeSoundConfig_proto_rawDesc = []byte{
 	0x6e, 0x61, 0x6c, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x43, 0x68, 0x61, 0x74, 0x43, 0x68, 0x61,
 	0x6e, 0x67, 0x65, 0x53, 0x6f, 0x75, 0x6e, 0x64, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75,
-	0x22, 0xae, 0x01, 0x0a, 0x2d, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65,
+	0x22, 0xa0, 0x02, 0x0a, 0x2c, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65,
 	0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x43, 0x68, 0x61, 0x74,
-	0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x53, 0x6f, 0x75, 0x6e, 0x64, 0x43, 0x6f, 0x6e, 0x66,
-	0x69, 0x67, 0x12, 0x0c, 0x0a, 0x01, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x01, 0x61,
-	0x12, 0x4f, 0x0a, 0x01, 0x62, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x41, 0x2e, 0x41, 0x63,
-	0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e, 0x6d, 0x75, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53,
-	0x74, 0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72,
-	0x43, 0x68, 0x61, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x53, 0x6f, 0x75, 0x6e, 0x64,
-	0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x52, 0x01,
-	0x62, 0x22, 0x1e, 0x0a, 0x07, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x12, 0x05, 0x0a, 0x01,
-	0x63, 0x10, 0x00, 0x12, 0x05, 0x0a, 0x01, 0x64, 0x10, 0x01, 0x12, 0x05, 0x0a, 0x01, 0x65, 0x10,
-	0x02, 0x42, 0x0b, 0x5a, 0x09, 0x2e, 0x3b, 0x61, 0x63, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x53, 0x6f, 0x75, 0x6e, 0x64, 0x43, 0x6f, 0x6e, 0x66, 0x69,
+	0x67, 0x12, 0x22, 0x0a, 0x0c, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x43, 0x68, 0x61, 0x74, 0x49,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x43,
+	0x68, 0x61, 0x74, 0x49, 0x64, 0x12, 0x84, 0x01, 0x0a, 0x15, 0x73, 0x6f, 0x75, 0x6e, 0x64, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x54, 0x79, 0x70, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x4e, 0x2e, 0x41, 0x63, 0x46, 0x75, 0x6e, 0x44, 0x61, 0x6e,
+	0x6d, 0x75, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x53, 0x69,
+	0x67, 0x6e, 0x61, 0x6c, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x43, 0x68, 0x61, 0x74, 0x43, 0x68,
+	0x61, 0x6e, 0x67, 0x65, 0x53, 0x6f, 0x75, 0x6e, 0x64, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e,
+	0x53, 0x6f, 0x75, 0x6e, 0x64, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x43, 0x68, 0x61, 0x6e, 0x67,
+	0x65, 0x54, 0x79, 0x70, 0x65, 0x52, 0x15, 0x73, 0x6f, 0x75, 0x6e, 0x64, 0x43, 0x6f, 0x6e, 0x66,
+	0x69, 0x67, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x54, 0x79, 0x70, 0x65, 0x22, 0x45, 0x0a, 0x15,
+	0x53, 0x6f, 0x75, 0x6e, 0x64, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x43, 0x68, 0x61, 0x6e, 0x67,
+	0x65, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e,
+	0x10, 0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x4f, 0x50, 0x45, 0x4e, 0x5f, 0x53, 0x4f, 0x55, 0x4e, 0x44,
+	0x10, 0x01, 0x12, 0x0f, 0x0a, 0x0b, 0x43, 0x4c, 0x4f, 0x53, 0x45, 0x5f, 0x53, 0x4f, 0x55, 0x4e,
+	0x44, 0x10, 0x02, 0x42, 0x0b, 0x5a, 0x09, 0x2e, 0x3b, 0x61, 0x63, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -161,11 +168,11 @@ func file_CommonStateSignalAuthorChatChangeSoundConfig_proto_rawDescGZIP() []byt
 var file_CommonStateSignalAuthorChatChangeSoundConfig_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_CommonStateSignalAuthorChatChangeSoundConfig_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_CommonStateSignalAuthorChatChangeSoundConfig_proto_goTypes = []interface{}{
-	(CommonStateSignalAuthorChatChangesSoundConfig_Unknown)(0), // 0: AcFunDanmu.CommonStateSignalAuthorChatChangesSoundConfig.Unknown
-	(*CommonStateSignalAuthorChatChangesSoundConfig)(nil),      // 1: AcFunDanmu.CommonStateSignalAuthorChatChangesSoundConfig
+	(CommonStateSignalAuthorChatChangeSoundConfig_SoundConfigChangeType)(0), // 0: AcFunDanmu.CommonStateSignalAuthorChatChangeSoundConfig.SoundConfigChangeType
+	(*CommonStateSignalAuthorChatChangeSoundConfig)(nil),                    // 1: AcFunDanmu.CommonStateSignalAuthorChatChangeSoundConfig
 }
 var file_CommonStateSignalAuthorChatChangeSoundConfig_proto_depIdxs = []int32{
-	0, // 0: AcFunDanmu.CommonStateSignalAuthorChatChangesSoundConfig.b:type_name -> AcFunDanmu.CommonStateSignalAuthorChatChangesSoundConfig.Unknown
+	0, // 0: AcFunDanmu.CommonStateSignalAuthorChatChangeSoundConfig.soundConfigChangeType:type_name -> AcFunDanmu.CommonStateSignalAuthorChatChangeSoundConfig.SoundConfigChangeType
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -180,7 +187,7 @@ func file_CommonStateSignalAuthorChatChangeSoundConfig_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_CommonStateSignalAuthorChatChangeSoundConfig_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommonStateSignalAuthorChatChangesSoundConfig); i {
+			switch v := v.(*CommonStateSignalAuthorChatChangeSoundConfig); i {
 			case 0:
 				return &v.state
 			case 1:

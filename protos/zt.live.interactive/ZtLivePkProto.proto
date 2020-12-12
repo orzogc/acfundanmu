@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package = ".;acproto";
+
+package AcFunDanmu;
+
+enum ZtLivePkProto {
+    d = 0;
+    e = 1;
+    f = 2;
+    g = 3;
+}

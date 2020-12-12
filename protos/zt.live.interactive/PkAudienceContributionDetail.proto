@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package = ".;acproto";
+
+package AcFunDanmu;
+
+import "ZtLiveUserInfo.proto";
+
+message PkAudienceContributionDetail {
+    ZtLiveUserInfo a = 1;
+    int64 b = 2;
+}
