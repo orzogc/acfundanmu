@@ -358,7 +358,7 @@ func Login(username, password string) (cookies []string, err error) {
 
 // Init 初始化，uid为主播的uid，cookies可以利用Login()获取，为nil时为游客模式，目前登陆模式和游客模式并没有太大区别。
 // uid为0时仅获取TokenInfo，可以调用GetTokenInfo()获取。
-// 应该尽可能复用返回的 *DanmuQueue 。
+// 应该尽可能复用返回的 *AcFunLive 。
 func Init(uid int64, cookies []string) (ac *AcFunLive, err error) {
 	ac = new(AcFunLive)
 	ac.t = &token{
@@ -434,19 +434,19 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (ac *AcFunLive, err error) {
 	return ac, nil
 }
 
-// ReInit 利用已有的 *DanmuQueue 重新初始化，返回新的 *DanmuQueue，事件模式下clearHandlers为true时需要重新调用OnComment等函数
-func (ac *AcFunLive) ReInit(uid int64, clearHandlers bool) (newAc *AcFunLive, err error) {
+// ReInit 利用已有的 *AcFunLive 重新初始化，返回新的 *AcFunLive，事件模式下clearHandlers为true时需要重新调用OnComment等函数
+func (ac *AcFunLive) ReInit(uid int64, clearHandlers bool) (newAC *AcFunLive, err error) {
 	tokenInfo := ac.GetTokenInfo()
-	newAc, err = InitWithToken(uid, *tokenInfo)
+	newAC, err = InitWithToken(uid, *tokenInfo)
 	if err != nil {
 		return nil, err
 	}
 	if !clearHandlers {
 		for k, v := range ac.handlerMap.listMap {
-			newAc.handlerMap.listMap[k] = v
+			newAC.handlerMap.listMap[k] = v
 		}
 	}
-	return newAc, nil
+	return newAC, nil
 }
 
 // StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，event为true时采用事件模式。

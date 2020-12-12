@@ -65,32 +65,32 @@ ac, err := acfundanmu.Init(uid, nil)
 if err != nil {
     log.Panicln(err)
 }
-ac.OnLiveOff(func(ac *acfundanmu.DanmuQueue, err error) {
+ac.OnLiveOff(func(ac *acfundanmu.AcFunLive, err error) {
     if err != nil {
         log.Println(err)
     } else {
         log.Println("直播结束")
     }
 })
-ac.OnComment(func(ac *acfundanmu.DanmuQueue, d *acfundanmu.Comment) {
+ac.OnComment(func(ac *acfundanmu.AcFunLive, d *acfundanmu.Comment) {
     log.Printf("%s（%d）：%s\n", d.Nickname, d.UserID, d.Content)
 })
-ac.OnLike(func(ac *acfundanmu.DanmuQueue, d *acfundanmu.Like) {
+ac.OnLike(func(ac *acfundanmu.AcFunLive, d *acfundanmu.Like) {
     log.Printf("%s（%d）点赞\n", d.Nickname, d.UserID)
 })
-ac.OnEnterRoom(func(ac *acfundanmu.DanmuQueue, d *acfundanmu.EnterRoom) {
+ac.OnEnterRoom(func(ac *acfundanmu.AcFunLive, d *acfundanmu.EnterRoom) {
     log.Printf("%s（%d）进入直播间\n", d.Nickname, d.UserID)
 })
-ac.OnFollowAuthor(func(ac *acfundanmu.DanmuQueue, d *acfundanmu.FollowAuthor) {
+ac.OnFollowAuthor(func(ac *acfundanmu.AcFunLive, d *acfundanmu.FollowAuthor) {
     log.Printf("%s（%d）关注了主播\n", d.Nickname, d.UserID)
 })
-ac.OnThrowBanana(func(ac *acfundanmu.DanmuQueue, d *acfundanmu.ThrowBanana) {
+ac.OnThrowBanana(func(ac *acfundanmu.AcFunLive, d *acfundanmu.ThrowBanana) {
     log.Printf("%s（%d）送出香蕉 * %d\n", d.Nickname, d.UserID, d.BananaCount)
 })
-ac.OnGift(func(ac *acfundanmu.DanmuQueue, d *acfundanmu.Gift) {
+ac.OnGift(func(ac *acfundanmu.AcFunLive, d *acfundanmu.Gift) {
     log.Printf("%s（%d）送出礼物 %s * %d，连击数：%d\n", d.Nickname, d.UserID, d.GiftName, d.Count, d.Combo)
 })
-ac.OnJoinClub(func(ac *acfundanmu.DanmuQueue, d *acfundanmu.JoinClub) {
+ac.OnJoinClub(func(ac *acfundanmu.AcFunLive, d *acfundanmu.JoinClub) {
     log.Printf("%s（%d）加入主播%s（%d）的守护团", d.FansInfo.Nickname, d.FansInfo.UserID, d.UperInfo.Nickname, d.UperInfo.UserID)
 })
 ctx, cancel := context.WithCancel(context.Background())
