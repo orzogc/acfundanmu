@@ -708,57 +708,57 @@ func (pb *Playback) Distinguish() (aliURL, txURL string) {
 }
 
 // GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetWatchingList() ([]WatchingUser, error) {
-	return dq.t.getWatchingList()
+func (ac *AcFunLive) GetWatchingList() ([]WatchingUser, error) {
+	return ac.t.getWatchingList()
 }
 
 // GetBillboard 返回直播间最近七日内的礼物贡献榜前50名观众的详细信息，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetBillboard() ([]BillboardUser, error) {
-	return dq.t.getBillboard()
+func (ac *AcFunLive) GetBillboard() ([]BillboardUser, error) {
+	return ac.t.getBillboard()
 }
 
 // GetSummary 返回直播总结信息，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetSummary() (*Summary, error) {
-	return dq.t.getSummary()
+func (ac *AcFunLive) GetSummary() (*Summary, error) {
+	return ac.t.getSummary()
 }
 
 // GetLuckList 返回抢到红包的用户列表，需要调用Login()登陆AcFun帐号，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
-	return dq.t.getLuckList(redpack)
+func (ac *AcFunLive) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
+	return ac.t.getLuckList(redpack)
 }
 
 // GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()，目前部分直播没有回放
-func (dq *DanmuQueue) GetPlayback(liveID string) (*Playback, error) {
-	return dq.t.getPlayback(liveID)
+func (ac *AcFunLive) GetPlayback(liveID string) (*Playback, error) {
+	return ac.t.getPlayback(liveID)
 }
 
 // GetGiftList 返回指定主播直播间的礼物数据，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetGiftList() map[int64]GiftDetail {
+func (ac *AcFunLive) GetGiftList() map[int64]GiftDetail {
 	gifts := make(map[int64]GiftDetail)
-	for k, v := range dq.t.gifts {
+	for k, v := range ac.t.gifts {
 		gifts[k] = v
 	}
 	return gifts
 }
 
 // GetAllGift 返回全部礼物的数据，可以调用Init(0, nil)，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetAllGift() (map[int64]GiftDetail, error) {
-	return dq.t.getAllGift()
+func (ac *AcFunLive) GetAllGift() (map[int64]GiftDetail, error) {
+	return ac.t.getAllGift()
 }
 
 // GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要调用Login()登陆AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetWalletBalance() (accoins int, bananas int, e error) {
-	return dq.t.getWalletBalance()
+func (ac *AcFunLive) GetWalletBalance() (accoins int, bananas int, e error) {
+	return ac.t.getWalletBalance()
 }
 
 // GetAuthorKickHistory 返回主播踢人的历史记录，需要调用Login()登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
-func (dq *DanmuQueue) GetAuthorKickHistory() (e error) {
-	return dq.t.getAuthorKickHistory()
+func (ac *AcFunLive) GetAuthorKickHistory() (e error) {
+	return ac.t.getAuthorKickHistory()
 }
 
 // GetAuthorManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetAuthorManagerList() ([]Manager, error) {
-	return dq.t.getAuthorManagerList()
+func (ac *AcFunLive) GetAuthorManagerList() ([]Manager, error) {
+	return ac.t.getAuthorManagerList()
 }
 
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName，利用Login()获取AcFun帐号的cookies

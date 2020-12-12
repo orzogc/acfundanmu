@@ -33,7 +33,7 @@ const (
 )
 
 // 事件handler
-type eventHandler func(*DanmuQueue, interface{})
+type eventHandler func(*AcFunLive, interface{})
 
 // 事件handler的map
 type handlerMap struct {
@@ -49,10 +49,10 @@ func (h *handlerMap) add(t eventType, f eventHandler) {
 }
 
 // 调用事件handler列表里的handler
-func (dq *DanmuQueue) dispatchEvent(t eventType, i interface{}) {
-	dq.handlerMap.Lock()
-	list, ok := dq.handlerMap.listMap[t]
-	dq.handlerMap.Unlock()
+func (ac *AcFunLive) dispatchEvent(t eventType, i interface{}) {
+	ac.handlerMap.Lock()
+	list, ok := ac.handlerMap.listMap[t]
+	ac.handlerMap.Unlock()
 	if ok {
 		for _, f := range list {
 			go func(f eventHandler) {
@@ -61,159 +61,159 @@ func (dq *DanmuQueue) dispatchEvent(t eventType, i interface{}) {
 						log.Printf("dispatchEvent() %v goroutine error: %v", t, err)
 					}
 				}()
-				f(dq, i)
+				f(ac, i)
 			}(f)
 		}
 	}
 }
 
 // OnLiveOff 处理直播结束信号，有可能是网络原因导致连接超时，直播不一定真的结束，可以多次调用
-func (dq *DanmuQueue) OnLiveOff(handler func(*DanmuQueue, error)) {
-	dq.handlerMap.add(liveOff, func(dq *DanmuQueue, i interface{}) {
+func (ac *AcFunLive) OnLiveOff(handler func(*AcFunLive, error)) {
+	ac.handlerMap.add(liveOff, func(ac *AcFunLive, i interface{}) {
 		if i == nil {
-			handler(dq, nil)
+			handler(ac, nil)
 		} else {
-			handler(dq, i.(error))
+			handler(ac, i.(error))
 		}
 	})
 }
 
 // OnComment 处理评论弹幕，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnComment(handler func(*DanmuQueue, *Comment)) {
-	dq.handlerMap.add(commentDanmu, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*Comment))
+func (ac *AcFunLive) OnComment(handler func(*AcFunLive, *Comment)) {
+	ac.handlerMap.add(commentDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*Comment))
 	})
 }
 
 // OnLike 处理点赞弹幕，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnLike(handler func(*DanmuQueue, *Like)) {
-	dq.handlerMap.add(likeDanmu, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*Like))
+func (ac *AcFunLive) OnLike(handler func(*AcFunLive, *Like)) {
+	ac.handlerMap.add(likeDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*Like))
 	})
 }
 
 // OnEnterRoom 处理用户进场，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnEnterRoom(handler func(*DanmuQueue, *EnterRoom)) {
-	dq.handlerMap.add(enterRoomDanmu, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*EnterRoom))
+func (ac *AcFunLive) OnEnterRoom(handler func(*AcFunLive, *EnterRoom)) {
+	ac.handlerMap.add(enterRoomDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*EnterRoom))
 	})
 }
 
 // OnFollowAuthor 处理用户关注主播，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnFollowAuthor(handler func(*DanmuQueue, *FollowAuthor)) {
-	dq.handlerMap.add(followAuthorDanmu, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*FollowAuthor))
+func (ac *AcFunLive) OnFollowAuthor(handler func(*AcFunLive, *FollowAuthor)) {
+	ac.handlerMap.add(followAuthorDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*FollowAuthor))
 	})
 }
 
 // OnThrowBanana 处理用户投蕉，现在基本用 OnGift 代替，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnThrowBanana(handler func(*DanmuQueue, *ThrowBanana)) {
-	dq.handlerMap.add(throwBananaDanmu, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*ThrowBanana))
+func (ac *AcFunLive) OnThrowBanana(handler func(*AcFunLive, *ThrowBanana)) {
+	ac.handlerMap.add(throwBananaDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*ThrowBanana))
 	})
 }
 
 // OnGift 处理用户赠送礼物，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnGift(handler func(*DanmuQueue, *Gift)) {
-	dq.handlerMap.add(giftDanmu, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*Gift))
+func (ac *AcFunLive) OnGift(handler func(*AcFunLive, *Gift)) {
+	ac.handlerMap.add(giftDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*Gift))
 	})
 }
 
 // OnRichText 处理富文本，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnRichText(handler func(*DanmuQueue, *RichText)) {
-	dq.handlerMap.add(richTextDanmu, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*RichText))
+func (ac *AcFunLive) OnRichText(handler func(*AcFunLive, *RichText)) {
+	ac.handlerMap.add(richTextDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*RichText))
 	})
 }
 
 // OnJoinClub 处理用户加入主播守护团，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnJoinClub(handler func(*DanmuQueue, *JoinClub)) {
-	dq.handlerMap.add(joinClubDanmu, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*JoinClub))
+func (ac *AcFunLive) OnJoinClub(handler func(*AcFunLive, *JoinClub)) {
+	ac.handlerMap.add(joinClubDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*JoinClub))
 	})
 }
 
 // OnBananaCount 处理直播间获得的香蕉数，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnBananaCount(handler func(dq *DanmuQueue, allBananaCount string)) {
-	dq.handlerMap.add(bananaCountInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(string))
+func (ac *AcFunLive) OnBananaCount(handler func(ac *AcFunLive, allBananaCount string)) {
+	ac.handlerMap.add(bananaCountInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(string))
 	})
 }
 
 // OnDisplayInfo 处理直播间的一些数据，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnDisplayInfo(handler func(*DanmuQueue, *DisplayInfo)) {
-	dq.handlerMap.add(displayInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*DisplayInfo))
+func (ac *AcFunLive) OnDisplayInfo(handler func(*AcFunLive, *DisplayInfo)) {
+	ac.handlerMap.add(displayInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*DisplayInfo))
 	})
 }
 
 // OnTopUsers 处理直播间礼物榜在线前三的信息，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnTopUsers(handler func(*DanmuQueue, []TopUser)) {
-	dq.handlerMap.add(topUsersInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.([]TopUser))
+func (ac *AcFunLive) OnTopUsers(handler func(*AcFunLive, []TopUser)) {
+	ac.handlerMap.add(topUsersInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.([]TopUser))
 	})
 }
 
 // OnRecentComment 处理APP进直播间时显示的最近发的弹幕，可以多次调用
-func (dq *DanmuQueue) OnRecentComment(handler func(*DanmuQueue, []Comment)) {
-	dq.handlerMap.add(recentCommentInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.([]Comment))
+func (ac *AcFunLive) OnRecentComment(handler func(*AcFunLive, []Comment)) {
+	ac.handlerMap.add(recentCommentInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.([]Comment))
 	})
 }
 
 // OnChatCall 处理主播发起连麦，可以多次调用
-func (dq *DanmuQueue) OnChatCall(handler func(*DanmuQueue, *ChatCall)) {
-	dq.handlerMap.add(chatCallInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*ChatCall))
+func (ac *AcFunLive) OnChatCall(handler func(*AcFunLive, *ChatCall)) {
+	ac.handlerMap.add(chatCallInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*ChatCall))
 	})
 }
 
 // OnChatAccept 处理用户接受连麦？一般不会出现这个信号，可以多次调用
-func (dq *DanmuQueue) OnChatAccept(handler func(*DanmuQueue, *ChatAccept)) {
-	dq.handlerMap.add(chatAcceptInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*ChatAccept))
+func (ac *AcFunLive) OnChatAccept(handler func(*AcFunLive, *ChatAccept)) {
+	ac.handlerMap.add(chatAcceptInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*ChatAccept))
 	})
 }
 
 // OnChatReady 处理用户接受连麦的信息，可以多次调用
-func (dq *DanmuQueue) OnChatReady(handler func(*DanmuQueue, *ChatReady)) {
-	dq.handlerMap.add(chatReadyInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*ChatReady))
+func (ac *AcFunLive) OnChatReady(handler func(*AcFunLive, *ChatReady)) {
+	ac.handlerMap.add(chatReadyInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*ChatReady))
 	})
 }
 
 // OnChatEnd 处理连麦结束，可以多次调用
-func (dq *DanmuQueue) OnChatEnd(handler func(*DanmuQueue, *ChatEnd)) {
-	dq.handlerMap.add(chatEndInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(*ChatEnd))
+func (ac *AcFunLive) OnChatEnd(handler func(*AcFunLive, *ChatEnd)) {
+	ac.handlerMap.add(chatEndInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*ChatEnd))
 	})
 }
 
 // OnRedpackList 处理直播间的红包列表，handler需要支持并行处理，可以多次调用
-func (dq *DanmuQueue) OnRedpackList(handler func(*DanmuQueue, []Redpack)) {
-	dq.handlerMap.add(redpackListInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.([]Redpack))
+func (ac *AcFunLive) OnRedpackList(handler func(*AcFunLive, []Redpack)) {
+	ac.handlerMap.add(redpackListInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.([]Redpack))
 	})
 }
 
 // OnKickedOut 处理被踢出直播间，可以多次调用
-func (dq *DanmuQueue) OnKickedOut(handler func(dq *DanmuQueue, kickedOutReason string)) {
-	dq.handlerMap.add(kickedOutInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(string))
+func (ac *AcFunLive) OnKickedOut(handler func(ac *AcFunLive, kickedOutReason string)) {
+	ac.handlerMap.add(kickedOutInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(string))
 	})
 }
 
 // OnViolationAlert 处理直播间警告，可以多次调用
-func (dq *DanmuQueue) OnViolationAlert(handler func(dq *DanmuQueue, violationContent string)) {
-	dq.handlerMap.add(violationAlertInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(string))
+func (ac *AcFunLive) OnViolationAlert(handler func(ac *AcFunLive, violationContent string)) {
+	ac.handlerMap.add(violationAlertInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(string))
 	})
 }
 
 // OnManagerState 处理登陆帐号的房管状态，可以多次调用
-func (dq *DanmuQueue) OnManagerState(handler func(*DanmuQueue, ManagerState)) {
-	dq.handlerMap.add(managerStateInfo, func(dq *DanmuQueue, i interface{}) {
-		handler(dq, i.(ManagerState))
+func (ac *AcFunLive) OnManagerState(handler func(*AcFunLive, ManagerState)) {
+	ac.handlerMap.add(managerStateInfo, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(ManagerState))
 	})
 }

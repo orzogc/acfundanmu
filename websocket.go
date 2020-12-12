@@ -40,7 +40,7 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, interval int
 }
 
 // 启动websocket
-func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- error) {
+func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("Recovering from panic in wsStart(), the error is:  %v", err)
@@ -48,13 +48,13 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 			errCh <- err.(error)
 			close(errCh)
 			if event {
-				dq.dispatchEvent(liveOff, err.(error))
+				ac.dispatchEvent(liveOff, err.(error))
 			}
 		}
 	}()
 
 	if !event {
-		defer dq.q.Dispose()
+		defer ac.q.Dispose()
 	}
 
 	conn, err := fastws.Dial(host)
@@ -68,23 +68,23 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 		_ = conn.Close()
 	}()
 
-	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.register())
+	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.register())
 	checkErr(err)
 	_, msg, err := conn.ReadMessage(nil)
 	checkErr(err)
-	registerDown, err := dq.t.decode(msg)
+	registerDown, err := ac.t.decode(msg)
 	checkErr(err)
 	regResp := &acproto.RegisterResponse{}
 	err = proto.Unmarshal(registerDown.PayloadData, regResp)
 	checkErr(err)
-	dq.t.instanceID = regResp.InstanceId
-	dq.t.sessionKey = base64.StdEncoding.EncodeToString(regResp.SessKey)
+	ac.t.instanceID = regResp.InstanceId
+	ac.t.sessionKey = base64.StdEncoding.EncodeToString(regResp.SessKey)
 	//lz4CompressionThreshold = regResp.SdkOption.Lz4CompressionThresholdBytes
 
-	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.keepAlive(true))
+	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.keepAlive(true))
 	checkErr(err)
 
-	_, err = conn.WriteMessage(fastws.ModeBinary, dq.t.enterRoom())
+	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.enterRoom())
 	checkErr(err)
 
 	msgCh := make(chan []byte, 100)
@@ -102,12 +102,12 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 			if err != nil {
 				if !errors.Is(err, fastws.EOF) {
 					log.Printf("websocket接收数据出现错误：%v", err)
-					log.Printf("停止获取uid为%d的主播的直播弹幕", dq.t.uid)
+					log.Printf("停止获取uid为%d的主播的直播弹幕", ac.t.uid)
 					hasError = true
 					errCh <- err
 					close(errCh)
 					if event {
-						dq.dispatchEvent(liveOff, err)
+						ac.dispatchEvent(liveOff, err)
 					}
 				}
 				break
@@ -121,7 +121,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 		defer wg.Done()
 		defer close(payloadCh)
 		for msg := range msgCh {
-			stream, err := dq.t.decode(msg)
+			stream, err := ac.t.decode(msg)
 			if err != nil {
 				log.Printf("解码接收到的数据出现错误：%v", err)
 				continue
@@ -134,7 +134,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 	go func() {
 		defer wg.Done()
 		for stream := range payloadCh {
-			err := dq.handleCommand(wsCtx, conn, stream, event)
+			err := ac.handleCommand(wsCtx, conn, stream, event)
 			if err != nil {
 				log.Printf("处理接收到的数据出现错误：%v", err)
 			}
@@ -146,7 +146,7 @@ func (dq *DanmuQueue) wsStart(ctx context.Context, event bool, errCh chan<- erro
 		errCh <- nil
 		close(errCh)
 		if event {
-			dq.dispatchEvent(liveOff, nil)
+			ac.dispatchEvent(liveOff, nil)
 		}
 	}
 }

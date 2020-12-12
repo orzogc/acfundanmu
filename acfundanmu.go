@@ -324,8 +324,8 @@ type liveInfo struct {
 	StreamInfo
 }
 
-// DanmuQueue 就是直播间弹幕系统相关信息，支持并行
-type DanmuQueue struct {
+// AcFunLive 就是直播间弹幕系统相关信息，支持并行
+type AcFunLive struct {
 	q          *queue.Queue // DanmuMessage的队列
 	info       *liveInfo    // 直播间的相关信息状态
 	t          *token       // 令牌相关信息
@@ -359,21 +359,21 @@ func Login(username, password string) (cookies []string, err error) {
 // Init 初始化，uid为主播的uid，cookies可以利用Login()获取，为nil时为游客模式，目前登陆模式和游客模式并没有太大区别。
 // uid为0时仅获取TokenInfo，可以调用GetTokenInfo()获取。
 // 应该尽可能复用返回的 *DanmuQueue 。
-func Init(uid int64, cookies []string) (dq *DanmuQueue, err error) {
-	dq = new(DanmuQueue)
-	dq.t = &token{
+func Init(uid int64, cookies []string) (ac *AcFunLive, err error) {
+	ac = new(AcFunLive)
+	ac.t = &token{
 		uid:      uid,
 		livePage: fmt.Sprintf(liveURL, uid),
 	}
 	if len(cookies) != 0 {
-		dq.t.cookies = append([]string{}, cookies...)
+		ac.t.cookies = append([]string{}, cookies...)
 	}
-	dq.info = new(liveInfo)
-	dq.handlerMap = new(handlerMap)
-	dq.handlerMap.listMap = make(map[eventType][]eventHandler)
+	ac.info = new(liveInfo)
+	ac.handlerMap = new(handlerMap)
+	ac.handlerMap.listMap = make(map[eventType][]eventHandler)
 
 	for retry := 0; retry < 3; retry++ {
-		dq.info.StreamInfo, err = dq.t.getToken()
+		ac.info.StreamInfo, err = ac.t.getToken()
 		if err != nil {
 			if retry == 2 {
 				log.Printf("初始化失败：%v", err)
@@ -387,21 +387,21 @@ func Init(uid int64, cookies []string) (dq *DanmuQueue, err error) {
 		time.Sleep(10 * time.Second)
 	}
 
-	dq.info.TokenInfo = TokenInfo{
-		UserID:       dq.t.userID,
-		SecurityKey:  dq.t.securityKey,
-		ServiceToken: dq.t.serviceToken,
-		DeviceID:     dq.t.deviceID,
-		Cookies:      dq.t.cookies,
+	ac.info.TokenInfo = TokenInfo{
+		UserID:       ac.t.userID,
+		SecurityKey:  ac.t.securityKey,
+		ServiceToken: ac.t.serviceToken,
+		DeviceID:     ac.t.deviceID,
+		Cookies:      ac.t.cookies,
 	}
 
-	return dq, nil
+	return ac, nil
 }
 
 // InitWithToken 利用tokenInfo初始化，uid为主播的uid
-func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
-	dq = new(DanmuQueue)
-	dq.t = &token{
+func InitWithToken(uid int64, tokenInfo TokenInfo) (ac *AcFunLive, err error) {
+	ac = new(AcFunLive)
+	ac.t = &token{
 		uid:          uid,
 		livePage:     fmt.Sprintf(liveURL, uid),
 		userID:       tokenInfo.UserID,
@@ -410,14 +410,14 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 		deviceID:     tokenInfo.DeviceID,
 		cookies:      append([]string{}, tokenInfo.Cookies...),
 	}
-	dq.info = new(liveInfo)
-	dq.info.TokenInfo = tokenInfo
-	dq.info.TokenInfo.Cookies = append([]string{}, tokenInfo.Cookies...)
-	dq.handlerMap = new(handlerMap)
-	dq.handlerMap.listMap = make(map[eventType][]eventHandler)
+	ac.info = new(liveInfo)
+	ac.info.TokenInfo = tokenInfo
+	ac.info.TokenInfo.Cookies = append([]string{}, tokenInfo.Cookies...)
+	ac.handlerMap = new(handlerMap)
+	ac.handlerMap.listMap = make(map[eventType][]eventHandler)
 
 	for retry := 0; retry < 3; retry++ {
-		dq.info.StreamInfo, err = dq.t.getLiveToken()
+		ac.info.StreamInfo, err = ac.t.getLiveToken()
 		if err != nil {
 			if retry == 2 {
 				log.Printf("初始化失败：%v", err)
@@ -431,55 +431,55 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (dq *DanmuQueue, err error) {
 		time.Sleep(10 * time.Second)
 	}
 
-	return dq, nil
+	return ac, nil
 }
 
 // ReInit 利用已有的 *DanmuQueue 重新初始化，返回新的 *DanmuQueue，事件模式下clearHandlers为true时需要重新调用OnComment等函数
-func (dq *DanmuQueue) ReInit(uid int64, clearHandlers bool) (newDQ *DanmuQueue, err error) {
-	tokenInfo := dq.GetTokenInfo()
-	newDQ, err = InitWithToken(uid, *tokenInfo)
+func (ac *AcFunLive) ReInit(uid int64, clearHandlers bool) (newAc *AcFunLive, err error) {
+	tokenInfo := ac.GetTokenInfo()
+	newAc, err = InitWithToken(uid, *tokenInfo)
 	if err != nil {
 		return nil, err
 	}
 	if !clearHandlers {
-		for k, v := range dq.handlerMap.listMap {
-			newDQ.handlerMap.listMap[k] = v
+		for k, v := range ac.handlerMap.listMap {
+			newAc.handlerMap.listMap[k] = v
 		}
 	}
-	return newDQ, nil
+	return newAc, nil
 }
 
 // StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，event为true时采用事件模式。
 // event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
-func (dq *DanmuQueue) StartDanmu(ctx context.Context, event bool) <-chan error {
+func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	ch := make(chan error, 1)
-	if dq.t.uid == 0 {
+	if ac.t.uid == 0 {
 		err := fmt.Errorf("主播uid不能为0")
 		log.Println(err)
 		ch <- err
 		return ch
 	}
 	if !event {
-		dq.q = queue.New(queueLen)
+		ac.q = queue.New(queueLen)
 	}
-	go dq.wsStart(ctx, event, ch)
+	go ac.wsStart(ctx, event, ch)
 	return ch
 }
 
 // GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu(ctx, false)
-func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
-	if dq.q == nil {
+func (ac *AcFunLive) GetDanmu() (danmu []DanmuMessage) {
+	if ac.q == nil {
 		log.Println("需要先调用StartDanmu()，event不能为true")
 		return nil
 	}
-	if dq.t.uid == 0 {
+	if ac.t.uid == 0 {
 		log.Println("主播uid不能为0")
 		return nil
 	}
-	if (*queue.Queue)(dq.q).Disposed() {
+	if (*queue.Queue)(ac.q).Disposed() {
 		return nil
 	}
-	ds, err := dq.q.Get(queueLen)
+	ds, err := ac.q.Get(queueLen)
 	if err != nil {
 		return nil
 	}
@@ -493,40 +493,40 @@ func (dq *DanmuQueue) GetDanmu() (danmu []DanmuMessage) {
 }
 
 // GetLiveInfo 返回直播间的状态信息，需要先调用StartDanmu(ctx, false)
-func (dq *DanmuQueue) GetLiveInfo() *LiveInfo {
-	dq.info.Lock()
-	defer dq.info.Unlock()
-	info := dq.info.LiveInfo
-	info.TopUsers = append([]TopUser{}, dq.info.TopUsers...)
-	info.RecentComment = append([]Comment{}, dq.info.RecentComment...)
-	info.RedpackList = append([]Redpack{}, dq.info.RedpackList...)
+func (ac *AcFunLive) GetLiveInfo() *LiveInfo {
+	ac.info.Lock()
+	defer ac.info.Unlock()
+	info := ac.info.LiveInfo
+	info.TopUsers = append([]TopUser{}, ac.info.TopUsers...)
+	info.RecentComment = append([]Comment{}, ac.info.RecentComment...)
+	info.RedpackList = append([]Redpack{}, ac.info.RedpackList...)
 	return &info
 }
 
 // GetTokenInfo 返回直播间token相关信息，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetTokenInfo() *TokenInfo {
-	info := dq.info.TokenInfo
-	info.Cookies = append([]string{}, dq.info.Cookies...)
+func (ac *AcFunLive) GetTokenInfo() *TokenInfo {
+	info := ac.info.TokenInfo
+	info.Cookies = append([]string{}, ac.info.Cookies...)
 	return &info
 }
 
 // GetStreamInfo 返回直播的一些信息，不需要调用StartDanmu()
-func (dq *DanmuQueue) GetStreamInfo() *StreamInfo {
-	info := dq.info.StreamInfo
-	info.StreamList = append([]StreamURL{}, dq.info.StreamList...)
+func (ac *AcFunLive) GetStreamInfo() *StreamInfo {
+	info := ac.info.StreamInfo
+	info.StreamList = append([]StreamURL{}, ac.info.StreamList...)
 	return &info
 }
 
 // GetUID 返回主播的uid，有可能是0
-func (dq *DanmuQueue) GetUID() int64 {
-	return dq.t.uid
+func (ac *AcFunLive) GetUID() int64 {
+	return ac.t.uid
 }
 
 // GetTokenInfo 返回TokenInfo，相当于调用 Init(0, cookies) 后返回对应的TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
 func GetTokenInfo(cookies []string) (*TokenInfo, error) {
-	dq, err := Init(0, cookies)
+	ac, err := Init(0, cookies)
 	if err != nil {
 		return nil, err
 	}
-	return dq.GetTokenInfo(), nil
+	return ac.GetTokenInfo(), nil
 }

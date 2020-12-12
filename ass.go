@@ -87,7 +87,7 @@ func convert(name string) string {
 
 // WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕，需要先调用StartDanmu(ctx, false)。
 // newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕。
-func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
+func (ac *AcFunLive) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("Recovering from panic in WriteASS(), the error is: %v", err)
@@ -95,15 +95,15 @@ func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, ne
 		}
 	}()
 
-	if dq.q == nil {
+	if ac.q == nil {
 		log.Println("需要先调用StartDanmu()，event不能为true")
 		return
 	}
-	if dq.t.uid == 0 {
+	if ac.t.uid == 0 {
 		log.Println("主播uid不能为0")
 		return
 	}
-	if (*queue.Queue)(dq.q).Disposed() {
+	if (*queue.Queue)(ac.q).Disposed() {
 		return
 	}
 
@@ -114,7 +114,7 @@ func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, ne
 		checkErr(err)
 		defer f.Close()
 
-		info := fmt.Sprintf(scriptInfo, dq.info.LiveID, dq.info.StreamName, s.Title, s.PlayResX, s.PlayResY)
+		info := fmt.Sprintf(scriptInfo, ac.info.LiveID, ac.info.StreamName, s.Title, s.PlayResX, s.PlayResY)
 		style := fmt.Sprintf(sytles, s.FontSize)
 
 		_, err = f.WriteString(info)
@@ -136,7 +136,7 @@ func (dq *DanmuQueue) WriteASS(ctx context.Context, s SubConfig, file string, ne
 		case <-ctx.Done():
 			return
 		default:
-			danmu := dq.GetDanmu()
+			danmu := ac.GetDanmu()
 			if danmu == nil {
 				return
 			}
