@@ -414,7 +414,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 }
 
 // 获取主播踢人的历史记录
-func (t *token) getAuthorKickHistory() (e error) {
+func (t *token) getKickHistory() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getAuthorKickHistory() error: %w", err)
@@ -425,7 +425,7 @@ func (t *token) getAuthorKickHistory() (e error) {
 		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
-	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, nil, false)
+	resp, err := t.fetchKuaiShouAPI(kickHistoryURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -443,7 +443,7 @@ func (t *token) getAuthorKickHistory() (e error) {
 }
 
 // 获取主播的房管列表
-func (t *token) getAuthorManagerList() (managerList []Manager, e error) {
+func (t *token) getManagerList() (managerList []Manager, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getAuthorManagerList() error: %w", err)
@@ -457,7 +457,7 @@ func (t *token) getAuthorManagerList() (managerList []Manager, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	resp, err := t.fetchKuaiShouAPI(authorManagerListURL, form, false)
+	resp, err := t.fetchKuaiShouAPI(managerListURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -670,14 +670,14 @@ func (ac *AcFunLive) GetWalletBalance() (accoins int, bananas int, e error) {
 	return ac.t.getWalletBalance()
 }
 
-// GetAuthorKickHistory 返回主播踢人的历史记录，需要调用Login()登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
-func (ac *AcFunLive) GetAuthorKickHistory() (e error) {
-	return ac.t.getAuthorKickHistory()
+// GetKickHistory 返回主播踢人的历史记录，需要调用Login()登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
+func (ac *AcFunLive) GetKickHistory() (e error) {
+	return ac.t.getKickHistory()
 }
 
-// GetAuthorManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
-func (ac *AcFunLive) GetAuthorManagerList() ([]Manager, error) {
-	return ac.t.getAuthorManagerList()
+// GetManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
+func (ac *AcFunLive) GetManagerList() ([]Manager, error) {
+	return ac.t.getManagerList()
 }
 
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName，利用Login()获取AcFun帐号的cookies
