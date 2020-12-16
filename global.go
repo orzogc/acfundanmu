@@ -54,6 +54,12 @@ const (
 	deleteManagerURL = "https://api.kuaishouzt.com/rest/zt/live/web/author/action/manager/delete?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 )
 
+const (
+	checkLiveAuthURL = "https://member.acfun.cn/common/api/checkLiveAuth"
+	liveTypeListURL  = "https://member.acfun.cn/common/api/getLiveTypeList"
+	obsConfigURL     = "https://api.kuaishouzt.com/rest/zt/live/web/obs/config?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+)
+
 type token struct {
 	//sync.Mutex           // seqID、headerSeqID和ticketIndex的锁
 	userID          int64  // AcFun帐号uid
@@ -75,7 +81,6 @@ type token struct {
 	cookies         []string
 	medalParser     fastjson.ParserPool
 	watchParser     fastjson.ParserPool
-	actionParser    fastjson.ParserPool
 }
 
 // 检查错误

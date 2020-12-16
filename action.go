@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fastjson"
 )
 
 // 房管踢人
@@ -29,8 +30,7 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
 
-	p := t.actionParser.Get()
-	defer t.actionParser.Put(p)
+	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 || v.GetBool("data", "kickSucc") != true {
@@ -62,8 +62,7 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
 
-	p := t.actionParser.Get()
-	defer t.actionParser.Put(p)
+	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 || v.GetBool("data", "kickSucc") != true {
@@ -94,8 +93,7 @@ func (t *token) addManager(managerUID int64) (e error) {
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
 
-	p := t.actionParser.Get()
-	defer t.actionParser.Put(p)
+	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -126,8 +124,7 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
 
-	p := t.actionParser.Get()
-	defer t.actionParser.Put(p)
+	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
