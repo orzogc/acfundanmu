@@ -522,6 +522,11 @@ func (ac *AcFunLive) GetUID() int64 {
 	return ac.t.uid
 }
 
+// GetLiveID 返回liveID，有可能为空
+func (ac *AcFunLive) GetLiveID() string {
+	return ac.t.liveID
+}
+
 // GetTokenInfo 返回TokenInfo，相当于调用 Init(0, cookies) 后返回对应的TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
 func GetTokenInfo(cookies []string) (*TokenInfo, error) {
 	ac, err := Init(0, cookies)

@@ -164,14 +164,18 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 }
 
 // 获取直播总结信息
-func (t *token) getSummary() (summary *Summary, e error) {
+func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getSummary() error: %w", err)
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(endSummaryURL, nil, false)
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("liveId", liveID)
+	resp, err := t.fetchKuaiShouAPI(endSummaryURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -629,7 +633,12 @@ func (ac *AcFunLive) GetBillboard() ([]BillboardUser, error) {
 
 // GetSummary 返回直播总结信息，不需要调用StartDanmu()
 func (ac *AcFunLive) GetSummary() (*Summary, error) {
-	return ac.t.getSummary()
+	return ac.t.getSummary(ac.t.liveID)
+}
+
+// GetSummaryWithLiveID 返回直播总结信息，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()
+func (ac *AcFunLive) GetSummaryWithLiveID(liveID string) (*Summary, error) {
+	return ac.t.getSummary(liveID)
 }
 
 // GetLuckList 返回抢到红包的用户列表，需要调用Login()登陆AcFun帐号，不需要调用StartDanmu()
