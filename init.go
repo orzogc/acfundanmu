@@ -1,11 +1,19 @@
 package acfundanmu
 
 import (
+	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
+	"facette.io/natsort"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
@@ -322,7 +330,7 @@ func (t *token) getGiftList() (e error) {
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(giftURL, nil)
+	resp, err := t.fetchKuaiShouAPI(giftURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -391,7 +399,13 @@ func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
 }
 
 // 通过快手API获取数据，form为nil时采用默认form，调用后需要 defer fasthttp.ReleaseResponse(resp)
-func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args) (*fasthttp.Response, error) {
+func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (resp *fasthttp.Response, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("fetchKuaiShouAPI() error: %w", err)
+		}
+	}()
+
 	var apiURL string
 	if len(t.cookies) != 0 {
 		apiURL = fmt.Sprintf(url, t.userID, t.deviceID, midgroundSt, t.serviceToken)
@@ -405,6 +419,11 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args) (*fasthttp.Res
 		form.Set("visitorId", strconv.FormatInt(t.userID, 10))
 		form.Set("liveId", t.liveID)
 	}
+	if sign {
+		clientSign, err := t.genClientSign(apiURL, form)
+		checkErr(err)
+		form.Set("__clientSign", clientSign)
+	}
 	client := &httpClient{
 		url:         apiURL,
 		body:        form.QueryString(),
@@ -412,5 +431,54 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args) (*fasthttp.Res
 		contentType: formContentType,
 		referer:     t.livePage,
 	}
+
 	return client.doRequest()
+}
+
+// 生成client sign
+func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign string, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("genClientSign() error: %w", err)
+		}
+	}()
+
+	uri := fasthttp.AcquireURI()
+	defer fasthttp.ReleaseURI(uri)
+	err := uri.Parse(nil, []byte(url))
+	checkErr(err)
+	path := string(uri.Path())
+	urlParams := uri.QueryArgs()
+	var paramsStr []string
+	// 应该要忽略以__开头的key
+	urlParams.VisitAll(func(key, value []byte) {
+		paramsStr = append(paramsStr, string(key)+"="+string(value))
+	})
+	form.VisitAll(func(key, value []byte) {
+		paramsStr = append(paramsStr, string(key)+"="+string(value))
+	})
+	// 实际上这里应该要比较key
+	natsort.Sort(paramsStr)
+
+	minute := time.Now().Unix() / 60
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Int31()
+	var nonce int64 = minute | (int64(randomNum) << 32)
+	nonceStr := strconv.FormatInt(nonce, 10)
+
+	key, err := base64.StdEncoding.DecodeString(t.securityKey)
+	checkErr(err)
+	needSigned := "POST&" + path + "&" + strings.Join(paramsStr, "&") + "&" + nonceStr
+	mac := hmac.New(sha256.New, key)
+	mac.Write([]byte(needSigned))
+	hashed := mac.Sum(nil)
+
+	buf := new(bytes.Buffer)
+	err = binary.Write(buf, binary.BigEndian, nonce)
+	checkErr(err)
+	signedBytes := buf.Bytes()
+	signedBytes = append(signedBytes, hashed...)
+	clientSign = base64.RawURLEncoding.EncodeToString(signedBytes)
+
+	return clientSign, nil
 }

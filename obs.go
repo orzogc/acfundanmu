@@ -125,7 +125,7 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 		panic(fmt.Errorf("获取OBS推流设置需要登陆AcFun帐号"))
 	}
 
-	resp, err := t.fetchKuaiShouAPI(obsConfigURL, nil)
+	resp, err := t.fetchKuaiShouAPI(obsConfigURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()

@@ -1,19 +1,11 @@
 package acfundanmu
 
 import (
-	"bytes"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/binary"
 	"fmt"
 	"log"
-	"math/rand"
 	"strconv"
 	"strings"
-	"time"
 
-	"facette.io/natsort"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
@@ -80,7 +72,7 @@ func (t *token) getWatchingList() (watchingList []WatchingUser, e error) {
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(watchingListURL, nil)
+	resp, err := t.fetchKuaiShouAPI(watchingListURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -133,22 +125,7 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("authorId", strconv.FormatInt(t.uid, 10))
-	cookie := fasthttp.AcquireCookie()
-	defer fasthttp.ReleaseCookie(cookie)
-	if len(t.cookies) != 0 {
-		cookie.SetKey(midgroundSt)
-	} else {
-		cookie.SetKey(visitorSt)
-	}
-	cookie.SetValue(t.serviceToken)
-	client := &httpClient{
-		url:         fmt.Sprintf(billboardURL, t.userID, t.deviceID),
-		body:        form.QueryString(),
-		method:      "POST",
-		cookies:     []*fasthttp.Cookie{cookie},
-		contentType: formContentType,
-	}
-	resp, err := client.doRequest()
+	resp, err := t.fetchKuaiShouAPI(billboardURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -194,7 +171,7 @@ func (t *token) getSummary() (summary *Summary, e error) {
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(endSummaryURL, nil)
+	resp, err := t.fetchKuaiShouAPI(endSummaryURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -244,7 +221,7 @@ func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 	form.Set("liveId", t.liveID)
 	form.Set("redpackBizUnit", redpack.RedpackBizUnit)
 	form.Set("redpackId", redpack.RedPackID)
-	resp, err := t.fetchKuaiShouAPI(redpackLuckListURL, form)
+	resp, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -299,26 +276,7 @@ func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("liveId", liveID)
-	url := fmt.Sprintf(playbackURL, t.userID, t.deviceID)
-	clientSign, err := t.genClientSign(url, form)
-	checkErr(err)
-	form.Set("__clientSign", clientSign)
-	cookie := fasthttp.AcquireCookie()
-	defer fasthttp.ReleaseCookie(cookie)
-	if len(t.cookies) != 0 {
-		cookie.SetKey(midgroundSt)
-	} else {
-		cookie.SetKey(visitorSt)
-	}
-	cookie.SetValue(t.serviceToken)
-	client := &httpClient{
-		url:         url,
-		body:        form.QueryString(),
-		method:      "POST",
-		cookies:     []*fasthttp.Cookie{cookie},
-		contentType: formContentType,
-	}
-	resp, err := client.doRequest()
+	resp, err := t.fetchKuaiShouAPI(playbackURL, form, true)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -364,7 +322,7 @@ func (t *token) getPlayURL() (e error) {
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(getPlayURL, nil)
+	resp, err := t.fetchKuaiShouAPI(getPlayURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -392,7 +350,7 @@ func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	resp, err := t.fetchKuaiShouAPI(allGiftURL, form)
+	resp, err := t.fetchKuaiShouAPI(allGiftURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -424,7 +382,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	resp, err := t.fetchKuaiShouAPI(walletBalanceURL, form)
+	resp, err := t.fetchKuaiShouAPI(walletBalanceURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -463,7 +421,7 @@ func (t *token) getAuthorKickHistory() (e error) {
 		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
-	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, nil)
+	resp, err := t.fetchKuaiShouAPI(authorKickHistoryURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -495,7 +453,7 @@ func (t *token) getAuthorManagerList() (managerList []Manager, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	resp, err := t.fetchKuaiShouAPI(authorManagerListURL, form)
+	resp, err := t.fetchKuaiShouAPI(authorManagerListURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -530,54 +488,6 @@ func (t *token) getAuthorManagerList() (managerList []Manager, e error) {
 	}
 
 	return managerList, nil
-}
-
-// 生成client sign
-func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign string, e error) {
-	defer func() {
-		if err := recover(); err != nil {
-			e = fmt.Errorf("genClientSign() error: %w", err)
-		}
-	}()
-
-	uri := fasthttp.AcquireURI()
-	defer fasthttp.ReleaseURI(uri)
-	err := uri.Parse(nil, []byte(url))
-	checkErr(err)
-	path := string(uri.Path())
-	urlParams := uri.QueryArgs()
-	var paramsStr []string
-	// 应该要忽略以__开头的key
-	urlParams.VisitAll(func(key, value []byte) {
-		paramsStr = append(paramsStr, string(key)+"="+string(value))
-	})
-	form.VisitAll(func(key, value []byte) {
-		paramsStr = append(paramsStr, string(key)+"="+string(value))
-	})
-	// 实际上这里应该要比较key
-	natsort.Sort(paramsStr)
-
-	minute := time.Now().Unix() / 60
-	rand.Seed(time.Now().UnixNano())
-	randomNum := rand.Int31()
-	var nonce int64 = minute | (int64(randomNum) << 32)
-	nonceStr := strconv.FormatInt(nonce, 10)
-
-	key, err := base64.StdEncoding.DecodeString(t.securityKey)
-	checkErr(err)
-	needSigned := "POST&" + path + "&" + strings.Join(paramsStr, "&") + "&" + nonceStr
-	mac := hmac.New(sha256.New, key)
-	mac.Write([]byte(needSigned))
-	hashed := mac.Sum(nil)
-
-	buf := new(bytes.Buffer)
-	err = binary.Write(buf, binary.BigEndian, nonce)
-	checkErr(err)
-	signedBytes := buf.Bytes()
-	signedBytes = append(signedBytes, hashed...)
-	clientSign = base64.RawURLEncoding.EncodeToString(signedBytes)
-
-	return clientSign, nil
 }
 
 // 获取登陆帐号的守护徽章和指定主播守护徽章的名字
