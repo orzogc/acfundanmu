@@ -154,7 +154,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				checkErr(err)
 				d := &Comment{
 					DanmuCommon: DanmuCommon{
-						SendTime: comment.SendTimeMs * 1e6,
+						SendTime: comment.SendTimeMs,
 						UserInfo: UserInfo{
 							UserID:   comment.UserInfo.UserId,
 							Nickname: comment.UserInfo.Nickname,
@@ -169,7 +169,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				err := proto.Unmarshal(pl, like)
 				checkErr(err)
 				d := &Like{
-					SendTime: like.SendTimeMs * 1e6,
+					SendTime: like.SendTimeMs,
 					UserInfo: UserInfo{
 						UserID:   like.UserInfo.UserId,
 						Nickname: like.UserInfo.Nickname,
@@ -182,7 +182,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				err := proto.Unmarshal(pl, enter)
 				checkErr(err)
 				d := &EnterRoom{
-					SendTime: enter.SendTimeMs * 1e6,
+					SendTime: enter.SendTimeMs,
 					UserInfo: UserInfo{
 						UserID:   enter.UserInfo.UserId,
 						Nickname: enter.UserInfo.Nickname,
@@ -195,7 +195,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				err := proto.Unmarshal(pl, follow)
 				checkErr(err)
 				d := &FollowAuthor{
-					SendTime: follow.SendTimeMs * 1e6,
+					SendTime: follow.SendTimeMs,
 					UserInfo: UserInfo{
 						UserID:   follow.UserInfo.UserId,
 						Nickname: follow.UserInfo.Nickname,
@@ -217,7 +217,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				checkErr(err)
 				d := &ThrowBanana{
 					DanmuCommon: DanmuCommon{
-						SendTime: banana.SendTimeMs * 1e6,
+						SendTime: banana.SendTimeMs,
 						UserInfo: UserInfo{
 							UserID:   banana.Visitor.UserId,
 							Nickname: banana.Visitor.Name,
@@ -240,7 +240,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				}
 				d := &Gift{
 					DanmuCommon: DanmuCommon{
-						SendTime: gift.SendTimeMs * 1e6,
+						SendTime: gift.SendTimeMs,
 						UserInfo: UserInfo{
 							UserID:   gift.User.UserId,
 							Nickname: gift.User.Nickname,
@@ -276,7 +276,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				err := proto.Unmarshal(pl, richText)
 				checkErr(err)
 				d := &RichText{
-					SendTime: richText.SendTimeMs * 1e6,
+					SendTime: richText.SendTimeMs,
 				}
 				d.Segments = make([]RichTextSegment, len(richText.Segments))
 				for i, segment := range richText.Segments {
@@ -317,7 +317,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				err := proto.Unmarshal(pl, join)
 				checkErr(err)
 				d := &JoinClub{
-					JoinTime: join.JoinTimeMs * 1e6,
+					JoinTime: join.JoinTimeMs,
 					FansInfo: UserInfo{
 						UserID:   join.FansInfo.UserId,
 						Nickname: join.FansInfo.Name,
@@ -439,7 +439,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			for i, comment := range comments.Comment {
 				d := Comment{
 					DanmuCommon: DanmuCommon{
-						SendTime: comment.SendTimeMs * 1e6,
+						SendTime: comment.SendTimeMs,
 						UserInfo: UserInfo{
 							UserID:   comment.UserInfo.UserId,
 							Nickname: comment.UserInfo.Nickname,
@@ -465,7 +465,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				ac.dispatchEvent(chatCallInfo, &ChatCall{
 					ChatID:   chatCall.ChatId,
 					LiveID:   chatCall.LiveId,
-					CallTime: chatCall.CallTimestampMs * 1e6,
+					CallTime: chatCall.CallTimestampMs,
 				})
 			}
 		case "CommonStateSignalChatAccept":
@@ -518,12 +518,12 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 						Nickname: redpack.Sender.Nickname,
 					},
 					DisplayStatus:      RedpackDisplayStatus(redpack.DisplayStatus),
-					GrabBeginTime:      redpack.GrabBeginTimeMs * 1e6,
-					GetTokenLatestTime: redpack.GetTokenLatestTimeMs * 1e6,
+					GrabBeginTime:      redpack.GrabBeginTimeMs,
+					GetTokenLatestTime: redpack.GetTokenLatestTimeMs,
 					RedPackID:          redpack.RedPackId,
 					RedpackBizUnit:     redpack.RedpackBizUnit,
 					RedpackAmount:      redpack.RedpackAmount,
-					SettleBeginTime:    redpack.SettleBeginTime * 1e6,
+					SettleBeginTime:    redpack.SettleBeginTime,
 				}
 				ac.t.getMoreInfo(&r.UserInfo, redpack.Sender)
 				redpacks[i] = r

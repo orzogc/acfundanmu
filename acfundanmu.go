@@ -165,7 +165,7 @@ type DanmuMessage interface {
 
 // DanmuCommon 弹幕通用部分
 type DanmuCommon struct {
-	SendTime int64 // 弹幕发送时间，是以纳秒为单位的Unix时间
+	SendTime int64 // 弹幕发送时间，是以毫秒为单位的Unix时间
 	UserInfo       // 用户信息
 }
 
@@ -205,13 +205,13 @@ type Gift struct {
 
 // RichText 富文本，目前是用于发红包和抢红包的相关消息
 type RichText struct {
-	SendTime int64             // 弹幕发送时间，是以纳秒为单位的Unix时间
+	SendTime int64             // 弹幕发送时间，是以毫秒为单位的Unix时间
 	Segments []RichTextSegment // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
 }
 
 // JoinClub 用户加入主播的守护团，FansInfo和UperInfo都没有Avatar、Medal和ManagerType
 type JoinClub struct {
-	JoinTime int64    // 用户加入守护团的时间，是以纳秒为单位的Unix时间
+	JoinTime int64    // 用户加入守护团的时间，是以毫秒为单位的Unix时间
 	FansInfo UserInfo // 用户的信息
 	UperInfo UserInfo // 主播的信息
 }
@@ -223,12 +223,12 @@ type TopUser WatchingUser
 type Redpack struct {
 	UserInfo                                // 发红包的用户
 	DisplayStatus      RedpackDisplayStatus // 红包的状态
-	GrabBeginTime      int64                // 抢红包的开始时间，是以纳秒为单位的Unix时间
-	GetTokenLatestTime int64                // 抢红包的用户获得token的最晚时间？是以纳秒为单位的Unix时间
+	GrabBeginTime      int64                // 抢红包的开始时间，是以毫秒为单位的Unix时间
+	GetTokenLatestTime int64                // 抢红包的用户获得token的最晚时间？是以毫秒为单位的Unix时间
 	RedPackID          string               // 红包ID
 	RedpackBizUnit     string               // 一般是"ztLiveAcfunRedpackGift"
 	RedpackAmount      int64                // 红包的总价值，单位是AC币
-	SettleBeginTime    int64                // 抢红包的结束时间，是以纳秒为单位的Unix时间
+	SettleBeginTime    int64                // 抢红包的结束时间，是以毫秒为单位的Unix时间
 }
 
 // ChatInfo 连麦信息
@@ -247,7 +247,7 @@ type ChatInfo struct {
 type ChatCall struct {
 	ChatID   string // 连麦ID
 	LiveID   string // 直播ID
-	CallTime int64  // 连麦发起时间，是以纳秒为单位的Unix时间
+	CallTime int64  // 连麦发起时间，是以毫秒为单位的Unix时间
 }
 
 // ChatAccept 用户接受连麦？一般不会出现这个信号

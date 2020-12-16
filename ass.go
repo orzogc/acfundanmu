@@ -148,12 +148,13 @@ func (ac *AcFunLive) WriteASS(ctx context.Context, s SubConfig, file string, new
 				}
 
 				length := utf8.RuneCountInString(c.Content) * s.FontSize
+				sendTime := c.SendTime * 1e6
 				// leftTime就是弹幕运动到视频左边的时间
-				leftTime := c.SendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
+				leftTime := sendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
 				dt := dTime{
-					appear:    c.SendTime - s.StartTime,
-					emerge:    c.SendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
-					disappear: c.SendTime - s.StartTime + duration}
+					appear:    sendTime - s.StartTime,
+					emerge:    sendTime - s.StartTime + (int64(length)*duration)/int64(s.PlayResX+length),
+					disappear: sendTime - s.StartTime + duration}
 				for i, t := range lastTime {
 					// 防止弹幕发生碰撞重叠
 					if dt.appear > t.emerge && leftTime > t.disappear {

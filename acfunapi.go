@@ -43,7 +43,7 @@ type MedalDetail struct {
 	UperAvatar         string // UP主的头像
 	WearMedal          bool   // 是否正在佩戴该守护徽章
 	FriendshipDegree   int    // 目前守护徽章的亲密度
-	JoinClubTime       int64  // 加入守护团的时间，是以纳秒为单位的Unix时间
+	JoinClubTime       int64  // 加入守护团的时间，是以毫秒为单位的Unix时间
 	CurrentDegreeLimit int    // 守护徽章目前等级的亲密度的上限
 }
 
@@ -636,7 +636,7 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 			case "friendshipDegree":
 				medalList[i].FriendshipDegree = v.GetInt()
 			case "joinClubTime":
-				medalList[i].JoinClubTime = v.GetInt64() * 1e6
+				medalList[i].JoinClubTime = v.GetInt64()
 			case "currentDegreeLimit":
 				medalList[i].CurrentDegreeLimit = v.GetInt()
 			default:
