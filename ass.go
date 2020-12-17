@@ -51,11 +51,11 @@ type danmuTime int64
 
 // SubConfig 是字幕的详细设置
 type SubConfig struct {
-	Title     string // 字幕标题
-	PlayResX  int    // 视频分辨率
-	PlayResY  int    // 视频分辨率
-	FontSize  int    // 字体大小
-	StartTime int64  // 直播录播开始的时间，是以纳秒为单位的Unix时间
+	Title     string `json:"title"`     // 字幕标题
+	PlayResX  int    `json:"playResX"`  // 视频分辨率
+	PlayResY  int    `json:"playResY"`  // 视频分辨率
+	FontSize  int    `json:"fontSize"`  // 字体大小
+	StartTime int64  `json:"startTime"` // 直播录播开始的时间，是以纳秒为单位的Unix时间
 }
 
 // dTime就是计算弹幕碰撞需要的数据

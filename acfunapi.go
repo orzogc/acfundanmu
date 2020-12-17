@@ -12,10 +12,10 @@ import (
 
 // WatchingUser 就是观看直播的用户的信息，目前没有Medal
 type WatchingUser struct {
-	UserInfo                 // 用户信息
-	AnonymousUser     bool   // 是否匿名用户
-	DisplaySendAmount string // 赠送的全部礼物的价值，单位是AC币，注意不一定是纯数字的字符串
-	CustomData        string // 用户的一些额外信息，格式为json
+	UserInfo          `json:"userInfo"`
+	AnonymousUser     bool   `json:"anonymousUser"`     // 是否匿名用户
+	DisplaySendAmount string `json:"displaySendAmount"` // 赠送的全部礼物的价值，单位是AC币，注意不一定是纯数字的字符串
+	CustomData        string `json:"customData"`        // 用户的一些额外信息，格式为json
 }
 
 // BillboardUser 就是礼物贡献榜上的用户的信息，没有AnonymousUser、Medal和ManagerType
@@ -23,43 +23,43 @@ type BillboardUser WatchingUser
 
 // Summary 就是直播的总结信息
 type Summary struct {
-	LiveDurationMs int64 // 直播时长，单位为毫秒
-	LikeCount      int   // 点赞总数
-	WatchCount     int   // 观看过直播的人数总数
+	LiveDuration int64 `json:"liveDuration"` // 直播时长，单位为毫秒
+	LikeCount    int   `json:"likeCount"`    // 点赞总数
+	WatchCount   int   `json:"watchCount"`   // 观看过直播的人数总数
 }
 
 // MedalDetail 就是登陆帐号守护徽章的详细信息，没有UserID
 type MedalDetail struct {
-	MedalInfo
-	UperName           string // UP主的名字
-	UperAvatar         string // UP主的头像
-	WearMedal          bool   // 是否正在佩戴该守护徽章
-	FriendshipDegree   int    // 目前守护徽章的亲密度
-	JoinClubTime       int64  // 加入守护团的时间，是以毫秒为单位的Unix时间
-	CurrentDegreeLimit int    // 守护徽章目前等级的亲密度的上限
+	MedalInfo          `json:"medalInfo"`
+	UperName           string `json:"uperName"`           // UP主的名字
+	UperAvatar         string `json:"uperAvatar"`         // UP主的头像
+	WearMedal          bool   `json:"wearMedal"`          // 是否正在佩戴该守护徽章
+	FriendshipDegree   int    `json:"friendshipDegree"`   // 目前守护徽章的亲密度
+	JoinClubTime       int64  `json:"joinClubTime"`       // 加入守护团的时间，是以毫秒为单位的Unix时间
+	CurrentDegreeLimit int    `json:"currentDegreeLimit"` // 守护徽章目前等级的亲密度的上限
 }
 
 // LuckyUser 就是抢到红包的用户，没有Medal和ManagerType
 type LuckyUser struct {
-	UserInfo
-	GrabAmount int // 抢红包抢到的AC币
+	UserInfo   `json:"userInfo"`
+	GrabAmount int `json:"grabAmount"` // 抢红包抢到的AC币
 }
 
 // Playback 就是直播回放的相关信息
 type Playback struct {
-	Duration  int64  // 录播视频时长，单位是毫秒
-	URL       string // 录播源链接，目前分为阿里云和腾讯云两种，目前阿里云的下载速度比较快
-	BackupURL string // 备份录播源链接
-	M3U8Slice string // m3u8
-	Width     int    // 录播视频宽度
-	Height    int    // 录播视频高度
+	Duration  int64  `json:"duration"`  // 录播视频时长，单位是毫秒
+	URL       string `json:"url"`       // 录播源链接，目前分为阿里云和腾讯云两种，目前阿里云的下载速度比较快
+	BackupURL string `json:"backupURL"` // 备份录播源链接
+	M3U8Slice string `json:"m3u8Slice"` // m3u8
+	Width     int    `json:"width"`     // 录播视频宽度
+	Height    int    `json:"height"`    // 录播视频高度
 }
 
 // Manager 就是房管的用户信息，目前没有Medal和ManagerType
 type Manager struct {
-	UserInfo          // 用户信息
-	CustomData string // 用户的一些额外信息，格式为json
-	Online     bool   // 是否直播间在线？
+	UserInfo   `json:"userInfo"`
+	CustomData string `json:"customData"` // 用户的一些额外信息，格式为json
+	Online     bool   `json:"online"`     // 是否直播间在线？
 }
 
 var liveListParser fastjson.ParserPool
@@ -192,7 +192,7 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
 		case "liveDurationMs":
-			summary.LiveDurationMs = v.GetInt64()
+			summary.LiveDuration = v.GetInt64()
 		case "likeCount":
 			summary.LikeCount, err = strconv.Atoi(string(v.GetStringBytes()))
 			checkErr(err)

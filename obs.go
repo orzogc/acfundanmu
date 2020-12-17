@@ -9,19 +9,19 @@ import (
 
 // LiveTypeList 就是直播分类
 type LiveTypeList struct {
-	ID           int    // 直播次分类ID
-	Name         string // 直播次分类名字
-	CategoryID   int    // 直播主分类ID
-	CategoryName string // 直播主分类名字
+	ID           int    `json:"id"`           // 直播次分类ID
+	Name         string `json:"name"`         // 直播次分类名字
+	CategoryID   int    `json:"categoryID"`   // 直播主分类ID
+	CategoryName string `json:"categoryName"` // 直播主分类名字
 }
 
 // OBSConfig 就是OBS的推流设置
 type OBSConfig struct {
-	StreamName        string   // 直播源名字（ID）
-	StreamPullAddress string   // 拉流地址，也就是直播源地址
-	StreamPushAddress []string // 推流地址，分为阿里云和腾讯云两种
-	Panoramic         bool     // 是否全景直播
-	Interval          int64    // 发送transcodeInfo的时间间隔，单位为毫秒
+	StreamName        string   `json:"streamName"`        // 直播源名字（ID）
+	StreamPullAddress string   `json:"streamPullAddress"` // 拉流地址，也就是直播源地址
+	StreamPushAddress []string `json:"streamPushAddress"` // 推流地址，分为阿里云和腾讯云两种
+	Panoramic         bool     `json:"panoramic"`         // 是否全景直播
+	Interval          int64    `json:"interval"`          // 发送transcodeInfo的时间间隔，单位为毫秒
 }
 
 // 检测开播权限

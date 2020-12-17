@@ -85,52 +85,52 @@ const (
 
 // GiftDetail 就是礼物的详细信息
 type GiftDetail struct {
-	GiftID                 int64  // 礼物ID
-	GiftName               string // 礼物名字
-	ARLiveName             string // 不为空时礼物属于虚拟偶像区的特殊礼物
-	PayWalletType          int    // 1为非免费礼物，2为免费礼物
-	Price                  int    // 礼物价格，非免费礼物时单位为AC币，免费礼物（香蕉）时为1
-	WebpPic                string // 礼物的webp格式图片（动图）
-	PngPic                 string // 礼物的png格式图片（大）
-	SmallPngPic            string // 礼物的png格式图片（小）
-	AllowBatchSendSizeList []int  // 网页或APP单次能够赠送的礼物数量列表
-	CanCombo               bool   // 是否能连击，一般免费礼物（香蕉）不能连击，其余能连击
-	CanDraw                bool   // 是否能涂鸦？
-	MagicFaceID            int
-	Description            string // 礼物的描述
-	RedpackPrice           int    // 礼物红包价格总额，单位为AC币
+	GiftID                 int64  `json:"giftID"`                 // 礼物ID
+	GiftName               string `json:"giftName"`               // 礼物名字
+	ARLiveName             string `json:"arLiveName"`             // 不为空时礼物属于虚拟偶像区的特殊礼物
+	PayWalletType          int    `json:"payWalletType"`          // 1为非免费礼物，2为免费礼物
+	Price                  int    `json:"price"`                  // 礼物价格，非免费礼物时单位为AC币，免费礼物（香蕉）时为1
+	WebpPic                string `json:"webpPic"`                // 礼物的webp格式图片（动图）
+	PngPic                 string `json:"pngPic"`                 // 礼物的png格式图片（大）
+	SmallPngPic            string `json:"smallPngPic"`            // 礼物的png格式图片（小）
+	AllowBatchSendSizeList []int  `json:"allowBatchSendSizeList"` // 网页或APP单次能够赠送的礼物数量列表
+	CanCombo               bool   `json:"canCombo"`               // 是否能连击，一般免费礼物（香蕉）不能连击，其余能连击
+	CanDraw                bool   `json:"canDraw"`                // 是否能涂鸦？
+	MagicFaceID            int    `json:"magicFaceID"`
+	Description            string `json:"description"`  // 礼物的描述
+	RedpackPrice           int    `json:"redpackPrice"` // 礼物红包价格总额，单位为AC币
 }
 
 // DrawPoint 绘制礼物的点？
 type DrawPoint struct {
-	MarginLeft int64
-	MarginTop  int64
-	ScaleRatio float64
-	Handup     bool
+	MarginLeft int64   `json:"marginLeft"`
+	MarginTop  int64   `json:"marginTop"`
+	ScaleRatio float64 `json:"scaleRatio"`
+	Handup     bool    `json:"handup"`
 }
 
 // DrawGiftInfo 绘制礼物的信息？
 type DrawGiftInfo struct {
-	ScreenWidth  int64
-	ScreenHeight int64
-	DrawPoint    []DrawPoint
+	ScreenWidth  int64       `json:"screenWidth"`
+	ScreenHeight int64       `json:"screenHeight"`
+	DrawPoint    []DrawPoint `json:"drawPoint"`
 }
 
 // UserInfo 就是用户信息
 type UserInfo struct {
-	UserID      int64       // 用户uid
-	Nickname    string      // 用户名字
-	Avatar      string      // 用户头像
-	Medal       MedalInfo   // 守护徽章
-	ManagerType ManagerType // 用户是否房管
+	UserID      int64       `json:"userID"`      // 用户uid
+	Nickname    string      `json:"nickname"`    // 用户名字
+	Avatar      string      `json:"avatar"`      // 用户头像
+	Medal       MedalInfo   `json:"medal"`       // 守护徽章
+	ManagerType ManagerType `json:"managerType"` // 用户是否房管
 }
 
 // MedalInfo 就是守护徽章信息
 type MedalInfo struct {
-	UperID   int64  // UP主的uid
-	UserID   int64  // 用户的uid
-	ClubName string // 守护徽章名字
-	Level    int    // 守护徽章等级
+	UperID   int64  `json:"uperID"`   // UP主的uid
+	UserID   int64  `json:"userID"`   // 用户的uid
+	ClubName string `json:"clubName"` // 守护徽章名字
+	Level    int    `json:"level"`    // 守护徽章等级
 }
 
 // RichTextSegment 副文本片段的接口
@@ -140,21 +140,21 @@ type RichTextSegment interface {
 
 // RichTextUserInfo 富文本里的用户信息
 type RichTextUserInfo struct {
-	UserInfo
-	Color string // 用户信息的颜色
+	UserInfo `json:"userInfo"`
+	Color    string `json:"color"` // 用户信息的颜色
 }
 
 // RichTextPlain 富文本里的文字
 type RichTextPlain struct {
-	Text  string // 文字
-	Color string // 文字的颜色
+	Text  string `json:"text"`  // 文字
+	Color string `json:"color"` // 文字的颜色
 }
 
 // RichTextImage 富文本里的图片
 type RichTextImage struct {
-	Pictures         []string // 图片
-	AlternativeText  string   // 可选的文本？
-	AlternativeColor string   // 可选的文本颜色？
+	Pictures         []string `json:"pictures"`         // 图片
+	AlternativeText  string   `json:"alternativeText"`  // 可选的文本？
+	AlternativeColor string   `json:"alternativeColor"` // 可选的文本颜色？
 }
 
 // DanmuMessage 弹幕的接口
@@ -165,14 +165,14 @@ type DanmuMessage interface {
 
 // DanmuCommon 弹幕通用部分
 type DanmuCommon struct {
-	SendTime int64 // 弹幕发送时间，是以毫秒为单位的Unix时间
-	UserInfo       // 用户信息
+	SendTime int64             `json:"sendTime"` // 弹幕发送时间，是以毫秒为单位的Unix时间
+	UserInfo `json:"userInfo"` // 用户信息
 }
 
 // Comment 用户发的弹幕
 type Comment struct {
-	DanmuCommon
-	Content string // 弹幕内容
+	DanmuCommon `json:"danmuInfo"`
+	Content     string `json:"content"` // 弹幕文字内容
 }
 
 // Like 用户点赞的弹幕
@@ -186,34 +186,34 @@ type FollowAuthor DanmuCommon
 
 // ThrowBanana 用户投蕉的弹幕，没有Avatar、Medal和ManagerType，现在基本不用这个，通常用Gift代替
 type ThrowBanana struct {
-	DanmuCommon
-	BananaCount int // 投蕉数量
+	DanmuCommon `json:"danmuInfo"`
+	BananaCount int `json:"bananaCount"` // 投蕉数量
 }
 
 // Gift 用户赠送礼物的弹幕
 type Gift struct {
-	DanmuCommon
-	GiftDetail                   // 礼物详细信息
-	Count                 int32  // 礼物单次赠送的数量，礼物总数是Count * Combo
-	Combo                 int32  // 礼物连击数量，礼物总数是Count * Combo
-	Value                 int64  // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
-	ComboID               string // 礼物连击ID
-	SlotDisplayDurationMs int64  // 应该是礼物动画持续的时间，送礼物后在该时间内再送一次可以实现礼物连击
-	ExpireDurationMs      int64
-	DrawGiftInfo          DrawGiftInfo // 礼物涂鸦
+	DanmuCommon         `json:"danmuInfo"`
+	GiftDetail          `json:"giftDetail"`
+	Count               int32        `json:"count"`               // 礼物单次赠送的数量，礼物总数是Count * Combo
+	Combo               int32        `json:"combo"`               // 礼物连击数量，礼物总数是Count * Combo
+	Value               int64        `json:"value"`               // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
+	ComboID             string       `json:"comboID"`             // 礼物连击ID
+	SlotDisplayDuration int64        `json:"slotDisplayDuration"` // 应该是礼物动画持续的时间，单位为毫秒，送礼物后在该时间内再送一次可以实现礼物连击
+	ExpireDuration      int64        `json:"ExpireDuration"`
+	DrawGiftInfo        DrawGiftInfo `json:"drawGiftInfo"` // 礼物涂鸦
 }
 
 // RichText 富文本，目前是用于发红包和抢红包的相关消息
 type RichText struct {
-	SendTime int64             // 弹幕发送时间，是以毫秒为单位的Unix时间
-	Segments []RichTextSegment // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
+	SendTime int64             `json:"sendTime"` // 弹幕发送时间，是以毫秒为单位的Unix时间
+	Segments []RichTextSegment `json:"segments"` // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
 }
 
 // JoinClub 用户加入主播的守护团，FansInfo和UperInfo都没有Avatar、Medal和ManagerType
 type JoinClub struct {
-	JoinTime int64    // 用户加入守护团的时间，是以毫秒为单位的Unix时间
-	FansInfo UserInfo // 用户的信息
-	UperInfo UserInfo // 主播的信息
+	JoinTime int64    `json:"joinTime"` // 用户加入守护团的时间，是以毫秒为单位的Unix时间
+	FansInfo UserInfo `json:"fansInfo"` // 用户的信息
+	UperInfo UserInfo `json:"uperInfo"` // 主播的信息
 }
 
 // TopUser 就是礼物榜在线前三，目前没有Medal和ManagerType
@@ -221,99 +221,87 @@ type TopUser WatchingUser
 
 // Redpack 红包信息
 type Redpack struct {
-	UserInfo                                // 发红包的用户
-	DisplayStatus      RedpackDisplayStatus // 红包的状态
-	GrabBeginTime      int64                // 抢红包的开始时间，是以毫秒为单位的Unix时间
-	GetTokenLatestTime int64                // 抢红包的用户获得token的最晚时间？是以毫秒为单位的Unix时间
-	RedPackID          string               // 红包ID
-	RedpackBizUnit     string               // 一般是"ztLiveAcfunRedpackGift"
-	RedpackAmount      int64                // 红包的总价值，单位是AC币
-	SettleBeginTime    int64                // 抢红包的结束时间，是以毫秒为单位的Unix时间
+	UserInfo           `json:"userInfo"`    // 发红包的用户
+	DisplayStatus      RedpackDisplayStatus `json:"displayStatus"`      // 红包的状态
+	GrabBeginTime      int64                `json:"grabBeginTime"`      // 抢红包的开始时间，是以毫秒为单位的Unix时间
+	GetTokenLatestTime int64                `json:"getTokenLatestTime"` // 抢红包的用户获得token的最晚时间？是以毫秒为单位的Unix时间
+	RedPackID          string               `json:"redPackID"`          // 红包ID
+	RedpackBizUnit     string               `json:"redpackBizUnit"`     // 一般是"ztLiveAcfunRedpackGift"
+	RedpackAmount      int64                `json:"redpackAmount"`      // 红包的总价值，单位是AC币
+	SettleBeginTime    int64                `json:"settleBeginTime"`    // 抢红包的结束时间，是以毫秒为单位的Unix时间
 }
-
-// ChatInfo 连麦信息
-/*
-type ChatInfo struct {
-	ChatID          string        // 连麦ID
-	LiveID          string        // 直播ID
-	CallTimestampMs int64         // 连麦发起时间
-	Guest           UserInfo      // 被连麦的帐号信息，目前没有房管类型
-	MediaType       ChatMediaType // 连麦类型
-	EndType         ChatEndType   // 连麦结束类型
-}
-*/
 
 // ChatCall 主播发起连麦
 type ChatCall struct {
-	ChatID   string // 连麦ID
-	LiveID   string // 直播ID
-	CallTime int64  // 连麦发起时间，是以毫秒为单位的Unix时间
+	ChatID   string `json:"chatID"`   // 连麦ID
+	LiveID   string `json:"liveID"`   // 直播ID
+	CallTime int64  `json:"callTime"` // 连麦发起时间，是以毫秒为单位的Unix时间
 }
 
 // ChatAccept 用户接受连麦？一般不会出现这个信号
 type ChatAccept struct {
-	ChatID          string        // 连麦ID
-	MediaType       ChatMediaType // 连麦类型
-	ArraySignalInfo string
+	ChatID          string        `json:"chatID"`    // 连麦ID
+	MediaType       ChatMediaType `json:"mediaType"` // 连麦类型
+	ArraySignalInfo string        `json:"arraySignalInfo"`
 }
 
 // ChatReady 用户接受连麦的信息
 type ChatReady struct {
-	ChatID    string        // 连麦ID
-	Guest     UserInfo      // 被连麦的帐号信息，目前没有房管类型
-	MediaType ChatMediaType // 连麦类型
+	ChatID    string        `json:"chatID"`    // 连麦ID
+	Guest     UserInfo      `json:"guest"`     // 被连麦的帐号信息，目前没有房管类型
+	MediaType ChatMediaType `json:"mediaType"` // 连麦类型
 }
 
 // ChatEnd 连麦结束
 type ChatEnd struct {
-	ChatID  string      // 连麦ID
-	EndType ChatEndType // 连麦结束类型
+	ChatID  string      `json:"chatID"`  // 连麦ID
+	EndType ChatEndType `json:"endType"` // 连麦结束类型
 }
 
 // TokenInfo 就是AcFun直播的token相关信息
 type TokenInfo struct {
-	UserID       int64    // 登陆模式或游客模式的uid
-	SecurityKey  string   // 密钥
-	ServiceToken string   // token
-	DeviceID     string   // 设备ID
-	Cookies      []string // AcFun帐号的cookies
+	UserID       int64    `json:"userID"`       // 登陆模式或游客模式的uid
+	SecurityKey  string   `json:"securityKey"`  // 密钥
+	ServiceToken string   `json:"serviceToken"` // token
+	DeviceID     string   `json:"deviceID"`     // 设备ID
+	Cookies      []string `json:"cookies"`      // AcFun帐号的cookies
 }
 
 // StreamURL 就是直播源相关信息
 type StreamURL struct {
-	URL         string // 直播源链接
-	Bitrate     int    // 直播源码率，不一定是实际码率
-	QualityType string // 直播源类型，一般是"STANDARD"、"HIGH"、"SUPER"、"BLUE_RAY"
-	QualityName string // 直播源类型的中文名字，一般是"高清"、"超清"、"蓝光 4M"、"蓝光 5M"、"蓝光 6M"、"蓝光 7M"、"蓝光 8M"
+	URL         string `json:"url"`         // 直播源链接
+	Bitrate     int    `json:"bitrate"`     // 直播源码率，不一定是实际码率
+	QualityType string `json:"qualityType"` // 直播源类型，一般是"STANDARD"、"HIGH"、"SUPER"、"BLUE_RAY"
+	QualityName string `json:"qualityName"` // 直播源类型的中文名字，一般是"高清"、"超清"、"蓝光 4M"、"蓝光 5M"、"蓝光 6M"、"蓝光 7M"、"蓝光 8M"
 }
 
 // StreamInfo 就是直播的一部分信息
 type StreamInfo struct {
-	LiveID        string      // 直播ID
-	Title         string      // 直播间标题
-	LiveStartTime int64       // 直播开始的时间，是以毫秒为单位的Unix time
-	Panoramic     bool        // 是否全景直播
-	StreamList    []StreamURL // 直播源列表
-	StreamName    string      // 直播源名字（ID）
+	LiveID        string      `json:"liveID"`        // 直播ID
+	Title         string      `json:"title"`         // 直播间标题
+	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix time
+	Panoramic     bool        `json:"panoramic"`     // 是否全景直播
+	StreamList    []StreamURL `json:"streamList"`    // 直播源列表
+	StreamName    string      `json:"streamName"`    // 直播源名字（ID）
 }
 
 // DisplayInfo 就是直播间的一些数据
 type DisplayInfo struct {
-	WatchingCount string // 直播间在线观众数量
-	LikeCount     string // 直播间点赞总数
-	LikeDelta     int    // 点赞增加数量
+	WatchingCount string `json:"watchingCount"` // 直播间在线观众数量
+	LikeCount     string `json:"likeCount"`     // 直播间点赞总数
+	LikeDelta     int    `json:"likeDelta"`     // 点赞增加数量
 }
 
 // LiveInfo 就是直播间的相关状态信息
 type LiveInfo struct {
-	KickedOut        string       // 被踢理由？
-	ViolationAlert   string       // 直播间警告？
-	LiveManagerState ManagerState // 登陆帐号的房管状态
-	AllBananaCount   string       // 直播间香蕉总数
-	DisplayInfo
-	TopUsers      []TopUser // 礼物榜在线前三
-	RecentComment []Comment // APP进直播间时显示的最近发的弹幕
-	RedpackList   []Redpack // 红包列表
+	KickedOut        string       `json:"kickedOut"`        // 被踢理由？
+	ViolationAlert   string       `json:"violationAlert"`   // 直播间警告？
+	LiveManagerState ManagerState `json:"liveManagerState"` // 登陆帐号的房管状态
+	AllBananaCount   string       `json:"allBananaCount"`   // 直播间香蕉总数
+	DisplayInfo      `json:"displayInfo"`
+	TopUsers         []TopUser `json:"topUsers"`      // 礼物榜在线前三
+	RecentComment    []Comment `json:"recentComment"` // APP进直播间时显示的最近发的弹幕
+	RedpackList      []Redpack `json:"redpackList"`   // 红包列表
 }
 
 // 带锁的LiveInfo

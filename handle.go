@@ -246,13 +246,13 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 							Nickname: gift.User.Nickname,
 						},
 					},
-					GiftDetail:            g,
-					Count:                 gift.Count,
-					Combo:                 gift.Combo,
-					Value:                 gift.Value,
-					ComboID:               gift.ComboId,
-					SlotDisplayDurationMs: gift.SlotDisplayDurationMs,
-					ExpireDurationMs:      gift.ExpireDurationMs,
+					GiftDetail:          g,
+					Count:               gift.Count,
+					Combo:               gift.Combo,
+					Value:               gift.Value,
+					ComboID:             gift.ComboId,
+					SlotDisplayDuration: gift.SlotDisplayDurationMs,
+					ExpireDuration:      gift.ExpireDurationMs,
 				}
 				ac.t.getMoreInfo(&d.UserInfo, gift.User)
 				if gift.DrawGiftInfo != nil {
