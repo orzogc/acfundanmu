@@ -114,8 +114,8 @@ func (t *token) getWatchingList() (watchingList []WatchingUser, e error) {
 	return watchingList, nil
 }
 
-// 获取直播间最近七日内的礼物贡献榜前50名观众的详细信息
-func (t *token) getBillboard() (billboard []BillboardUser, e error) {
+// 获取主播最近七日内的礼物贡献榜前50名观众的详细信息
+func (t *token) getBillboard(uid int64) (billboard []BillboardUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getBillboard() error: %w", err)
@@ -124,7 +124,7 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("authorId", strconv.FormatInt(t.liverUID, 10))
+	form.Set("authorId", strconv.FormatInt(uid, 10))
 	resp, err := t.fetchKuaiShouAPI(billboardURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
@@ -626,9 +626,9 @@ func (ac *AcFunLive) GetWatchingList() ([]WatchingUser, error) {
 	return ac.t.getWatchingList()
 }
 
-// GetBillboard 返回直播间最近七日内的礼物贡献榜前50名观众的详细信息，不需要调用StartDanmu()
-func (ac *AcFunLive) GetBillboard() ([]BillboardUser, error) {
-	return ac.t.getBillboard()
+// GetBillboard 返回指定主播最近七日内的礼物贡献榜前50名观众的详细信息，可以调用Init(0, nil)，不需要调用StartDanmu()
+func (ac *AcFunLive) GetBillboard(uid int64) ([]BillboardUser, error) {
+	return ac.t.getBillboard(uid)
 }
 
 // GetSummary 返回直播总结信息，不需要调用StartDanmu()
