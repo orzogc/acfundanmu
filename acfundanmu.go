@@ -350,7 +350,7 @@ func Login(account, password string) (cookies []string, err error) {
 func Init(uid int64, cookies []string) (ac *AcFunLive, err error) {
 	ac = new(AcFunLive)
 	ac.t = &token{
-		liverID:  uid,
+		liverUID: uid,
 		livePage: fmt.Sprintf(liveURL, uid),
 	}
 	if len(cookies) != 0 {
@@ -390,7 +390,7 @@ func Init(uid int64, cookies []string) (ac *AcFunLive, err error) {
 func InitWithToken(uid int64, tokenInfo TokenInfo) (ac *AcFunLive, err error) {
 	ac = new(AcFunLive)
 	ac.t = &token{
-		liverID:      uid,
+		liverUID:     uid,
 		livePage:     fmt.Sprintf(liveURL, uid),
 		userID:       tokenInfo.UserID,
 		securityKey:  tokenInfo.SecurityKey,
@@ -441,7 +441,7 @@ func (ac *AcFunLive) ReInit(uid int64, clearHandlers bool) (newAC *AcFunLive, er
 // event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
 func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	ch := make(chan error, 1)
-	if ac.t.liverID == 0 {
+	if ac.t.liverUID == 0 {
 		err := fmt.Errorf("主播uid不能为0")
 		log.Println(err)
 		ch <- err
@@ -460,7 +460,7 @@ func (ac *AcFunLive) GetDanmu() (danmu []DanmuMessage) {
 		log.Println("需要先调用StartDanmu()，event不能为true")
 		return nil
 	}
-	if ac.t.liverID == 0 {
+	if ac.t.liverUID == 0 {
 		log.Println("主播uid不能为0")
 		return nil
 	}
@@ -510,9 +510,9 @@ func (ac *AcFunLive) GetUserID() int64 {
 	return ac.t.userID
 }
 
-// GetLiverID 返回主播的uid，有可能是0
-func (ac *AcFunLive) GetLiverID() int64 {
-	return ac.t.liverID
+// GetLiverUID 返回主播的uid，有可能是0
+func (ac *AcFunLive) GetLiverUID() int64 {
+	return ac.t.liverUID
 }
 
 // GetLiveID 返回liveID，有可能为空

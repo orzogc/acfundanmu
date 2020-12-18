@@ -76,7 +76,7 @@ type token struct {
 	ticketIndex     uint32
 	deviceID        string
 	gifts           map[int64]GiftDetail
-	liverID         int64 // 主播uid
+	liverUID        int64 // 主播uid
 	livePage        string
 	cookies         []string
 	medalParser     fastjson.ParserPool

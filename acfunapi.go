@@ -124,7 +124,7 @@ func (t *token) getBillboard() (billboard []BillboardUser, e error) {
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("authorId", strconv.FormatInt(t.liverID, 10))
+	form.Set("authorId", strconv.FormatInt(t.liverUID, 10))
 	resp, err := t.fetchKuaiShouAPI(billboardURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)

@@ -99,7 +99,7 @@ func (ac *AcFunLive) WriteASS(ctx context.Context, s SubConfig, file string, new
 		log.Println("需要先调用StartDanmu()，event不能为true")
 		return
 	}
-	if ac.t.liverID == 0 {
+	if ac.t.liverUID == 0 {
 		log.Println("主播uid不能为0")
 		return
 	}

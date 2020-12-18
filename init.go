@@ -224,7 +224,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 		}
 	}()
 
-	if t.liverID == 0 {
+	if t.liverUID == 0 {
 		return stream, nil
 	}
 
@@ -239,7 +239,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	// authorId就是主播的uid
-	form.Set("authorId", strconv.FormatInt(t.liverID, 10))
+	form.Set("authorId", strconv.FormatInt(t.liverUID, 10))
 	form.Set("pullStreamType", "FLV")
 	client := &httpClient{
 		url:         play,

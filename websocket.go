@@ -101,7 +101,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 			if err != nil {
 				if !errors.Is(err, fastws.EOF) {
 					log.Printf("websocket接收数据出现错误：%v", err)
-					log.Printf("停止获取uid为%d的主播的直播弹幕", ac.t.liverID)
+					log.Printf("停止获取uid为%d的主播的直播弹幕", ac.t.liverUID)
 					hasError = true
 					errCh <- err
 					close(errCh)
