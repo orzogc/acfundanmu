@@ -89,7 +89,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 }
 
 // 登陆acfun账号
-func login(username, password string) (cookies []string, e error) {
+func login(account, password string) (cookies []string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			cookies = nil
@@ -97,13 +97,13 @@ func login(username, password string) (cookies []string, e error) {
 		}
 	}()
 
-	if username == "" || password == "" {
+	if account == "" || password == "" {
 		panic(fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆"))
 	}
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("username", username)
+	form.Set("username", account)
 	form.Set("password", password)
 	form.Set("key", "")
 	form.Set("captcha", "")
@@ -224,7 +224,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 		}
 	}()
 
-	if t.uid == 0 {
+	if t.liverID == 0 {
 		return stream, nil
 	}
 
@@ -239,7 +239,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	// authorId就是主播的uid
-	form.Set("authorId", strconv.FormatInt(t.uid, 10))
+	form.Set("authorId", strconv.FormatInt(t.liverID, 10))
 	form.Set("pullStreamType", "FLV")
 	client := &httpClient{
 		url:         play,

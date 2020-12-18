@@ -320,14 +320,14 @@ type AcFunLive struct {
 	handlerMap *handlerMap  // 事件handler的map
 }
 
-// Login 登陆AcFun帐号，username为帐号邮箱或手机号，password为帐号密码
-func Login(username, password string) (cookies []string, err error) {
-	if username == "" || password == "" {
+// Login 登陆AcFun帐号，account为帐号邮箱或手机号，password为帐号密码
+func Login(account, password string) (cookies []string, err error) {
+	if account == "" || password == "" {
 		return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
 	}
 
 	for retry := 0; retry < 3; retry++ {
-		cookies, err = login(username, password)
+		cookies, err = login(account, password)
 		if err != nil {
 			if retry == 2 {
 				log.Printf("登陆AcFun帐号失败：%v", err)
@@ -350,7 +350,7 @@ func Login(username, password string) (cookies []string, err error) {
 func Init(uid int64, cookies []string) (ac *AcFunLive, err error) {
 	ac = new(AcFunLive)
 	ac.t = &token{
-		uid:      uid,
+		liverID:  uid,
 		livePage: fmt.Sprintf(liveURL, uid),
 	}
 	if len(cookies) != 0 {
@@ -390,7 +390,7 @@ func Init(uid int64, cookies []string) (ac *AcFunLive, err error) {
 func InitWithToken(uid int64, tokenInfo TokenInfo) (ac *AcFunLive, err error) {
 	ac = new(AcFunLive)
 	ac.t = &token{
-		uid:          uid,
+		liverID:      uid,
 		livePage:     fmt.Sprintf(liveURL, uid),
 		userID:       tokenInfo.UserID,
 		securityKey:  tokenInfo.SecurityKey,
@@ -441,7 +441,7 @@ func (ac *AcFunLive) ReInit(uid int64, clearHandlers bool) (newAC *AcFunLive, er
 // event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
 func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	ch := make(chan error, 1)
-	if ac.t.uid == 0 {
+	if ac.t.liverID == 0 {
 		err := fmt.Errorf("主播uid不能为0")
 		log.Println(err)
 		ch <- err
@@ -460,7 +460,7 @@ func (ac *AcFunLive) GetDanmu() (danmu []DanmuMessage) {
 		log.Println("需要先调用StartDanmu()，event不能为true")
 		return nil
 	}
-	if ac.t.uid == 0 {
+	if ac.t.liverID == 0 {
 		log.Println("主播uid不能为0")
 		return nil
 	}
@@ -505,9 +505,14 @@ func (ac *AcFunLive) GetStreamInfo() *StreamInfo {
 	return &info
 }
 
-// GetUID 返回主播的uid，有可能是0
-func (ac *AcFunLive) GetUID() int64 {
-	return ac.t.uid
+// GetUserID 返回AcFun帐号的uid
+func (ac *AcFunLive) GetUserID() int64 {
+	return ac.t.userID
+}
+
+// GetLiverID 返回主播的uid，有可能是0
+func (ac *AcFunLive) GetLiverID() int64 {
+	return ac.t.liverID
 }
 
 // GetLiveID 返回liveID，有可能为空
