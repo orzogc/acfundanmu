@@ -96,14 +96,14 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 			ac.handleNotifySignal(&payload, event)
 		case "ZtLiveScStatusChanged":
 			statusChanged := &acproto.ZtLiveScStatusChanged{}
-			err := proto.Unmarshal(payload, statusChanged)
+			err = proto.Unmarshal(payload, statusChanged)
 			checkErr(err)
 			if statusChanged.Type == acproto.ZtLiveScStatusChanged_LIVE_CLOSED || statusChanged.Type == acproto.ZtLiveScStatusChanged_LIVE_BANNED {
 				ac.t.wsStop(conn, "Live closed")
 			}
 		case "ZtLiveScTicketInvalid":
 			ticketInvalid := &acproto.ZtLiveScTicketInvalid{}
-			err := proto.Unmarshal(payload, ticketInvalid)
+			err = proto.Unmarshal(payload, ticketInvalid)
 			checkErr(err)
 			index := atomic.LoadUint32(&ac.t.ticketIndex)
 			_ = atomic.CompareAndSwapUint32(&ac.t.ticketIndex, index, (index+1)%uint32(len(ac.t.tickets)))
@@ -150,7 +150,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 			switch item.SignalType {
 			case "CommonActionSignalComment":
 				comment := &acproto.CommonActionSignalComment{}
-				err := proto.Unmarshal(pl, comment)
+				err = proto.Unmarshal(pl, comment)
 				checkErr(err)
 				d := &Comment{
 					DanmuCommon: DanmuCommon{
@@ -166,7 +166,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				danmu = append(danmu, d)
 			case "CommonActionSignalLike":
 				like := &acproto.CommonActionSignalLike{}
-				err := proto.Unmarshal(pl, like)
+				err = proto.Unmarshal(pl, like)
 				checkErr(err)
 				d := &Like{
 					SendTime: like.SendTimeMs,
@@ -179,7 +179,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				danmu = append(danmu, d)
 			case "CommonActionSignalUserEnterRoom":
 				enter := &acproto.CommonActionSignalUserEnterRoom{}
-				err := proto.Unmarshal(pl, enter)
+				err = proto.Unmarshal(pl, enter)
 				checkErr(err)
 				d := &EnterRoom{
 					SendTime: enter.SendTimeMs,
@@ -192,7 +192,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				danmu = append(danmu, d)
 			case "CommonActionSignalUserFollowAuthor":
 				follow := &acproto.CommonActionSignalUserFollowAuthor{}
-				err := proto.Unmarshal(pl, follow)
+				err = proto.Unmarshal(pl, follow)
 				checkErr(err)
 				d := &FollowAuthor{
 					SendTime: follow.SendTimeMs,
@@ -213,7 +213,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 			*/
 			case "AcfunActionSignalThrowBanana":
 				banana := &acproto.AcfunActionSignalThrowBanana{}
-				err := proto.Unmarshal(pl, banana)
+				err = proto.Unmarshal(pl, banana)
 				checkErr(err)
 				d := &ThrowBanana{
 					DanmuCommon: DanmuCommon{
@@ -228,7 +228,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				danmu = append(danmu, d)
 			case "CommonActionSignalGift":
 				gift := &acproto.CommonActionSignalGift{}
-				err := proto.Unmarshal(pl, gift)
+				err = proto.Unmarshal(pl, gift)
 				checkErr(err)
 				// 礼物列表应该不会在直播中途改变，但以防万一
 				g, ok := ac.t.gifts[gift.GiftId]
@@ -273,7 +273,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				danmu = append(danmu, d)
 			case "CommonActionSignalRichText":
 				richText := &acproto.CommonActionSignalRichText{}
-				err := proto.Unmarshal(pl, richText)
+				err = proto.Unmarshal(pl, richText)
 				checkErr(err)
 				d := &RichText{
 					SendTime: richText.SendTimeMs,
@@ -314,7 +314,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				danmu = append(danmu, d)
 			case "AcfunActionSignalJoinClub":
 				join := &acproto.AcfunActionSignalJoinClub{}
-				err := proto.Unmarshal(pl, join)
+				err = proto.Unmarshal(pl, join)
 				checkErr(err)
 				d := &JoinClub{
 					JoinTime: join.JoinTimeMs,
@@ -381,7 +381,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 		switch item.SignalType {
 		case "AcfunStateSignalDisplayInfo":
 			bananaInfo := &acproto.AcfunStateSignalDisplayInfo{}
-			err := proto.Unmarshal(item.Payload, bananaInfo)
+			err = proto.Unmarshal(item.Payload, bananaInfo)
 			checkErr(err)
 			if event {
 				ac.dispatchEvent(bananaCountInfo, bananaInfo.BananaCount)
@@ -392,7 +392,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 		case "CommonStateSignalDisplayInfo":
 			stateInfo := &acproto.CommonStateSignalDisplayInfo{}
-			err := proto.Unmarshal(item.Payload, stateInfo)
+			err = proto.Unmarshal(item.Payload, stateInfo)
 			checkErr(err)
 			info := DisplayInfo{
 				WatchingCount: stateInfo.WatchingCount,
@@ -408,7 +408,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 		case "CommonStateSignalTopUsers":
 			topUsers := &acproto.CommonStateSignalTopUsers{}
-			err := proto.Unmarshal(item.Payload, topUsers)
+			err = proto.Unmarshal(item.Payload, topUsers)
 			checkErr(err)
 			users := make([]TopUser, len(topUsers.User))
 			for i, user := range topUsers.User {
@@ -433,7 +433,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 		case "CommonStateSignalRecentComment":
 			comments := &acproto.CommonStateSignalRecentComment{}
-			err := proto.Unmarshal(item.Payload, comments)
+			err = proto.Unmarshal(item.Payload, comments)
 			checkErr(err)
 			danmu := make([]Comment, len(comments.Comment))
 			for i, comment := range comments.Comment {
@@ -459,7 +459,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 		case "CommonStateSignalChatCall":
 			chatCall := &acproto.CommonStateSignalChatCall{}
-			err := proto.Unmarshal(item.Payload, chatCall)
+			err = proto.Unmarshal(item.Payload, chatCall)
 			checkErr(err)
 			if event {
 				ac.dispatchEvent(chatCallInfo, &ChatCall{
@@ -470,7 +470,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 		case "CommonStateSignalChatAccept":
 			chatAccept := &acproto.CommonStateSignalChatAccept{}
-			err := proto.Unmarshal(item.Payload, chatAccept)
+			err = proto.Unmarshal(item.Payload, chatAccept)
 			checkErr(err)
 			log.Printf("CommonStateSignalChatAccept: %+v\n", chatAccept)
 			if event {
@@ -482,7 +482,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 		case "CommonStateSignalChatReady":
 			chatReady := &acproto.CommonStateSignalChatReady{}
-			err := proto.Unmarshal(item.Payload, chatReady)
+			err = proto.Unmarshal(item.Payload, chatReady)
 			checkErr(err)
 			guest := UserInfo{
 				UserID:   chatReady.GuestUserInfo.UserId,
@@ -498,7 +498,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 		case "CommonStateSignalChatEnd":
 			chatEnd := &acproto.CommonStateSignalChatEnd{}
-			err := proto.Unmarshal(item.Payload, chatEnd)
+			err = proto.Unmarshal(item.Payload, chatEnd)
 			checkErr(err)
 			if event {
 				ac.dispatchEvent(chatEndInfo, &ChatEnd{
@@ -508,7 +508,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 		case "CommonStateSignalCurrentRedpackList":
 			redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
-			err := proto.Unmarshal(item.Payload, redpackList)
+			err = proto.Unmarshal(item.Payload, redpackList)
 			checkErr(err)
 			redpacks := make([]Redpack, len(redpackList.Redpacks))
 			for i, redpack := range redpackList.Redpacks {
@@ -554,7 +554,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 		switch item.SignalType {
 		case "CommonNotifySignalKickedOut":
 			kickedOut := &acproto.CommonNotifySignalKickedOut{}
-			err := proto.Unmarshal(item.Payload, kickedOut)
+			err = proto.Unmarshal(item.Payload, kickedOut)
 			checkErr(err)
 			if event {
 				ac.dispatchEvent(kickedOutInfo, kickedOut.Reason)
@@ -565,7 +565,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			}
 		case "CommonNotifySignalViolationAlert":
 			violationAlert := &acproto.CommonNotifySignalViolationAlert{}
-			err := proto.Unmarshal(item.Payload, violationAlert)
+			err = proto.Unmarshal(item.Payload, violationAlert)
 			checkErr(err)
 			if event {
 				ac.dispatchEvent(violationAlertInfo, violationAlert.ViolationContent)
@@ -576,7 +576,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			}
 		case "CommonNotifySignalLiveManagerState":
 			liveManagerState := &acproto.CommonNotifySignalLiveManagerState{}
-			err := proto.Unmarshal(item.Payload, liveManagerState)
+			err = proto.Unmarshal(item.Payload, liveManagerState)
 			checkErr(err)
 			if event {
 				ac.dispatchEvent(managerStateInfo, liveManagerState.State)

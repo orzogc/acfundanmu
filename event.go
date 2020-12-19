@@ -9,7 +9,7 @@ import (
 type eventType int
 
 const (
-	liveOff eventType = iota
+	stopDanmu eventType = iota
 	commentDanmu
 	likeDanmu
 	enterRoomDanmu
@@ -67,9 +67,9 @@ func (ac *AcFunLive) dispatchEvent(t eventType, i interface{}) {
 	}
 }
 
-// OnLiveOff 处理直播结束信号，有可能是网络原因导致连接超时，直播不一定真的结束，可以多次调用
-func (ac *AcFunLive) OnLiveOff(handler func(*AcFunLive, error)) {
-	ac.handlerMap.add(liveOff, func(ac *AcFunLive, i interface{}) {
+// OnStopDanmu 处理停止获取弹幕，有可能是网络原因导致连接超时无法获取弹幕，直播不一定结束，可以多次调用
+func (ac *AcFunLive) OnStopDanmu(handler func(*AcFunLive, error)) {
+	ac.handlerMap.add(stopDanmu, func(ac *AcFunLive, i interface{}) {
 		if i == nil {
 			handler(ac, nil)
 		} else {

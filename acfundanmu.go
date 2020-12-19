@@ -275,7 +275,7 @@ type StreamURL struct {
 	QualityName string `json:"qualityName"` // 直播源类型的中文名字，一般是"高清"、"超清"、"蓝光 4M"、"蓝光 5M"、"蓝光 6M"、"蓝光 7M"、"蓝光 8M"
 }
 
-// StreamInfo 就是直播的一部分信息
+// StreamInfo 就是直播的直播源信息
 type StreamInfo struct {
 	LiveID        string      `json:"liveID"`        // 直播ID
 	Title         string      `json:"title"`         // 直播间标题
@@ -306,7 +306,7 @@ type LiveInfo struct {
 
 // 带锁的LiveInfo
 type liveInfo struct {
-	sync.Mutex // LiveInfo和RecentComment的锁
+	sync.Mutex // LiveInfo的锁
 	LiveInfo
 	TokenInfo
 	StreamInfo
@@ -498,7 +498,7 @@ func (ac *AcFunLive) GetTokenInfo() *TokenInfo {
 	return &info
 }
 
-// GetStreamInfo 返回直播的一些信息，不需要调用StartDanmu()
+// GetStreamInfo 返回直播的直播源信息，不需要调用StartDanmu()
 func (ac *AcFunLive) GetStreamInfo() *StreamInfo {
 	info := ac.info.StreamInfo
 	info.StreamList = append([]StreamURL{}, ac.info.StreamList...)
