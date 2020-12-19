@@ -520,7 +520,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 					DisplayStatus:      RedpackDisplayStatus(redpack.DisplayStatus),
 					GrabBeginTime:      redpack.GrabBeginTimeMs,
 					GetTokenLatestTime: redpack.GetTokenLatestTimeMs,
-					RedPackID:          redpack.RedPackId,
+					RedpackID:          redpack.RedPackId,
 					RedpackBizUnit:     redpack.RedpackBizUnit,
 					RedpackAmount:      redpack.RedpackAmount,
 					SettleBeginTime:    redpack.SettleBeginTime,

@@ -225,7 +225,7 @@ type Redpack struct {
 	DisplayStatus      RedpackDisplayStatus `json:"displayStatus"`      // 红包的状态
 	GrabBeginTime      int64                `json:"grabBeginTime"`      // 抢红包的开始时间，是以毫秒为单位的Unix时间
 	GetTokenLatestTime int64                `json:"getTokenLatestTime"` // 抢红包的用户获得token的最晚时间？是以毫秒为单位的Unix时间
-	RedPackID          string               `json:"redPackID"`          // 红包ID
+	RedpackID          string               `json:"redpackID"`          // 红包ID
 	RedpackBizUnit     string               `json:"redpackBizUnit"`     // 一般是"ztLiveAcfunRedpackGift"
 	RedpackAmount      int64                `json:"redpackAmount"`      // 红包的总价值，单位是AC币
 	SettleBeginTime    int64                `json:"settleBeginTime"`    // 抢红包的结束时间，是以毫秒为单位的Unix时间

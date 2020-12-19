@@ -208,7 +208,7 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 }
 
 // 获取抢到红包的用户列表
-func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
+func (t *token) getLuckList(liveID, redpackID string) (luckyList []LuckyUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getLuckList() error: %w", err)
@@ -222,9 +222,9 @@ func (t *token) getLuckList(redpack Redpack) (luckyList []LuckyUser, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	form.Set("liveId", t.liveID)
-	form.Set("redpackBizUnit", redpack.RedpackBizUnit)
-	form.Set("redpackId", redpack.RedPackID)
+	form.Set("liveId", liveID)
+	form.Set("redpackBizUnit", "ztLiveAcfunRedpackGift")
+	form.Set("redpackId", redpackID)
 	resp, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
@@ -642,8 +642,8 @@ func (ac *AcFunLive) GetSummaryWithLiveID(liveID string) (*Summary, error) {
 }
 
 // GetLuckList 返回抢到红包的用户列表，需要调用Login()登陆AcFun帐号，不需要调用StartDanmu()
-func (ac *AcFunLive) GetLuckList(redpack Redpack) ([]LuckyUser, error) {
-	return ac.t.getLuckList(redpack)
+func (ac *AcFunLive) GetLuckList(liveID, redpackID string) ([]LuckyUser, error) {
+	return ac.t.getLuckList(liveID, redpackID)
 }
 
 // GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()，目前部分直播没有回放
