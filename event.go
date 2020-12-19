@@ -67,7 +67,7 @@ func (ac *AcFunLive) dispatchEvent(t eventType, i interface{}) {
 	}
 }
 
-// OnDanmuStop 处理停止获取弹幕，有可能是网络原因导致连接超时无法获取弹幕，直播不一定结束，可以多次调用
+// OnDanmuStop 处理获取弹幕结束，有可能是网络原因导致连接超时无法获取弹幕，直播不一定结束，可以多次调用
 func (ac *AcFunLive) OnDanmuStop(handler func(*AcFunLive, error)) {
 	ac.handlerMap.add(stopDanmu, func(ac *AcFunLive, i interface{}) {
 		if i == nil {

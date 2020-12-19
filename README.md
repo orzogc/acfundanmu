@@ -65,7 +65,7 @@ ac, err := acfundanmu.Init(uid, nil)
 if err != nil {
     log.Panicln(err)
 }
-ac.OnLiveOff(func(ac *acfundanmu.AcFunLive, err error) {
+ac.OnDanmuStop(func(ac *acfundanmu.AcFunLive, err error) {
     if err != nil {
         log.Println(err)
     } else {
