@@ -2,6 +2,7 @@ package acfundanmu
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
@@ -68,7 +69,7 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 	return true, nil
 }
 
-// 获取直播分类
+// 获取直播分类列表
 func (t *token) getLiveTypeList() (list []LiveTypeList, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -106,6 +107,8 @@ func (t *token) getLiveTypeList() (list []LiveTypeList, e error) {
 				list[i].CategoryID = v.GetInt()
 			case "categoryName":
 				list[i].CategoryName = string(v.GetStringBytes())
+			default:
+				log.Printf("直播分类列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 			}
 		})
 	}
@@ -155,6 +158,8 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 			config.Panoramic = v.GetBool()
 		case "intervalMillis":
 			config.Interval = v.GetInt64()
+		default:
+			log.Printf("OBS推流设置里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
 	})
 
@@ -166,7 +171,7 @@ func (ac *AcFunLive) CheckLiveAuth() (bool, error) {
 	return ac.t.checkLiveAuth()
 }
 
-// GetLiveTypeList 获取直播分类，可以调用Init(0, nil)，不需要调用StartDanmu()
+// GetLiveTypeList 获取直播分类列表，可以调用Init(0, nil)，不需要调用StartDanmu()
 func (ac *AcFunLive) GetLiveTypeList() ([]LiveTypeList, error) {
 	return ac.t.getLiveTypeList()
 }

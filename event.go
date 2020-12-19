@@ -37,7 +37,7 @@ type eventHandler func(*AcFunLive, interface{})
 
 // 事件handler的map
 type handlerMap struct {
-	sync.Mutex
+	sync.RWMutex
 	listMap map[eventType][]eventHandler
 }
 
@@ -50,9 +50,9 @@ func (h *handlerMap) add(t eventType, f eventHandler) {
 
 // 调用事件handler列表里的handler
 func (ac *AcFunLive) dispatchEvent(t eventType, i interface{}) {
-	ac.handlerMap.Lock()
+	ac.handlerMap.RLock()
+	defer ac.handlerMap.RUnlock()
 	list, ok := ac.handlerMap.listMap[t]
-	ac.handlerMap.Unlock()
 	if ok {
 		for _, f := range list {
 			go func(f eventHandler) {

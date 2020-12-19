@@ -165,8 +165,8 @@ type DanmuMessage interface {
 
 // DanmuCommon 弹幕通用部分
 type DanmuCommon struct {
-	SendTime int64             `json:"sendTime"` // 弹幕发送时间，是以毫秒为单位的Unix时间
-	UserInfo `json:"userInfo"` // 用户信息
+	SendTime int64 `json:"sendTime"` // 弹幕发送时间，是以毫秒为单位的Unix时间
+	UserInfo `json:"userInfo"`
 }
 
 // Comment 用户发的弹幕
@@ -306,7 +306,7 @@ type LiveInfo struct {
 
 // 带锁的LiveInfo
 type liveInfo struct {
-	sync.Mutex // LiveInfo的锁
+	sync.RWMutex // LiveInfo的锁
 	LiveInfo
 	TokenInfo
 	StreamInfo
@@ -482,8 +482,8 @@ func (ac *AcFunLive) GetDanmu() (danmu []DanmuMessage) {
 
 // GetLiveInfo 返回直播间的状态信息，需要先调用StartDanmu(ctx, false)
 func (ac *AcFunLive) GetLiveInfo() *LiveInfo {
-	ac.info.Lock()
-	defer ac.info.Unlock()
+	ac.info.RLock()
+	defer ac.info.RUnlock()
 	info := ac.info.LiveInfo
 	info.TopUsers = append([]TopUser{}, ac.info.TopUsers...)
 	info.RecentComment = append([]Comment{}, ac.info.RecentComment...)

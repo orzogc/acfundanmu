@@ -61,7 +61,6 @@ const (
 )
 
 type token struct {
-	//sync.Mutex           // seqID、headerSeqID和ticketIndex的锁
 	userID          int64  // AcFun帐号uid
 	securityKey     string // 第一次发送ws信息时所用密钥
 	serviceToken    string
