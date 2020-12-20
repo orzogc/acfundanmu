@@ -23,9 +23,9 @@ type BillboardUser WatchingUser
 
 // Summary 就是直播的总结信息
 type Summary struct {
-	LiveDuration int64 `json:"liveDuration"` // 直播时长，单位为毫秒
-	LikeCount    int   `json:"likeCount"`    // 点赞总数
-	WatchCount   int   `json:"watchCount"`   // 观看过直播的人数总数
+	LiveDuration int64  `json:"liveDuration"` // 直播时长，单位为毫秒
+	LikeCount    string `json:"likeCount"`    // 点赞总数
+	WatchCount   string `json:"watchCount"`   // 观看过直播的人数总数
 }
 
 // MedalDetail 就是登陆帐号守护徽章的详细信息，没有UserID
@@ -194,11 +194,9 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 		case "liveDurationMs":
 			summary.LiveDuration = v.GetInt64()
 		case "likeCount":
-			summary.LikeCount, err = strconv.Atoi(string(v.GetStringBytes()))
-			checkErr(err)
+			summary.LikeCount = string(v.GetStringBytes())
 		case "watchCount":
-			summary.WatchCount, err = strconv.Atoi(string(v.GetStringBytes()))
-			checkErr(err)
+			summary.WatchCount = string(v.GetStringBytes())
 		default:
 			log.Printf("直播总结信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}

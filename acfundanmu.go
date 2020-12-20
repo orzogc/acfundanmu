@@ -101,18 +101,18 @@ type GiftDetail struct {
 	RedpackPrice           int    `json:"redpackPrice"` // 礼物红包价格总额，单位为AC币
 }
 
-// DrawPoint 绘制礼物的点？
+// DrawPoint 单个涂鸦礼物的位置
 type DrawPoint struct {
-	MarginLeft int64   `json:"marginLeft"`
-	MarginTop  int64   `json:"marginTop"`
-	ScaleRatio float64 `json:"scaleRatio"`
+	MarginLeft int64   `json:"marginLeft"` // 到手机屏幕左边的距离
+	MarginTop  int64   `json:"marginTop"`  // 到手机屏幕顶部的距离
+	ScaleRatio float64 `json:"scaleRatio"` // 放大倍数？
 	Handup     bool    `json:"handup"`
 }
 
-// DrawGiftInfo 绘制礼物的信息？
+// DrawGiftInfo 涂鸦礼物信息
 type DrawGiftInfo struct {
-	ScreenWidth  int64       `json:"screenWidth"`
-	ScreenHeight int64       `json:"screenHeight"`
+	ScreenWidth  int64       `json:"screenWidth"`  // 手机屏幕宽度
+	ScreenHeight int64       `json:"screenHeight"` // 手机屏幕高度
 	DrawPoint    []DrawPoint `json:"drawPoint"`
 }
 
@@ -205,7 +205,7 @@ type Gift struct {
 
 // RichText 富文本，目前是用于发红包和抢红包的相关消息
 type RichText struct {
-	SendTime int64             `json:"sendTime"` // 弹幕发送时间，是以毫秒为单位的Unix时间
+	SendTime int64             `json:"sendTime"` // 富文本的发送时间，是以毫秒为单位的Unix时间，可能为0
 	Segments []RichTextSegment `json:"segments"` // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
 }
 
