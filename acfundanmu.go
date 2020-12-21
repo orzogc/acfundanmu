@@ -121,7 +121,7 @@ type UserInfo struct {
 	UserID      int64       `json:"userID"`      // 用户uid
 	Nickname    string      `json:"nickname"`    // 用户名字
 	Avatar      string      `json:"avatar"`      // 用户头像
-	Medal       MedalInfo   `json:"medal"`       // 守护徽章
+	Medal       MedalInfo   `json:"medal"`       // 用户正在佩戴的守护徽章
 	ManagerType ManagerType `json:"managerType"` // 用户是否房管
 }
 
@@ -223,7 +223,7 @@ type TopUser WatchingUser
 type Redpack struct {
 	UserInfo           `json:"userInfo"`    // 发红包的用户
 	DisplayStatus      RedpackDisplayStatus `json:"displayStatus"`      // 红包的状态
-	GrabBeginTime      int64                `json:"grabBeginTime"`      // 抢红包的开始时间，是以毫秒为单位的Unix时间
+	GrabBeginTime      int64                `json:"grabBeginTime"`      // 开始抢红包的时间，是以毫秒为单位的Unix时间
 	GetTokenLatestTime int64                `json:"getTokenLatestTime"` // 抢红包的用户获得token的最晚时间？是以毫秒为单位的Unix时间
 	RedpackID          string               `json:"redpackID"`          // 红包ID
 	RedpackBizUnit     string               `json:"redpackBizUnit"`     // 一般是"ztLiveAcfunRedpackGift"

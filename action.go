@@ -20,10 +20,8 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 		panic(fmt.Errorf("房管踢人需要登陆AcFun帐号"))
 	}
 
-	form := fasthttp.AcquireArgs()
+	form := t.defaultForm(t.liveID)
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	form.Set("liveId", t.liveID)
 	form.Set("kickedUserId", strconv.FormatInt(kickedUID, 10))
 	resp, err := t.fetchKuaiShouAPI(managerKickURL, form, false)
 	checkErr(err)
@@ -52,10 +50,8 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 		panic(fmt.Errorf("主播踢人需要登陆AcFun帐号"))
 	}
 
-	form := fasthttp.AcquireArgs()
+	form := t.defaultForm(t.liveID)
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	form.Set("liveId", t.liveID)
 	form.Set("kickedUserId", strconv.FormatInt(kickedUID, 10))
 	resp, err := t.fetchKuaiShouAPI(authorKickURL, form, false)
 	checkErr(err)

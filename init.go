@@ -414,10 +414,8 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (re
 	}
 
 	if form == nil {
-		form = fasthttp.AcquireArgs()
+		form = t.defaultForm(t.liveID)
 		defer fasthttp.ReleaseArgs(form)
-		form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-		form.Set("liveId", t.liveID)
 	}
 	if sign {
 		clientSign, err := t.genClientSign(apiURL, form)
@@ -433,6 +431,14 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (re
 	}
 
 	return client.doRequest()
+}
+
+// 默认form，调用后需要 defer fasthttp.ReleaseArgs(form)
+func (t *token) defaultForm(liveID string) *fasthttp.Args {
+	form := fasthttp.AcquireArgs()
+	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("liveId", liveID)
+	return form
 }
 
 // 生成client sign

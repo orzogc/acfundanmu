@@ -65,14 +65,16 @@ type Manager struct {
 var liveListParser fastjson.ParserPool
 
 // 获取直播间排名前50的在线观众信息列表
-func (t *token) getWatchingList() (watchingList []WatchingUser, e error) {
+func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("watchingList() error: %w", err)
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(watchingListURL, nil, false)
+	form := t.defaultForm(liveID)
+	defer fasthttp.ReleaseArgs(form)
+	resp, err := t.fetchKuaiShouAPI(watchingListURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 	body := resp.Body()
@@ -171,10 +173,8 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 		}
 	}()
 
-	form := fasthttp.AcquireArgs()
+	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	form.Set("liveId", liveID)
 	resp, err := t.fetchKuaiShouAPI(endSummaryURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
@@ -217,10 +217,8 @@ func (t *token) getLuckList(liveID, redpackID string) (luckyList []LuckyUser, e 
 		panic(fmt.Errorf("获取抢到红包的用户列表需要登陆AcFun帐号"))
 	}
 
-	form := fasthttp.AcquireArgs()
+	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	form.Set("liveId", liveID)
 	form.Set("redpackBizUnit", "ztLiveAcfunRedpackGift")
 	form.Set("redpackId", redpackID)
 	resp, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
@@ -621,7 +619,12 @@ func (pb *Playback) Distinguish() (aliURL, txURL string) {
 
 // GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
 func (ac *AcFunLive) GetWatchingList() ([]WatchingUser, error) {
-	return ac.t.getWatchingList()
+	return ac.t.getWatchingList(ac.t.liveID)
+}
+
+// GetWatchingListWithLiveID 返回直播间排名前50的在线观众信息列表，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()
+func (ac *AcFunLive) GetWatchingListWithLiveID(liveID string) ([]WatchingUser, error) {
+	return ac.t.getWatchingList(liveID)
 }
 
 // GetBillboard 返回指定主播最近七日内的礼物贡献榜前50名观众的详细信息，可以调用Init(0, nil)，不需要调用StartDanmu()
