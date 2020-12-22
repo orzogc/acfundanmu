@@ -498,6 +498,10 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 		}
 	}()
 
+	if len(cookies) == 0 {
+		panic(fmt.Errorf("获取登陆帐号的守护徽章和指定主播守护徽章的名字需要登陆AcFun帐号"))
+	}
+
 	httpCookies := make([]*fasthttp.Cookie, len(cookies))
 	for i, c := range cookies {
 		cookie := fasthttp.AcquireCookie()
@@ -556,6 +560,52 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 	}
 
 	return medalList, clubName, nil
+}
+
+// 获取指定用户正在佩戴的守护徽章信息
+func getUserMedal(uid int64) (medal *MedalDetail, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getUserMedal() error: %w", err)
+		}
+	}()
+
+	client := httpClient{
+		url:    fmt.Sprintf(userMedalURL, uid),
+		method: "GET",
+	}
+	resp, err := client.doRequest()
+	checkErr(err)
+	defer fasthttp.ReleaseResponse(resp)
+	body := resp.Body()
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取指定用户正在佩戴的守护徽章信息失败，响应为 %s", string(body)))
+	}
+
+	medal = &MedalDetail{}
+	o := v.GetObject("wearMedalInfo")
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "uperId":
+			medal.UperID = v.GetInt64()
+		case "level":
+			medal.Level = v.GetInt()
+		case "clubName":
+			medal.ClubName = string(v.GetStringBytes())
+		case "uperName":
+			medal.UperName = string(v.GetStringBytes())
+		case "uperHeadUrl":
+			medal.UperAvatar = string(v.GetStringBytes())
+		}
+	})
+	medal.UserID = uid
+	medal.WearMedal = true
+
+	return medal, nil
 }
 
 // 获取正在直播的直播间列表
@@ -684,4 +734,9 @@ func (ac *AcFunLive) GetManagerList() ([]Manager, error) {
 // GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName，利用Login()获取AcFun帐号的cookies
 func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, err error) {
 	return getMedalInfo(uid, cookies)
+}
+
+// GetUserMedal 返回指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
+func GetUserMedal(uid int64) (medal *MedalDetail, e error) {
+	return getUserMedal(uid)
 }
