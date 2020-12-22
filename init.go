@@ -82,6 +82,8 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 		req.Header.SetReferer(c.referer)
 	}
 
+	req.Header.Set("Accept-Encoding", "gzip")
+
 	err := c.client.Do(req, resp)
 	checkErr(err)
 
@@ -117,7 +119,7 @@ func login(account, password string) (cookies []string, e error) {
 	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -188,7 +190,7 @@ func (t *token) getAcFunToken() (e error) {
 	resp, err = client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -251,7 +253,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -333,7 +335,7 @@ func (t *token) getGiftList() (e error) {
 	resp, err := t.fetchKuaiShouAPI(giftURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -439,6 +441,18 @@ func (t *token) defaultForm(liveID string) *fasthttp.Args {
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
 	form.Set("liveId", liveID)
 	return form
+}
+
+// 获取响应body
+func getBody(resp *fasthttp.Response) []byte {
+	if string(resp.Header.Peek("content-encoding")) == "gzip" || string(resp.Header.Peek("Content-Encoding")) == "gzip" {
+		body, err := resp.BodyGunzip()
+		if err == nil {
+			return body
+		}
+	}
+
+	return resp.Body()
 }
 
 // 生成client sign

@@ -77,7 +77,7 @@ func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e e
 	resp, err := t.fetchKuaiShouAPI(watchingListURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	p := t.watchParser.Get()
 	defer t.watchParser.Put(p)
@@ -130,7 +130,7 @@ func (t *token) getBillboard(uid int64) (billboard []BillboardUser, e error) {
 	resp, err := t.fetchKuaiShouAPI(billboardURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	p := t.watchParser.Get()
 	defer t.watchParser.Put(p)
@@ -178,7 +178,7 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 	resp, err := t.fetchKuaiShouAPI(endSummaryURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -224,7 +224,7 @@ func (t *token) getLuckList(liveID, redpackID string) (luckyList []LuckyUser, e 
 	resp, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	p := t.watchParser.Get()
 	defer t.watchParser.Put(p)
@@ -279,7 +279,7 @@ func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 	resp, err := t.fetchKuaiShouAPI(playbackURL, form, true)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -325,7 +325,7 @@ func (t *token) getPlayURL() (e error) {
 	resp, err := t.fetchKuaiShouAPI(getPlayURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -353,7 +353,7 @@ func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 	resp, err := t.fetchKuaiShouAPI(allGiftURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -385,7 +385,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	resp, err := t.fetchKuaiShouAPI(walletBalanceURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -424,7 +424,7 @@ func (t *token) getKickHistory() (e error) {
 	resp, err := t.fetchKuaiShouAPI(kickHistoryURL, nil, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -456,7 +456,7 @@ func (t *token) getManagerList() (managerList []Manager, e error) {
 	resp, err := t.fetchKuaiShouAPI(managerListURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -518,7 +518,7 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -577,7 +577,7 @@ func getUserMedal(uid int64) (medal *MedalDetail, e error) {
 	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -600,6 +600,8 @@ func getUserMedal(uid int64) (medal *MedalDetail, e error) {
 			medal.UperName = string(v.GetStringBytes())
 		case "uperHeadUrl":
 			medal.UperAvatar = string(v.GetStringBytes())
+		default:
+			log.Printf("指定用户正在佩戴的守护徽章信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
 	})
 	medal.UserID = uid
@@ -624,7 +626,7 @@ func getLiveList() (body string, e error) {
 		resp, err := client.doRequest()
 		checkErr(err)
 		defer fasthttp.ReleaseResponse(resp)
-		respBody := resp.Body()
+		respBody := getBody(resp)
 
 		p := liveListParser.Get()
 		defer liveListParser.Put(p)

@@ -53,7 +53,7 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -84,7 +84,7 @@ func (t *token) getLiveTypeList() (list []LiveTypeList, e error) {
 	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -133,7 +133,7 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 	resp, err := t.fetchKuaiShouAPI(obsConfigURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)

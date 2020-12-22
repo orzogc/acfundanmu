@@ -26,7 +26,7 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 	resp, err := t.fetchKuaiShouAPI(managerKickURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -56,7 +56,7 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 	resp, err := t.fetchKuaiShouAPI(authorKickURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -87,7 +87,7 @@ func (t *token) addManager(managerUID int64) (e error) {
 	resp, err := t.fetchKuaiShouAPI(addManagerURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -118,7 +118,7 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 	resp, err := t.fetchKuaiShouAPI(deleteManagerURL, form, false)
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
-	body := resp.Body()
+	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
