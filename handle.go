@@ -50,9 +50,9 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 			err = proto.Unmarshal(cmd.Payload, heartbeat)
 			checkErr(err)
 		case "ZtLiveCsUserExitAck":
-			//userExit := &acproto.ZtLiveCsUserExitAck{}
-			//err = proto.Unmarshal(cmd.Payload, userExit)
-			//checkErr(err)
+			userExit := &acproto.ZtLiveCsUserExitAck{}
+			err = proto.Unmarshal(cmd.Payload, userExit)
+			checkErr(err)
 		default:
 			log.Printf("未知的cmd.CmdAckType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				cmd.CmdAckType,
@@ -115,8 +115,8 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 				string(payload),
 				base64.StdEncoding.EncodeToString(payload))
 		}
+	// AcFun帐号收到的私信信息
 	case "Push.Message":
-		// AcFun帐号收到的私信信息
 	case "Push.DataUpdate":
 	case "Push.SyncSession":
 	case "Push.acfun":
@@ -203,14 +203,6 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				}
 				ac.t.getMoreInfo(&d.UserInfo, follow.UserInfo)
 				danmu = append(danmu, d)
-			/*
-				case "CommonNotifySignalKickedOut":
-					t.handleNotifySignal(signalType, &pl, info)
-				case "CommonNotifySignalViolationAlert":
-					t.handleNotifySignal(signalType, &pl, info)
-				case "CommonNotifySignalLiveManagerState":
-					t.handleNotifySignal(signalType, &pl, info)
-			*/
 			case "AcfunActionSignalThrowBanana":
 				banana := &acproto.AcfunActionSignalThrowBanana{}
 				err = proto.Unmarshal(pl, banana)

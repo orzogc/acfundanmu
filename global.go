@@ -70,10 +70,10 @@ type token struct {
 	tickets         []string
 	instanceID      int64
 	sessionKey      []byte // 除第一次外发送ws信息时所用密钥
-	seqID           int64
-	headerSeqID     int64
+	seqID           int64  // 要用原子锁操作
+	headerSeqID     int64  // 要用原子锁操作
 	heartbeatSeqID  int64
-	ticketIndex     uint32
+	ticketIndex     uint32 // 要用原子锁操作
 	deviceID        string
 	gifts           map[int64]GiftDetail
 	liverUID        int64 // 主播uid

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/dgrr/fastws"
@@ -32,8 +33,10 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, interval int
 		case <-ticker.C:
 			_, err := conn.WriteMessage(fastws.ModeBinary, t.heartbeat())
 			checkErr(err)
-			_, err = conn.WriteMessage(fastws.ModeBinary, t.keepAlive(false))
-			checkErr(err)
+			if atomic.LoadInt64(&t.seqID)%6 == 3 {
+				_, err = conn.WriteMessage(fastws.ModeBinary, t.keepAlive(false))
+				checkErr(err)
+			}
 		}
 	}
 }
