@@ -278,7 +278,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	t.sessionKey = nil
 	t.seqID = 1
 	t.headerSeqID = 1
-	t.heartbeatSeqID = 1
+	t.heartbeatSeqID = 0
 	t.ticketIndex = 0
 
 	err = t.getGiftList()

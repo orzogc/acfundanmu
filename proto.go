@@ -148,7 +148,7 @@ func (t *token) enterRoom() []byte {
 }
 
 // KeepAlive数据
-func (t *token) keepAlive(increase bool) []byte {
+func (t *token) keepAlive() []byte {
 	keepAlive := &acproto.KeepAliveRequest{
 		PresenceStatus:  acproto.RegisterRequest_kPresenceOnline,
 		AppActiveStatus: acproto.RegisterRequest_kAppInForeground,
@@ -160,9 +160,7 @@ func (t *token) keepAlive(increase bool) []byte {
 
 	header := t.genHeader(len(body))
 
-	if increase {
-		_ = atomic.AddInt64(&t.seqID, 1)
-	}
+	_ = atomic.AddInt64(&t.seqID, 1)
 
 	return t.encode(header, body)
 }

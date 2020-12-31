@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/dgrr/fastws"
@@ -33,8 +32,8 @@ func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, interval int
 		case <-ticker.C:
 			_, err := conn.WriteMessage(fastws.ModeBinary, t.heartbeat())
 			checkErr(err)
-			if atomic.LoadInt64(&t.seqID)%6 == 3 {
-				_, err = conn.WriteMessage(fastws.ModeBinary, t.keepAlive(false))
+			if t.heartbeatSeqID%5 == 4 {
+				_, err = conn.WriteMessage(fastws.ModeBinary, t.keepAlive())
 				checkErr(err)
 			}
 		}
@@ -83,7 +82,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 	ac.t.sessionKey = regResp.SessKey
 	//lz4CompressionThreshold = regResp.SdkOption.Lz4CompressionThresholdBytes
 
-	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.keepAlive(true))
+	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.keepAlive())
 	checkErr(err)
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.enterRoom())
