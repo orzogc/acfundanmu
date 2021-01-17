@@ -50,10 +50,8 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 		method:  "POST",
 		cookies: cookies,
 	}
-	resp, err := client.doRequest()
+	body, err := client.request()
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -81,10 +79,8 @@ func (t *token) getLiveTypeList() (list []LiveTypeList, e error) {
 		url:    liveTypeListURL,
 		method: "POST",
 	}
-	resp, err := client.doRequest()
+	body, err := client.request()
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -130,10 +126,8 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	resp, err := t.fetchKuaiShouAPI(obsConfigURL, form, false)
+	body, err := t.fetchKuaiShouAPI(obsConfigURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)

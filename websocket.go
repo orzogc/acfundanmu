@@ -58,7 +58,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		defer ac.q.Dispose()
 	}
 
-	conn, err := fastws.Dial(host)
+	conn, err := fastws.Dial(wsHost)
 	checkErr(err)
 
 	// 关闭websocket

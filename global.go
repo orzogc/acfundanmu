@@ -18,7 +18,7 @@ const (
 	visitor   = "acfun.api.visitor"
 	midground = "acfun.midground.api"
 
-	host                 = "wss://link.xiatou.com/"
+	wsHost               = "wss://link.xiatou.com/"
 	appID                = 13
 	appName              = "link-sdk"
 	sdkVersion           = "1.2.1"

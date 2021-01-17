@@ -74,10 +74,8 @@ func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e e
 
 	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
-	resp, err := t.fetchKuaiShouAPI(watchingListURL, form, false)
+	body, err := t.fetchKuaiShouAPI(watchingListURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	p := t.watchParser.Get()
 	defer t.watchParser.Put(p)
@@ -127,10 +125,8 @@ func (t *token) getBillboard(uid int64) (billboard []BillboardUser, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("authorId", strconv.FormatInt(uid, 10))
-	resp, err := t.fetchKuaiShouAPI(billboardURL, form, false)
+	body, err := t.fetchKuaiShouAPI(billboardURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	p := t.watchParser.Get()
 	defer t.watchParser.Put(p)
@@ -175,10 +171,8 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 
 	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
-	resp, err := t.fetchKuaiShouAPI(endSummaryURL, form, false)
+	body, err := t.fetchKuaiShouAPI(endSummaryURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -221,10 +215,8 @@ func (t *token) getLuckList(liveID, redpackID string) (luckyList []LuckyUser, e 
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("redpackBizUnit", "ztLiveAcfunRedpackGift")
 	form.Set("redpackId", redpackID)
-	resp, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
+	body, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	p := t.watchParser.Get()
 	defer t.watchParser.Put(p)
@@ -276,10 +268,8 @@ func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("liveId", liveID)
-	resp, err := t.fetchKuaiShouAPI(playbackURL, form, true)
+	body, err := t.fetchKuaiShouAPI(playbackURL, form, true)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -322,10 +312,8 @@ func (t *token) getPlayURL() (e error) {
 		}
 	}()
 
-	resp, err := t.fetchKuaiShouAPI(getPlayURL, nil, false)
+	body, err := t.fetchKuaiShouAPI(getPlayURL, nil, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -350,10 +338,8 @@ func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	resp, err := t.fetchKuaiShouAPI(allGiftURL, form, false)
+	body, err := t.fetchKuaiShouAPI(allGiftURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -382,10 +368,8 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	resp, err := t.fetchKuaiShouAPI(walletBalanceURL, form, false)
+	body, err := t.fetchKuaiShouAPI(walletBalanceURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -421,10 +405,8 @@ func (t *token) getKickHistory() (e error) {
 		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
-	resp, err := t.fetchKuaiShouAPI(kickHistoryURL, nil, false)
+	body, err := t.fetchKuaiShouAPI(kickHistoryURL, nil, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -453,10 +435,8 @@ func (t *token) getManagerList() (managerList []Manager, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
-	resp, err := t.fetchKuaiShouAPI(managerListURL, form, false)
+	body, err := t.fetchKuaiShouAPI(managerListURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -515,10 +495,8 @@ func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubNam
 		method:  "GET",
 		cookies: httpCookies,
 	}
-	resp, err := client.doRequest()
+	body, err := client.request()
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -574,10 +552,8 @@ func getUserMedal(uid int64) (medal *MedalDetail, e error) {
 		url:    fmt.Sprintf(userMedalURL, uid),
 		method: "GET",
 	}
-	resp, err := client.doRequest()
+	body, err := client.request()
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -623,10 +599,8 @@ func getLiveList() (body string, e error) {
 			url:    fmt.Sprintf(liveListURL, count),
 			method: "GET",
 		}
-		resp, err := client.doRequest()
+		respBody, err := client.request()
 		checkErr(err)
-		defer fasthttp.ReleaseResponse(resp)
-		respBody := getBody(resp)
 
 		p := liveListParser.Get()
 		defer liveListParser.Put(p)

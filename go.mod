@@ -8,8 +8,8 @@ require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/dgrr/fastws v1.0.3
 	github.com/golang/protobuf v1.4.3
-	github.com/klauspost/compress v1.11.4 // indirect
-	github.com/valyala/fasthttp v1.18.0
+	github.com/klauspost/compress v1.11.7 // indirect
+	github.com/valyala/fasthttp v1.19.0
 	github.com/valyala/fastjson v1.6.3
 	google.golang.org/protobuf v1.25.0
 )

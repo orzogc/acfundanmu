@@ -23,10 +23,8 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 	form := t.defaultForm(t.liveID)
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("kickedUserId", strconv.FormatInt(kickedUID, 10))
-	resp, err := t.fetchKuaiShouAPI(managerKickURL, form, false)
+	body, err := t.fetchKuaiShouAPI(managerKickURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -53,10 +51,8 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 	form := t.defaultForm(t.liveID)
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("kickedUserId", strconv.FormatInt(kickedUID, 10))
-	resp, err := t.fetchKuaiShouAPI(authorKickURL, form, false)
+	body, err := t.fetchKuaiShouAPI(authorKickURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -84,10 +80,8 @@ func (t *token) addManager(managerUID int64) (e error) {
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
 	form.Set("managerUserId", strconv.FormatInt(managerUID, 10))
-	resp, err := t.fetchKuaiShouAPI(addManagerURL, form, false)
+	body, err := t.fetchKuaiShouAPI(addManagerURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
@@ -115,10 +109,8 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
 	form.Set("managerUserId", strconv.FormatInt(managerUID, 10))
-	resp, err := t.fetchKuaiShouAPI(deleteManagerURL, form, false)
+	body, err := t.fetchKuaiShouAPI(deleteManagerURL, form, false)
 	checkErr(err)
-	defer fasthttp.ReleaseResponse(resp)
-	body := getBody(resp)
 
 	var p fastjson.Parser
 	v, err := p.ParseBytes(body)
