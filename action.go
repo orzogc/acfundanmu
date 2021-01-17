@@ -16,7 +16,7 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("房管踢人需要登陆AcFun帐号"))
 	}
 
@@ -44,7 +44,7 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("主播踢人需要登陆AcFun帐号"))
 	}
 
@@ -72,13 +72,13 @@ func (t *token) addManager(managerUID int64) (e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("主播添加房管需要登陆AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("visitorId", strconv.FormatInt(t.UserID, 10))
 	form.Set("managerUserId", strconv.FormatInt(managerUID, 10))
 	body, err := t.fetchKuaiShouAPI(addManagerURL, form, false)
 	checkErr(err)
@@ -101,13 +101,13 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("主播删除房管需要登陆AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("visitorId", strconv.FormatInt(t.UserID, 10))
 	form.Set("managerUserId", strconv.FormatInt(managerUID, 10))
 	body, err := t.fetchKuaiShouAPI(deleteManagerURL, form, false)
 	checkErr(err)
@@ -132,12 +132,12 @@ func (ac *AcFunLive) AuthorKick(kickedUID int64) error {
 	return ac.t.authorKick(kickedUID)
 }
 
-// AddManager 主播添加房管，需要已经登陆AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
+// AddManager 主播添加房管，需要已经登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) AddManager(managerUID int64) error {
 	return ac.t.addManager(managerUID)
 }
 
-// DeleteManager 主播删除房管，需要已经登陆AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
+// DeleteManager 主播删除房管，需要已经登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) DeleteManager(managerUID int64) error {
 	return ac.t.deleteManager(managerUID)
 }

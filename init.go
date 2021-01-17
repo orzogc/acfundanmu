@@ -62,10 +62,10 @@ func (t *token) getAcFunToken() (e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	var client *httpClient
-	if len(t.cookies) != 0 {
+	if len(t.Cookies) != 0 {
 		form.Set(sid, midground)
-		cookies := make([]*fasthttp.Cookie, len(t.cookies))
-		for i, c := range t.cookies {
+		cookies := make([]*fasthttp.Cookie, len(t.Cookies))
+		for i, c := range t.Cookies {
 			cookie := fasthttp.AcquireCookie()
 			defer fasthttp.ReleaseCookie(cookie)
 			err = cookie.Parse(c)
@@ -83,7 +83,7 @@ func (t *token) getAcFunToken() (e error) {
 		cookie := fasthttp.AcquireCookie()
 		defer fasthttp.ReleaseCookie(cookie)
 		cookie.SetKey("_did")
-		cookie.SetValue(t.deviceID)
+		cookie.SetValue(t.DeviceID)
 		client = &httpClient{
 			url:     loginURL,
 			body:    form.QueryString(),
@@ -106,7 +106,7 @@ func (t *token) getAcFunToken() (e error) {
 	// 获取userId和对应的令牌
 	userID := v.GetInt64("userId")
 	var serviceToken, securityKey string
-	if len(t.cookies) != 0 {
+	if len(t.Cookies) != 0 {
 		securityKey = string(v.GetStringBytes("ssecurity"))
 		serviceToken = string(v.GetStringBytes(midgroundSt))
 	} else {
@@ -114,9 +114,9 @@ func (t *token) getAcFunToken() (e error) {
 		serviceToken = string(v.GetStringBytes(visitorSt))
 	}
 
-	t.userID = userID
-	t.securityKey = securityKey
-	t.serviceToken = serviceToken
+	t.UserID = userID
+	t.SecurityKey = securityKey
+	t.ServiceToken = serviceToken
 
 	return nil
 }
@@ -134,11 +134,11 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	}
 
 	var play string
-	if len(t.cookies) != 0 {
+	if len(t.Cookies) != 0 {
 		// 需要userId、deviceID和serviceToken
-		play = fmt.Sprintf(playURL, t.userID, t.deviceID, midgroundSt, t.serviceToken)
+		play = fmt.Sprintf(playURL, t.UserID, t.DeviceID, midgroundSt, t.ServiceToken)
 	} else {
-		play = fmt.Sprintf(playURL, t.userID, t.deviceID, visitorSt, t.serviceToken)
+		play = fmt.Sprintf(playURL, t.UserID, t.DeviceID, visitorSt, t.ServiceToken)
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -247,7 +247,7 @@ func (t *token) getDeviceID() (e error) {
 	if !resp.Header.Cookie(didCookie) {
 		panic("无法获取didCookie")
 	}
-	t.deviceID = string(didCookie.Value())
+	t.DeviceID = string(didCookie.Value())
 
 	return nil
 }

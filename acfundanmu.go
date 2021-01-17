@@ -261,8 +261,8 @@ type ChatEnd struct {
 // TokenInfo 就是AcFun直播的token相关信息
 type TokenInfo struct {
 	UserID       int64    `json:"userID"`       // 登陆模式或游客模式的uid
-	SecurityKey  string   `json:"securityKey"`  // 密钥
-	ServiceToken string   `json:"serviceToken"` // token
+	SecurityKey  string   `json:"securityKey"`  // 密钥，第一次发送ws信息时用
+	ServiceToken string   `json:"serviceToken"` // 令牌
 	DeviceID     string   `json:"deviceID"`     // 设备ID
 	Cookies      []string `json:"cookies"`      // AcFun帐号的cookies
 }
@@ -308,7 +308,6 @@ type LiveInfo struct {
 type liveInfo struct {
 	sync.RWMutex // LiveInfo的锁
 	LiveInfo
-	TokenInfo
 	StreamInfo
 }
 
@@ -318,6 +317,37 @@ type AcFunLive struct {
 	info       *liveInfo    // 直播间的相关信息状态
 	t          *token       // 令牌相关信息
 	handlerMap *handlerMap  // 事件handler的map
+}
+
+// Option 就是AcFunLive的选项
+type Option func(*AcFunLive)
+
+// SetLiverUID 设置主播uid
+func SetLiverUID(liverUID int64) Option {
+	return func(ac *AcFunLive) {
+		ac.t.liverUID = liverUID
+		ac.t.livePage = fmt.Sprintf(liveURL, liverUID)
+	}
+}
+
+// SetCookies 设置AcFun帐号的cookies
+func SetCookies(cookies []string) Option {
+	return func(ac *AcFunLive) {
+		ac.t.Cookies = append([]string{}, cookies...)
+	}
+}
+
+// SetTokenInfo 设置TokenInfo
+func SetTokenInfo(tokenInfo *TokenInfo) Option {
+	return func(ac *AcFunLive) {
+		ac.t.TokenInfo = TokenInfo{
+			UserID:       tokenInfo.UserID,
+			SecurityKey:  tokenInfo.SecurityKey,
+			ServiceToken: tokenInfo.ServiceToken,
+			DeviceID:     tokenInfo.DeviceID,
+			Cookies:      append([]string{}, tokenInfo.Cookies...),
+		}
+	}
 }
 
 // Login 登陆AcFun帐号，account为帐号邮箱或手机号，password为帐号密码
@@ -333,8 +363,6 @@ func Login(account, password string) (cookies []string, err error) {
 				log.Printf("登陆AcFun帐号失败：%v", err)
 				return nil, fmt.Errorf("Login() error: 登陆AcFun帐号失败：%w", err)
 			}
-			//log.Printf("登陆AcFun帐号出现错误：%v", err)
-			//log.Println("尝试重新登陆AcFun帐号")
 		} else {
 			break
 		}
@@ -344,75 +372,30 @@ func Login(account, password string) (cookies []string, err error) {
 	return cookies, nil
 }
 
-// Init 初始化，uid为主播的uid，cookies可以利用Login()获取，为nil时为游客模式，目前登陆模式和游客模式并没有太大区别。
-// uid为0时仅获取TokenInfo，可以调用GetTokenInfo()获取。
-// 应该尽可能复用返回的 *AcFunLive 。
-func Init(uid int64, cookies []string) (ac *AcFunLive, err error) {
+// NewAcFunLive 新建一个 *AcFunLive
+func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 	ac = new(AcFunLive)
-	ac.t = &token{
-		liverUID: uid,
-		livePage: fmt.Sprintf(liveURL, uid),
-	}
-	if len(cookies) != 0 {
-		ac.t.cookies = append([]string{}, cookies...)
-	}
 	ac.info = new(liveInfo)
+	ac.t = new(token)
+	ac.t.livePage = liveHost
 	ac.handlerMap = new(handlerMap)
 	ac.handlerMap.listMap = make(map[eventType][]eventHandler)
 
+	for _, option := range options {
+		option(ac)
+	}
+
 	for retry := 0; retry < 3; retry++ {
-		ac.info.StreamInfo, err = ac.t.getToken()
-		if err != nil {
-			if retry == 2 {
-				log.Printf("初始化失败：%v", err)
-				return nil, fmt.Errorf("Init() error: 初始化失败，主播可能不在直播：%w", err)
-			}
-			//log.Printf("初始化出现错误：%v", err)
-			//log.Println("尝试重新初始化")
+		if ac.t.UserID == 0 {
+			ac.info.StreamInfo, err = ac.t.getToken()
 		} else {
-			break
+			ac.info.StreamInfo, err = ac.t.getLiveToken()
 		}
-		time.Sleep(10 * time.Second)
-	}
-
-	ac.info.TokenInfo = TokenInfo{
-		UserID:       ac.t.userID,
-		SecurityKey:  ac.t.securityKey,
-		ServiceToken: ac.t.serviceToken,
-		DeviceID:     ac.t.deviceID,
-		Cookies:      ac.t.cookies,
-	}
-
-	return ac, nil
-}
-
-// InitWithToken 利用tokenInfo初始化，uid为主播的uid
-func InitWithToken(uid int64, tokenInfo TokenInfo) (ac *AcFunLive, err error) {
-	ac = new(AcFunLive)
-	ac.t = &token{
-		liverUID:     uid,
-		livePage:     fmt.Sprintf(liveURL, uid),
-		userID:       tokenInfo.UserID,
-		securityKey:  tokenInfo.SecurityKey,
-		serviceToken: tokenInfo.ServiceToken,
-		deviceID:     tokenInfo.DeviceID,
-		cookies:      append([]string{}, tokenInfo.Cookies...),
-	}
-	ac.info = new(liveInfo)
-	ac.info.TokenInfo = tokenInfo
-	ac.info.TokenInfo.Cookies = append([]string{}, tokenInfo.Cookies...)
-	ac.handlerMap = new(handlerMap)
-	ac.handlerMap.listMap = make(map[eventType][]eventHandler)
-
-	for retry := 0; retry < 3; retry++ {
-		ac.info.StreamInfo, err = ac.t.getLiveToken()
 		if err != nil {
 			if retry == 2 {
 				log.Printf("初始化失败：%v", err)
-				return nil, fmt.Errorf("InitWithToken() error: 初始化失败，主播可能不在直播：%w", err)
+				return nil, fmt.Errorf("NewAcFunLive() error: 初始化失败，主播可能不在直播：%w", err)
 			}
-			//log.Printf("初始化出现错误：%v", err)
-			//log.Println("尝试重新初始化")
 		} else {
 			break
 		}
@@ -422,22 +405,29 @@ func InitWithToken(uid int64, tokenInfo TokenInfo) (ac *AcFunLive, err error) {
 	return ac, nil
 }
 
-// ReInit 利用已有的 *AcFunLive 重新初始化，返回新的 *AcFunLive，事件模式下clearHandlers为true时需要重新调用OnComment等函数
-func (ac *AcFunLive) ReInit(uid int64, clearHandlers bool) (newAC *AcFunLive, err error) {
+// SetLiverUID 设置主播uid，返回一个新的 *AcFunLive，不会复制弹幕获取采用事件响应模式时的事件处理函数
+func (ac *AcFunLive) SetLiverUID(uid int64) (newAC *AcFunLive, err error) {
 	tokenInfo := ac.GetTokenInfo()
-	newAC, err = InitWithToken(uid, *tokenInfo)
+	newAC, err = NewAcFunLive(SetLiverUID(uid), SetTokenInfo(tokenInfo))
 	if err != nil {
 		return nil, err
 	}
-	if !clearHandlers {
-		for k, v := range ac.handlerMap.listMap {
-			newAC.handlerMap.listMap[k] = v
-		}
-	}
+
 	return newAC, nil
 }
 
-// StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，event为true时采用事件模式。
+// CopyEventHandlers 弹幕获取采用事件响应模式时复制 anotherAC 的事件处理函数到 ac
+func (ac *AcFunLive) CopyEventHandlers(anotherAC *AcFunLive) {
+	anotherAC.handlerMap.RLock()
+	defer anotherAC.handlerMap.RUnlock()
+	ac.handlerMap.Lock()
+	defer ac.handlerMap.Unlock()
+	for k, v := range anotherAC.handlerMap.listMap {
+		ac.handlerMap.listMap[k] = v
+	}
+}
+
+// StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，event为true时采用事件响应模式。
 // event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
 func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	ch := make(chan error, 1)
@@ -493,8 +483,8 @@ func (ac *AcFunLive) GetLiveInfo() *LiveInfo {
 
 // GetTokenInfo 返回直播间token相关信息，不需要调用StartDanmu()
 func (ac *AcFunLive) GetTokenInfo() *TokenInfo {
-	info := ac.info.TokenInfo
-	info.Cookies = append([]string{}, ac.info.Cookies...)
+	info := ac.t.TokenInfo
+	info.Cookies = append([]string{}, ac.t.Cookies...)
 	return &info
 }
 
@@ -507,7 +497,7 @@ func (ac *AcFunLive) GetStreamInfo() *StreamInfo {
 
 // GetUserID 返回AcFun帐号的uid
 func (ac *AcFunLive) GetUserID() int64 {
-	return ac.t.userID
+	return ac.t.UserID
 }
 
 // GetLiverUID 返回主播的uid，有可能是0
@@ -520,9 +510,9 @@ func (ac *AcFunLive) GetLiveID() string {
 	return ac.t.liveID
 }
 
-// GetTokenInfo 返回TokenInfo，相当于调用 Init(0, cookies) 后返回对应的TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
+// GetTokenInfo 返回TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
 func GetTokenInfo(cookies []string) (*TokenInfo, error) {
-	ac, err := Init(0, cookies)
+	ac, err := NewAcFunLive(SetCookies(cookies))
 	if err != nil {
 		return nil, err
 	}

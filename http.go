@@ -131,10 +131,10 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (bo
 	}()
 
 	var apiURL string
-	if len(t.cookies) != 0 {
-		apiURL = fmt.Sprintf(url, t.userID, t.deviceID, midgroundSt, t.serviceToken)
+	if len(t.Cookies) != 0 {
+		apiURL = fmt.Sprintf(url, t.UserID, t.DeviceID, midgroundSt, t.ServiceToken)
 	} else {
-		apiURL = fmt.Sprintf(url, t.userID, t.deviceID, visitorSt, t.serviceToken)
+		apiURL = fmt.Sprintf(url, t.UserID, t.DeviceID, visitorSt, t.ServiceToken)
 	}
 
 	if form == nil {
@@ -160,7 +160,7 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (bo
 // 默认form，调用后需要 defer fasthttp.ReleaseArgs(form)
 func (t *token) defaultForm(liveID string) *fasthttp.Args {
 	form := fasthttp.AcquireArgs()
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("visitorId", strconv.FormatInt(t.UserID, 10))
 	form.Set("liveId", liveID)
 	return form
 }
@@ -210,7 +210,7 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 	var nonce int64 = minute | (int64(randomNum) << 32)
 	nonceStr := strconv.FormatInt(nonce, 10)
 
-	key, err := base64.StdEncoding.DecodeString(t.securityKey)
+	key, err := base64.StdEncoding.DecodeString(t.SecurityKey)
 	checkErr(err)
 	needSigned := "POST&" + path + "&" + strings.Join(paramsStr, "&") + "&" + nonceStr
 	mac := hmac.New(sha256.New, key)

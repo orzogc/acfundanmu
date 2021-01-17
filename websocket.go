@@ -49,7 +49,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 			errCh <- err.(error)
 			close(errCh)
 			if event {
-				ac.dispatchEvent(stopDanmu, err.(error))
+				ac.callEvent(stopDanmu, err.(error))
 			}
 		}
 	}()
@@ -108,7 +108,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 					errCh <- err
 					close(errCh)
 					if event {
-						ac.dispatchEvent(stopDanmu, err)
+						ac.callEvent(stopDanmu, err)
 					}
 				}
 				break
@@ -147,7 +147,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		errCh <- nil
 		close(errCh)
 		if event {
-			ac.dispatchEvent(stopDanmu, nil)
+			ac.callEvent(stopDanmu, nil)
 		}
 	}
 }

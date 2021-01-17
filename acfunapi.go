@@ -207,7 +207,7 @@ func (t *token) getLuckList(liveID, redpackID string) (luckyList []LuckyUser, e 
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("获取抢到红包的用户列表需要登陆AcFun帐号"))
 	}
 
@@ -337,7 +337,7 @@ func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("visitorId", strconv.FormatInt(t.UserID, 10))
 	body, err := t.fetchKuaiShouAPI(allGiftURL, form, false)
 	checkErr(err)
 
@@ -361,13 +361,13 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("获取钱包里AC币和拥有的香蕉的数量需要登陆AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("visitorId", strconv.FormatInt(t.UserID, 10))
 	body, err := t.fetchKuaiShouAPI(walletBalanceURL, form, false)
 	checkErr(err)
 
@@ -401,7 +401,7 @@ func (t *token) getKickHistory() (e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
@@ -428,13 +428,13 @@ func (t *token) getManagerList() (managerList []Manager, e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("获取主播的房管列表需要登陆主播的AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("visitorId", strconv.FormatInt(t.userID, 10))
+	form.Set("visitorId", strconv.FormatInt(t.UserID, 10))
 	body, err := t.fetchKuaiShouAPI(managerListURL, form, false)
 	checkErr(err)
 
@@ -648,12 +648,12 @@ func (ac *AcFunLive) GetWatchingList() ([]WatchingUser, error) {
 	return ac.t.getWatchingList(ac.t.liveID)
 }
 
-// GetWatchingListWithLiveID 返回直播间排名前50的在线观众信息列表，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()
+// GetWatchingListWithLiveID 返回直播间排名前50的在线观众信息列表，需要liveID，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetWatchingListWithLiveID(liveID string) ([]WatchingUser, error) {
 	return ac.t.getWatchingList(liveID)
 }
 
-// GetBillboard 返回指定主播最近七日内的礼物贡献榜前50名观众的详细信息，可以调用Init(0, nil)，不需要调用StartDanmu()
+// GetBillboard 返回指定主播最近七日内的礼物贡献榜前50名观众的详细信息，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetBillboard(uid int64) ([]BillboardUser, error) {
 	return ac.t.getBillboard(uid)
 }
@@ -663,7 +663,7 @@ func (ac *AcFunLive) GetSummary() (*Summary, error) {
 	return ac.t.getSummary(ac.t.liveID)
 }
 
-// GetSummaryWithLiveID 返回直播总结信息，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()
+// GetSummaryWithLiveID 返回直播总结信息，需要liveID，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetSummaryWithLiveID(liveID string) (*Summary, error) {
 	return ac.t.getSummary(liveID)
 }
@@ -673,7 +673,7 @@ func (ac *AcFunLive) GetLuckList(liveID, redpackID string) ([]LuckyUser, error) 
 	return ac.t.getLuckList(liveID, redpackID)
 }
 
-// GetPlayback 返回直播回放的相关信息，需要liveID，可以调用Init(0, nil)，不需要调用StartDanmu()，目前部分直播没有回放
+// GetPlayback 返回直播回放的相关信息，需要liveID，不需要设置主播uid，不需要调用StartDanmu()，目前部分直播没有回放
 func (ac *AcFunLive) GetPlayback(liveID string) (*Playback, error) {
 	return ac.t.getPlayback(liveID)
 }
@@ -687,12 +687,12 @@ func (ac *AcFunLive) GetGiftList() map[int64]GiftDetail {
 	return gifts
 }
 
-// GetAllGift 返回全部礼物的数据，可以调用Init(0, nil)，不需要调用StartDanmu()
+// GetAllGift 返回全部礼物的数据，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetAllGift() (map[int64]GiftDetail, error) {
 	return ac.t.getAllGift()
 }
 
-// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要调用Login()登陆AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
+// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要调用Login()登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetWalletBalance() (accoins int, bananas int, e error) {
 	return ac.t.getWalletBalance()
 }
@@ -702,7 +702,7 @@ func (ac *AcFunLive) GetKickHistory() (e error) {
 	return ac.t.getKickHistory()
 }
 
-// GetManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，可以调用Init(0, cookies)，不需要调用StartDanmu()
+// GetManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetManagerList() ([]Manager, error) {
 	return ac.t.getManagerList()
 }

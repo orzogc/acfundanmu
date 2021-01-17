@@ -49,7 +49,7 @@ func (h *handlerMap) add(t eventType, f eventHandler) {
 }
 
 // 调用事件handler列表里的handler
-func (ac *AcFunLive) dispatchEvent(t eventType, i interface{}) {
+func (ac *AcFunLive) callEvent(t eventType, i interface{}) {
 	ac.handlerMap.RLock()
 	defer ac.handlerMap.RUnlock()
 	list, ok := ac.handlerMap.listMap[t]

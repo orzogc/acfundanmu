@@ -4,10 +4,10 @@
 AcFun直播API，弹幕实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
 
 ### 示例代码
-#### 获取弹幕（非事件模式）
+#### 获取弹幕（非事件响应模式）
 ```go
 // uid为主播的uid
-ac, err := acfundanmu.Init(uid, nil)
+ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
 }
@@ -58,10 +58,10 @@ for {
     }
 }
 ```
-#### 采用事件模式
+#### 采用事件响应模式
 ```go
 // uid为主播的uid
-ac, err := acfundanmu.Init(uid, nil)
+ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
 }
@@ -101,7 +101,7 @@ _ = ac.StartDanmu(ctx, true)
 #### 获取直播间状态信息（非事件模式）
 ```go
 // uid为主播的uid
-ac, err := acfundanmu.Init(uid, nil)
+ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
 }
@@ -128,7 +128,7 @@ if err = <-ch; err != nil {
 #### 获取直播间排名前50的在线观众信息列表
 ```go
 // uid为主播的uid
-ac, err := acfundanmu.Init(uid, nil)
+ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
 }
@@ -155,7 +155,7 @@ go func() {
 #### 将弹幕转换成ass字幕文件
 ```go
 // uid为主播的uid
-ac, err := acfundanmu.Init(uid, nil)
+ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
 }

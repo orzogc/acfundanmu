@@ -338,21 +338,21 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 		if event {
 			switch d := d.(type) {
 			case *Comment:
-				ac.dispatchEvent(commentDanmu, d)
+				ac.callEvent(commentDanmu, d)
 			case *Like:
-				ac.dispatchEvent(likeDanmu, d)
+				ac.callEvent(likeDanmu, d)
 			case *EnterRoom:
-				ac.dispatchEvent(enterRoomDanmu, d)
+				ac.callEvent(enterRoomDanmu, d)
 			case *FollowAuthor:
-				ac.dispatchEvent(followAuthorDanmu, d)
+				ac.callEvent(followAuthorDanmu, d)
 			case *ThrowBanana:
-				ac.dispatchEvent(throwBananaDanmu, d)
+				ac.callEvent(throwBananaDanmu, d)
 			case *Gift:
-				ac.dispatchEvent(giftDanmu, d)
+				ac.callEvent(giftDanmu, d)
 			case *RichText:
-				ac.dispatchEvent(richTextDanmu, d)
+				ac.callEvent(richTextDanmu, d)
 			case *JoinClub:
-				ac.dispatchEvent(joinClubDanmu, d)
+				ac.callEvent(joinClubDanmu, d)
 			default:
 				log.Println("出现未处理的DanmuMessage")
 			}
@@ -376,7 +376,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, bananaInfo)
 			checkErr(err)
 			if event {
-				ac.dispatchEvent(bananaCountInfo, bananaInfo.BananaCount)
+				ac.callEvent(bananaCountInfo, bananaInfo.BananaCount)
 			} else {
 				ac.info.Lock()
 				ac.info.AllBananaCount = bananaInfo.BananaCount
@@ -392,7 +392,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				LikeDelta:     int(stateInfo.LikeDelta),
 			}
 			if event {
-				ac.dispatchEvent(displayInfo, &info)
+				ac.callEvent(displayInfo, &info)
 			} else {
 				ac.info.Lock()
 				ac.info.DisplayInfo = info
@@ -417,7 +417,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				users[i] = u
 			}
 			if event {
-				ac.dispatchEvent(topUsersInfo, users)
+				ac.callEvent(topUsersInfo, users)
 			} else {
 				ac.info.Lock()
 				ac.info.TopUsers = users
@@ -443,7 +443,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				danmu[i] = d
 			}
 			if event {
-				ac.dispatchEvent(recentCommentInfo, danmu)
+				ac.callEvent(recentCommentInfo, danmu)
 			} else {
 				ac.info.Lock()
 				ac.info.RecentComment = danmu
@@ -454,7 +454,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, chatCall)
 			checkErr(err)
 			if event {
-				ac.dispatchEvent(chatCallInfo, &ChatCall{
+				ac.callEvent(chatCallInfo, &ChatCall{
 					ChatID:   chatCall.ChatId,
 					LiveID:   chatCall.LiveId,
 					CallTime: chatCall.CallTimestampMs,
@@ -466,7 +466,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			checkErr(err)
 			log.Printf("CommonStateSignalChatAccept: %+v\n", chatAccept)
 			if event {
-				ac.dispatchEvent(chatAcceptInfo, &ChatAccept{
+				ac.callEvent(chatAcceptInfo, &ChatAccept{
 					ChatID:          chatAccept.ChatId,
 					MediaType:       ChatMediaType(chatAccept.MediaType),
 					ArraySignalInfo: chatAccept.ArraySignalInfo,
@@ -482,7 +482,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 			ac.t.getMoreInfo(&guest, chatReady.GuestUserInfo)
 			if event {
-				ac.dispatchEvent(chatReadyInfo, &ChatReady{
+				ac.callEvent(chatReadyInfo, &ChatReady{
 					ChatID:    chatReady.ChatId,
 					Guest:     guest,
 					MediaType: ChatMediaType(chatReady.MediaType),
@@ -493,7 +493,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, chatEnd)
 			checkErr(err)
 			if event {
-				ac.dispatchEvent(chatEndInfo, &ChatEnd{
+				ac.callEvent(chatEndInfo, &ChatEnd{
 					ChatID:  chatEnd.ChatId,
 					EndType: ChatEndType(chatEnd.EndType),
 				})
@@ -521,7 +521,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				redpacks[i] = r
 			}
 			if event {
-				ac.dispatchEvent(redpackListInfo, redpacks)
+				ac.callEvent(redpackListInfo, redpacks)
 			} else {
 				ac.info.Lock()
 				ac.info.RedpackList = redpacks
@@ -549,7 +549,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, kickedOut)
 			checkErr(err)
 			if event {
-				ac.dispatchEvent(kickedOutInfo, kickedOut.Reason)
+				ac.callEvent(kickedOutInfo, kickedOut.Reason)
 			} else {
 				ac.info.Lock()
 				ac.info.KickedOut = kickedOut.Reason
@@ -560,7 +560,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, violationAlert)
 			checkErr(err)
 			if event {
-				ac.dispatchEvent(violationAlertInfo, violationAlert.ViolationContent)
+				ac.callEvent(violationAlertInfo, violationAlert.ViolationContent)
 			} else {
 				ac.info.Lock()
 				ac.info.ViolationAlert = violationAlert.ViolationContent
@@ -571,7 +571,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, liveManagerState)
 			checkErr(err)
 			if event {
-				ac.dispatchEvent(managerStateInfo, liveManagerState.State)
+				ac.callEvent(managerStateInfo, liveManagerState.State)
 			} else {
 				ac.info.Lock()
 				ac.info.LiveManagerState = ManagerState(liveManagerState.State)

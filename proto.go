@@ -57,7 +57,7 @@ func (t *token) genPayload(cmd string, msg []byte) []byte {
 func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 	header = &acproto.PacketHeader{
 		AppId:             appID,
-		Uid:               t.userID,
+		Uid:               t.UserID,
 		InstanceId:        t.instanceID,
 		DecodedPayloadLen: uint32(length),
 		EncryptionMode:    acproto.PacketHeader_kEncryptionSessionKey,
@@ -84,7 +84,7 @@ func (t *token) register() []byte {
 		ZtCommonInfo: &acproto.ZtCommonInfo{
 			Kpn: kpn,
 			Kpf: kpf,
-			Uid: t.userID,
+			Uid: t.UserID,
 		},
 	}
 
@@ -97,7 +97,7 @@ func (t *token) register() []byte {
 	header.EncryptionMode = acproto.PacketHeader_kEncryptionServiceToken
 	header.TokenInfo = &acproto.TokenInfo{
 		TokenType: acproto.TokenInfo_kServiceToken,
-		Token:     []byte(t.serviceToken),
+		Token:     []byte(t.ServiceToken),
 	}
 	_ = atomic.AddInt64(&t.seqID, 1)
 
@@ -215,7 +215,7 @@ func (t *token) encode(header *acproto.PacketHeader, body []byte) []byte {
 	// 选择密钥
 	key := t.sessionKey
 	if header.EncryptionMode == acproto.PacketHeader_kEncryptionServiceToken {
-		key, err = base64.StdEncoding.DecodeString(t.securityKey)
+		key, err = base64.StdEncoding.DecodeString(t.SecurityKey)
 		checkErr(err)
 	}
 	encrypted := encrypt(key, body)
@@ -276,7 +276,7 @@ func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error
 		key := t.sessionKey
 		var err error
 		if header.EncryptionMode == acproto.PacketHeader_kEncryptionServiceToken {
-			key, err = base64.StdEncoding.DecodeString(t.securityKey)
+			key, err = base64.StdEncoding.DecodeString(t.SecurityKey)
 			checkErr(err)
 		}
 		payload = decrypt(payloadBytes, key)

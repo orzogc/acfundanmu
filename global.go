@@ -8,6 +8,7 @@ const (
 	visitorSt      = "acfun.api.visitor_st"
 	midgroundSt    = "acfun.midground.api_st"
 	acfunSignInURL = "https://id.app.acfun.cn/rest/web/login/signin"
+	liveHost       = "https://live.acfun.cn/"
 	liveURL        = "https://live.acfun.cn/live/%d"
 	loginURL       = "https://id.app.acfun.cn/rest/app/visitor/login"
 	getTokenURL    = "https://id.app.acfun.cn/rest/web/token/get"
@@ -62,9 +63,7 @@ const (
 )
 
 type token struct {
-	userID          int64  // AcFun帐号uid
-	securityKey     string // 第一次发送ws信息时所用密钥
-	serviceToken    string
+	TokenInfo
 	liveID          string
 	enterRoomAttach string
 	tickets         []string
@@ -74,11 +73,9 @@ type token struct {
 	headerSeqID     int64  // 要用原子锁操作
 	heartbeatSeqID  int64
 	ticketIndex     uint32 // 要用原子锁操作
-	deviceID        string
 	gifts           map[int64]GiftDetail
 	liverUID        int64 // 主播uid
 	livePage        string
-	cookies         []string
 	medalParser     fastjson.ParserPool
 	watchParser     fastjson.ParserPool
 }

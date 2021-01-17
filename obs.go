@@ -33,12 +33,12 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("检测开播权限需要登陆AcFun帐号"))
 	}
 
-	cookies := make([]*fasthttp.Cookie, len(t.cookies))
-	for i, c := range t.cookies {
+	cookies := make([]*fasthttp.Cookie, len(t.Cookies))
+	for i, c := range t.Cookies {
 		cookie := fasthttp.AcquireCookie()
 		defer fasthttp.ReleaseCookie(cookie)
 		err := cookie.Parse(c)
@@ -120,7 +120,7 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 		}
 	}()
 
-	if len(t.cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("获取OBS推流设置需要登陆AcFun帐号"))
 	}
 
@@ -162,17 +162,17 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 	return config, nil
 }
 
-// CheckLiveAuth 检测登陆帐号是否有直播权限，可以调用Init(0, cookies)，不需要调用StartDanmu()
+// CheckLiveAuth 检测登陆帐号是否有直播权限，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) CheckLiveAuth() (bool, error) {
 	return ac.t.checkLiveAuth()
 }
 
-// GetLiveTypeList 获取直播分类列表，可以调用Init(0, nil)，不需要调用StartDanmu()
+// GetLiveTypeList 获取直播分类列表，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetLiveTypeList() ([]LiveTypeList, error) {
 	return ac.t.getLiveTypeList()
 }
 
-// GetOBSConfig 获取OBS推流设置，可以调用Init(0, cookies)，不需要调用StartDanmu()
+// GetOBSConfig 获取OBS推流设置，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetOBSConfig() (*OBSConfig, error) {
 	return ac.t.getOBSConfig()
 }
