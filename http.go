@@ -21,7 +21,7 @@ type httpClient struct {
 	url         string
 	body        []byte
 	method      string
-	cookies     []*fasthttp.Cookie
+	cookies     Cookies
 	contentType string
 	referer     string
 }
@@ -104,7 +104,7 @@ func (c *httpClient) request() (body []byte, e error) {
 }
 
 // http请求，返回响应body和cookies
-func (c *httpClient) getCookies() (body []byte, cookies []string, e error) {
+func (c *httpClient) getCookies() (body []byte, cookies Cookies, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getCookies() error: %w", err)
@@ -116,7 +116,10 @@ func (c *httpClient) getCookies() (body []byte, cookies []string, e error) {
 	defer fasthttp.ReleaseResponse(resp)
 
 	resp.Header.VisitAllCookie(func(key, value []byte) {
-		cookies = append(cookies, string(value))
+		cookie := fasthttp.AcquireCookie()
+		err = cookie.ParseBytes(value)
+		checkErr(err)
+		cookies = append(cookies, cookie)
 	})
 
 	return getBody(resp), cookies, nil

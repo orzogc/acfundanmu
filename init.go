@@ -10,7 +10,7 @@ import (
 )
 
 // 登陆acfun账号
-func login(account, password string) (cookies []string, e error) {
+func login(account, password string) (cookies Cookies, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			cookies = nil
@@ -64,18 +64,10 @@ func (t *token) getAcFunToken() (e error) {
 	var client *httpClient
 	if len(t.Cookies) != 0 {
 		form.Set(sid, midground)
-		cookies := make([]*fasthttp.Cookie, len(t.Cookies))
-		for i, c := range t.Cookies {
-			cookie := fasthttp.AcquireCookie()
-			defer fasthttp.ReleaseCookie(cookie)
-			err = cookie.Parse(c)
-			checkErr(err)
-			cookies[i] = cookie
-		}
 		client = &httpClient{
 			url:     getTokenURL,
 			body:    form.QueryString(),
-			cookies: cookies,
+			cookies: t.Cookies,
 			referer: t.livePage,
 		}
 	} else {

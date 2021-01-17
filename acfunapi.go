@@ -471,29 +471,21 @@ func (t *token) getManagerList() (managerList []Manager, e error) {
 }
 
 // 获取登陆帐号的守护徽章和指定主播守护徽章的名字
-func getMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, e error) {
+func (t *token) getMedalInfo(uid int64) (medalList []MedalDetail, clubName string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getMedalInfo() error: %w", err)
 		}
 	}()
 
-	if len(cookies) == 0 {
+	if len(t.Cookies) == 0 {
 		panic(fmt.Errorf("获取登陆帐号的守护徽章和指定主播守护徽章的名字需要登陆AcFun帐号"))
 	}
 
-	httpCookies := make([]*fasthttp.Cookie, len(cookies))
-	for i, c := range cookies {
-		cookie := fasthttp.AcquireCookie()
-		defer fasthttp.ReleaseCookie(cookie)
-		err := cookie.Parse(c)
-		checkErr(err)
-		httpCookies[i] = cookie
-	}
 	client := &httpClient{
 		url:     fmt.Sprintf(medalInfoURL, uid),
 		method:  "GET",
-		cookies: httpCookies,
+		cookies: t.Cookies,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -707,12 +699,12 @@ func (ac *AcFunLive) GetManagerList() ([]Manager, error) {
 	return ac.t.getManagerList()
 }
 
-// GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName，利用Login()获取AcFun帐号的cookies
-func GetMedalInfo(uid int64, cookies []string) (medalList []MedalDetail, clubName string, err error) {
-	return getMedalInfo(uid, cookies)
+// GetMedalInfo 返回登陆用户的守护徽章列表medalList和uid指定主播的守护徽章的名字clubName，需要调用Login()登陆AcFun帐号，uid可以为0
+func (ac *AcFunLive) GetMedalInfo(uid int64) (medalList []MedalDetail, clubName string, err error) {
+	return ac.t.getMedalInfo(uid)
 }
 
-// GetUserMedal 返回指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
+// GetUserMedal 返回uid指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
 func GetUserMedal(uid int64) (medal *MedalDetail, e error) {
 	return getUserMedal(uid)
 }

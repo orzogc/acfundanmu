@@ -37,18 +37,10 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 		panic(fmt.Errorf("检测开播权限需要登陆AcFun帐号"))
 	}
 
-	cookies := make([]*fasthttp.Cookie, len(t.Cookies))
-	for i, c := range t.Cookies {
-		cookie := fasthttp.AcquireCookie()
-		defer fasthttp.ReleaseCookie(cookie)
-		err := cookie.Parse(c)
-		checkErr(err)
-		cookies[i] = cookie
-	}
 	client := &httpClient{
 		url:     checkLiveAuthURL,
 		method:  "POST",
-		cookies: cookies,
+		cookies: t.Cookies,
 	}
 	body, err := client.request()
 	checkErr(err)

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Workiva/go-datastructures/queue"
+	"github.com/valyala/fasthttp"
 )
 
 // 队列长度
@@ -258,13 +259,16 @@ type ChatEnd struct {
 	EndType ChatEndType `json:"endType"` // 连麦结束类型
 }
 
+// Cookies 就是AcFun帐号的cookies
+type Cookies []*fasthttp.Cookie
+
 // TokenInfo 就是AcFun直播的token相关信息
 type TokenInfo struct {
-	UserID       int64    `json:"userID"`       // 登陆模式或游客模式的uid
-	SecurityKey  string   `json:"securityKey"`  // 密钥，第一次发送ws信息时用
-	ServiceToken string   `json:"serviceToken"` // 令牌
-	DeviceID     string   `json:"deviceID"`     // 设备ID
-	Cookies      []string `json:"cookies"`      // AcFun帐号的cookies
+	UserID       int64   `json:"userID"`       // 登陆模式或游客模式的uid
+	SecurityKey  string  `json:"securityKey"`  // 密钥，第一次发送ws信息时用
+	ServiceToken string  `json:"serviceToken"` // 令牌
+	DeviceID     string  `json:"deviceID"`     // 设备ID
+	Cookies      Cookies `json:"cookies"`      // AcFun帐号的cookies
 }
 
 // StreamURL 就是直播源相关信息
@@ -323,17 +327,17 @@ type AcFunLive struct {
 type Option func(*AcFunLive)
 
 // SetLiverUID 设置主播uid
-func SetLiverUID(liverUID int64) Option {
+func SetLiverUID(uid int64) Option {
 	return func(ac *AcFunLive) {
-		ac.t.liverUID = liverUID
-		ac.t.livePage = fmt.Sprintf(liveURL, liverUID)
+		ac.t.liverUID = uid
+		ac.t.livePage = fmt.Sprintf(liveURL, uid)
 	}
 }
 
 // SetCookies 设置AcFun帐号的cookies
-func SetCookies(cookies []string) Option {
+func SetCookies(cookies Cookies) Option {
 	return func(ac *AcFunLive) {
-		ac.t.Cookies = append([]string{}, cookies...)
+		ac.t.Cookies = append([]*fasthttp.Cookie{}, cookies...)
 	}
 }
 
@@ -345,13 +349,13 @@ func SetTokenInfo(tokenInfo *TokenInfo) Option {
 			SecurityKey:  tokenInfo.SecurityKey,
 			ServiceToken: tokenInfo.ServiceToken,
 			DeviceID:     tokenInfo.DeviceID,
-			Cookies:      append([]string{}, tokenInfo.Cookies...),
+			Cookies:      append([]*fasthttp.Cookie{}, tokenInfo.Cookies...),
 		}
 	}
 }
 
 // Login 登陆AcFun帐号，account为帐号邮箱或手机号，password为帐号密码
-func Login(account, password string) (cookies []string, err error) {
+func Login(account, password string) (cookies Cookies, err error) {
 	if account == "" || password == "" {
 		return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
 	}
@@ -484,7 +488,7 @@ func (ac *AcFunLive) GetLiveInfo() *LiveInfo {
 // GetTokenInfo 返回直播间token相关信息，不需要调用StartDanmu()
 func (ac *AcFunLive) GetTokenInfo() *TokenInfo {
 	info := ac.t.TokenInfo
-	info.Cookies = append([]string{}, ac.t.Cookies...)
+	info.Cookies = append([]*fasthttp.Cookie{}, ac.t.Cookies...)
 	return &info
 }
 
@@ -511,7 +515,7 @@ func (ac *AcFunLive) GetLiveID() string {
 }
 
 // GetTokenInfo 返回TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
-func GetTokenInfo(cookies []string) (*TokenInfo, error) {
+func GetTokenInfo(cookies Cookies) (*TokenInfo, error) {
 	ac, err := NewAcFunLive(SetCookies(cookies))
 	if err != nil {
 		return nil, err
