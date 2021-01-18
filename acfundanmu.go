@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Workiva/go-datastructures/queue"
+	"github.com/segmentio/encoding/json"
 	"github.com/valyala/fasthttp"
 )
 
@@ -283,7 +284,7 @@ type StreamURL struct {
 type StreamInfo struct {
 	LiveID        string      `json:"liveID"`        // 直播ID
 	Title         string      `json:"title"`         // 直播间标题
-	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix time
+	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
 	Panoramic     bool        `json:"panoramic"`     // 是否全景直播
 	StreamList    []StreamURL `json:"streamList"`    // 直播源列表
 	StreamName    string      `json:"streamName"`    // 直播源名字（ID）
@@ -352,6 +353,36 @@ func SetTokenInfo(tokenInfo *TokenInfo) Option {
 			Cookies:      append([]*fasthttp.Cookie{}, tokenInfo.Cookies...),
 		}
 	}
+}
+
+// MarshalJSON 实现json的Marshaler接口
+func (c Cookies) MarshalJSON() ([]byte, error) {
+	cookies := make([]string, 0, len(c))
+	for _, cookie := range c {
+		cookies = append(cookies, cookie.String())
+	}
+
+	return json.Marshal(cookies)
+}
+
+// UnmarshalJSON 实现json的Unmarshaler接口
+func (c *Cookies) UnmarshalJSON(b []byte) error {
+	cookies := new([]string)
+	err := json.Unmarshal(b, cookies)
+	if err != nil {
+		return err
+	}
+	*c = make(Cookies, 0, len(*cookies))
+	for _, cookie := range *cookies {
+		co := fasthttp.AcquireCookie()
+		err = co.Parse(cookie)
+		if err != nil {
+			return err
+		}
+		*c = append(*c, co)
+	}
+
+	return nil
 }
 
 // Login 登陆AcFun帐号，account为帐号邮箱或手机号，password为帐号密码

@@ -177,7 +177,7 @@ func getBody(resp *fasthttp.Response) []byte {
 		}
 	}
 
-	body := append([]byte(nil), resp.Body()...)
+	body := append([]byte{}, resp.Body()...)
 
 	return body
 }

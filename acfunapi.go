@@ -62,6 +62,39 @@ type Manager struct {
 	Online     bool   `json:"online"`     // 是否直播间在线？
 }
 
+// UserProfile 就是用户信息
+type UserProfile struct {
+	UserID          int64  `json:"userID"`          // 用户uid
+	Nickname        string `json:"nickname"`        // 用户名字
+	Avatar          string `json:"avatar"`          // 用户头像
+	AvatarFrame     string `json:"avatarFrame"`     // 用户头像挂件
+	FollowingCount  int    `json:"followingCount"`  // 用户关注数量
+	FansCount       int    `json:"fansCount"`       // 用户粉丝数量
+	ContributeCount int    `json:"contributeCount"` // 用户投稿数量
+	Signature       string `json:"signature"`       // 用户签名
+	VerifiedText    string `json:"verifiedText"`    // 用户认证信息
+	IsJoinUpCollege bool   `json:"isJoinUpCollege"` // 用户是否加入阿普学院
+	IsFollowing     bool   `json:"isFollowing"`     // 是否关注了用户
+}
+
+// UserLiveInfo 就是用户直播信息
+type UserLiveInfo struct {
+	Profile               UserProfile `json:"profile"`               // 用户信息
+	LiveType              LiveType    `json:"liveType"`              // 直播分类
+	LiveID                string      `json:"liveID"`                // 直播ID
+	StreamName            string      `json:"streamName"`            // 直播源名字（ID）
+	Title                 string      `json:"title"`                 // 直播间标题
+	LiveStartTime         int64       `json:"liveStartTime"`         // 直播开始的时间，是以毫秒为单位的Unix时间
+	Portrait              bool        `json:"portrait"`              // 是否手机直播
+	Panoramic             bool        `json:"panoramic"`             // 是否全景直播
+	LiveCover             string      `json:"liveCover"`             // 直播间封面
+	OnlineCount           int         `json:"onlineCount"`           // 直播间在线人数
+	LikeCount             int         `json:"likeCount"`             // 直播间点赞总数
+	HasFansClub           bool        `json:"hasFansClub"`           // 主播是否有守护团
+	DisableDanmakuShow    bool        `json:"disableDanmakuShow"`    // 是否禁止显示弹幕？
+	PaidShowUserBuyStatus bool        `json:"paidShowUserBuyStatus"` // 用户是否购买了付费直播？
+}
+
 var liveListParser fastjson.ParserPool
 
 // 获取直播间排名前50的在线观众信息列表
@@ -578,6 +611,97 @@ func getUserMedal(uid int64) (medal *MedalDetail, e error) {
 	return medal, nil
 }
 
+// 从json里获取用户直播信息
+func getUserLiveInfoJSON(v *fastjson.Value) *UserLiveInfo {
+	info := new(UserLiveInfo)
+	o := v.GetObject()
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "user":
+			o := v.GetObject()
+			o.Visit(func(k []byte, v *fastjson.Value) {
+				switch string(k) {
+				case "name":
+					info.Profile.Nickname = string(v.GetStringBytes())
+				case "headUrl":
+					info.Profile.Avatar = string(v.GetStringBytes())
+				case "avatarFrameMobileImg":
+					info.Profile.AvatarFrame = string(v.GetStringBytes())
+				case "followingCountValue":
+					info.Profile.FollowingCount = v.GetInt()
+				case "fanCountValue":
+					info.Profile.FansCount = v.GetInt()
+				case "contributeCountValue":
+					info.Profile.ContributeCount = v.GetInt()
+				case "signature":
+					info.Profile.Signature = string(v.GetStringBytes())
+				case "verifiedText":
+					info.Profile.VerifiedText = string(v.GetStringBytes())
+				case "isJoinUpCollege":
+					info.Profile.IsJoinUpCollege = v.GetBool()
+				case "isFollowing":
+					info.Profile.IsFollowing = v.GetBool()
+				}
+			})
+		case "authorId":
+			info.Profile.UserID = v.GetInt64()
+		case "type":
+			info.LiveType = *getLiveType(v)
+		case "liveId":
+			info.LiveID = string(v.GetStringBytes())
+		case "streamName":
+			info.StreamName = string(v.GetStringBytes())
+		case "title":
+			info.Title = string(v.GetStringBytes())
+		case "createTime":
+			info.LiveStartTime = v.GetInt64()
+		case "portrait":
+			info.Portrait = v.GetBool()
+		case "panoramic":
+			info.Panoramic = v.GetBool()
+		case "coverUrls":
+			info.LiveCover = string(v.GetStringBytes("0"))
+		case "onlineCount":
+			info.OnlineCount = v.GetInt()
+		case "likeCount":
+			info.LikeCount = v.GetInt()
+		case "hasFansClub":
+			info.HasFansClub = v.GetBool()
+		case "disableDanmakuShow":
+			info.DisableDanmakuShow = v.GetBool()
+		case "paidShowUserBuyStatus":
+			info.PaidShowUserBuyStatus = v.GetBool()
+		}
+	})
+	return info
+}
+
+// 获取指定用户的直播信息
+func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getUserLiveInfo() error: %w", err)
+		}
+	}()
+
+	client := httpClient{
+		url:     fmt.Sprintf(liveInfoURL, uid),
+		method:  "GET",
+		cookies: cookies,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取指定用户的直播信息失败，响应为 %s", string(body)))
+	}
+
+	return getUserLiveInfoJSON(v), nil
+}
+
 // 获取正在直播的直播间列表
 func getLiveList() (body string, e error) {
 	defer func() {
@@ -704,7 +828,17 @@ func (ac *AcFunLive) GetMedalInfo(uid int64) (medalList []MedalDetail, clubName 
 	return ac.t.getMedalInfo(uid)
 }
 
+// GetUserLiveInfo 返回uid指定用户的直播信息
+func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
+	return getUserLiveInfo(uid, ac.t.Cookies)
+}
+
 // GetUserMedal 返回uid指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
 func GetUserMedal(uid int64) (medal *MedalDetail, e error) {
 	return getUserMedal(uid)
+}
+
+// GetUserLiveInfo 返回uid指定用户的直播信息
+func GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
+	return getUserLiveInfo(uid, nil)
 }

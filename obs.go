@@ -8,12 +8,12 @@ import (
 	"github.com/valyala/fastjson"
 )
 
-// LiveTypeList 就是直播分类
-type LiveTypeList struct {
-	ID           int    `json:"id"`           // 直播次分类ID
-	Name         string `json:"name"`         // 直播次分类名字
-	CategoryID   int    `json:"categoryID"`   // 直播主分类ID
-	CategoryName string `json:"categoryName"` // 直播主分类名字
+// LiveType 就是直播分类
+type LiveType struct {
+	CategoryID      int    `json:"categoryID"`      // 直播主分类ID
+	CategoryName    string `json:"categoryName"`    // 直播主分类名字
+	SubCategoryID   int    `json:"subCategoryID"`   // 直播次分类ID
+	SubCategoryName string `json:"subCategoryName"` // 直播次分类名字
 }
 
 // OBSConfig 就是OBS的推流设置
@@ -59,8 +59,30 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 	return true, nil
 }
 
+// 获取直播分类
+func getLiveType(v *fastjson.Value) *LiveType {
+	liveType := new(LiveType)
+	o := v.GetObject()
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "id":
+			liveType.SubCategoryID = v.GetInt()
+		case "name":
+			liveType.SubCategoryName = string(v.GetStringBytes())
+		case "categoryId":
+			liveType.CategoryID = v.GetInt()
+		case "categoryName":
+			liveType.CategoryName = string(v.GetStringBytes())
+		default:
+			log.Printf("直播分类里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+		}
+	})
+
+	return liveType
+}
+
 // 获取直播分类列表
-func (t *token) getLiveTypeList() (list []LiveTypeList, e error) {
+func (t *token) getLiveTypeList() (list []LiveType, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getLiveTypeList() error: %w", err)
@@ -82,23 +104,9 @@ func (t *token) getLiveTypeList() (list []LiveTypeList, e error) {
 	}
 
 	typeList := v.GetArray("typeList")
-	list = make([]LiveTypeList, len(typeList))
-	for i, l := range typeList {
-		o := l.GetObject()
-		o.Visit(func(k []byte, v *fastjson.Value) {
-			switch string(k) {
-			case "id":
-				list[i].ID = v.GetInt()
-			case "name":
-				list[i].Name = string(v.GetStringBytes())
-			case "categoryId":
-				list[i].CategoryID = v.GetInt()
-			case "categoryName":
-				list[i].CategoryName = string(v.GetStringBytes())
-			default:
-				log.Printf("直播分类列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
-			}
-		})
+	list = make([]LiveType, 0, len(typeList))
+	for _, l := range typeList {
+		list = append(list, *getLiveType(l))
 	}
 
 	return list, nil
@@ -160,7 +168,7 @@ func (ac *AcFunLive) CheckLiveAuth() (bool, error) {
 }
 
 // GetLiveTypeList 获取直播分类列表，不需要设置主播uid，不需要调用StartDanmu()
-func (ac *AcFunLive) GetLiveTypeList() ([]LiveTypeList, error) {
+func (ac *AcFunLive) GetLiveTypeList() ([]LiveType, error) {
 	return ac.t.getLiveTypeList()
 }
 
