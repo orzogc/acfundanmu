@@ -170,7 +170,7 @@ func (t *token) defaultForm(liveID string) *fasthttp.Args {
 
 // 获取响应body
 func getBody(resp *fasthttp.Response) []byte {
-	if bytes.Equal(resp.Header.Peek("content-encoding"), []byte("gzip")) || bytes.Equal(resp.Header.Peek("Content-Encoding"), []byte("gzip")) {
+	if string(resp.Header.Peek("content-encoding")) == "gzip" || string(resp.Header.Peek("Content-Encoding")) == "gzip" {
 		body, err := resp.BodyGunzip()
 		if err == nil {
 			return body

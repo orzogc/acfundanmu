@@ -95,8 +95,6 @@ type UserLiveInfo struct {
 	PaidShowUserBuyStatus bool        `json:"paidShowUserBuyStatus"` // 用户是否购买了付费直播？
 }
 
-var liveListParser fastjson.ParserPool
-
 // 获取直播间排名前50的在线观众信息列表
 func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e error) {
 	defer func() {
@@ -573,7 +571,7 @@ func getUserMedal(uid int64) (medal *MedalDetail, e error) {
 		}
 	}()
 
-	client := httpClient{
+	client := &httpClient{
 		url:    fmt.Sprintf(userMedalURL, uid),
 		method: "GET",
 	}
@@ -684,7 +682,7 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 		}
 	}()
 
-	client := httpClient{
+	client := &httpClient{
 		url:     fmt.Sprintf(liveInfoURL, uid),
 		method:  "GET",
 		cookies: cookies,
@@ -703,37 +701,45 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 }
 
 // 获取正在直播的直播间列表
-func getLiveList() (body string, e error) {
+func getLiveList(count int, page int, cookies Cookies) (liveList []UserLiveInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getLiveList() error: %w", err)
 		}
 	}()
 
-	for count := 1000; count < 1e8; count *= 10 {
-		client := httpClient{
-			url:    fmt.Sprintf(liveListURL, count),
-			method: "GET",
-		}
-		respBody, err := client.request()
-		checkErr(err)
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("count", strconv.Itoa(count))
+	form.Set("pcursor", strconv.Itoa(page))
+	client := &httpClient{
+		url:         liveListURL,
+		body:        form.QueryString(),
+		method:      "POST",
+		cookies:     cookies,
+		contentType: formContentType,
+	}
+	body, err := client.request()
+	checkErr(err)
 
-		p := liveListParser.Get()
-		defer liveListParser.Put(p)
-		v, err := p.ParseBytes(respBody)
-		checkErr(err)
-		v = v.Get("channelListData")
-		if !v.Exists("result") || v.GetInt("result") != 0 {
-			panic(fmt.Errorf("获取正在直播的直播间列表失败"))
-		}
-		cursor := string(v.GetStringBytes("pcursor"))
-		if cursor == "no_more" {
-			body = string(respBody)
-			break
-		}
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取正在直播的直播间列表失败，响应为：%s", string(body)))
 	}
 
-	return body, nil
+	list := v.GetArray("liveList")
+	liveList = make([]UserLiveInfo, 0, len(list))
+	for _, l := range list {
+		liveList = append(liveList, *getUserLiveInfoJSON(l))
+	}
+
+	return liveList, nil
+}
+
+func getAllLiveList(cookies Cookies) (liveList []UserLiveInfo, e error) {
+	return getLiveList(1000000, 0, cookies)
 }
 
 // Distinguish 返回阿里云和腾讯云链接，目前阿里云的下载速度比较快
@@ -828,9 +834,19 @@ func (ac *AcFunLive) GetMedalInfo(uid int64) (medalList []MedalDetail, clubName 
 	return ac.t.getMedalInfo(uid)
 }
 
-// GetUserLiveInfo 返回uid指定用户的直播信息
+// GetUserLiveInfo 返回uid指定用户的直播信息，不需要设置主播uid
 func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, ac.t.Cookies)
+}
+
+// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），不需要设置主播uid
+func (ac *AcFunLive) GetLiveList(count int, page int) ([]UserLiveInfo, error) {
+	return getLiveList(count, page, ac.t.Cookies)
+}
+
+// GetAllLiveList 返回全部正在直播的直播间列表，不需要设置主播uid
+func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
+	return getAllLiveList(ac.t.Cookies)
 }
 
 // GetUserMedal 返回uid指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
@@ -838,7 +854,17 @@ func GetUserMedal(uid int64) (medal *MedalDetail, e error) {
 	return getUserMedal(uid)
 }
 
-// GetUserLiveInfo 返回uid指定用户的直播信息
+// GetUserLiveInfo 返回uid指定用户的直播信息，不需要设置主播uid
 func GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, nil)
+}
+
+// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），不需要设置主播uid
+func GetLiveList(count int, page int) ([]UserLiveInfo, error) {
+	return getLiveList(count, page, nil)
+}
+
+// GetAllLiveList 返回全部正在直播的直播间列表，不需要设置主播uid
+func GetAllLiveList() ([]UserLiveInfo, error) {
+	return getAllLiveList(nil)
 }

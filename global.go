@@ -48,7 +48,7 @@ const (
 	liveInfoURL        = "https://api-new.app.acfun.cn/rest/app/live/info?authorId=%d"
 	userMedalURL       = "https://live.acfun.cn/rest/pc-direct/fansClub/user/info?userId=%d"
 	friendshipRankURL  = "https://live.acfun.cn/rest/pc-direct/fansClub/friendshipDegreeRankInfo?uperId=%d"
-	liveListURL        = "https://live.acfun.cn/api/channel/list?count=%d"
+	liveListURL        = "https://api-new.app.acfun.cn/rest/app/live/channel"
 )
 
 const (
