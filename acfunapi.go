@@ -95,6 +95,23 @@ type UserLiveInfo struct {
 	PaidShowUserBuyStatus bool        `json:"paidShowUserBuyStatus"` // 用户是否购买了付费直播？
 }
 
+// UserMedalInfo 就是用户的守护徽章信息
+type UserMedalInfo struct {
+	UserProfile      `json:"profile"`
+	FriendshipDegree int `json:"friendshipDegree"` // 用户守护徽章的亲密度
+	Level            int `json:"level"`            // 用户守护徽章的等级
+}
+
+// MedalRankList 就是主播守护徽章等级列表
+type MedalRankList struct {
+	RankList             []UserMedalInfo `json:"rankList"`             // 主播守护徽章等级列表
+	ClubName             string          `json:"clubName"`             // 守护徽章名字
+	MedalCount           int             `json:"medalCount"`           // 拥有主播守护徽章的用户的数量
+	HasMedal             bool            `json:"hasMedal"`             // 登陆用户是否有主播的守护徽章
+	UserFriendshipDegree int             `json:"userFriendshipDegree"` // 登陆用户的主播守护徽章的亲密度
+	UserRank             int             `json:"userRank"`             // 登陆用户的主播守护徽章的排名
+}
+
 // 获取直播间排名前50的在线观众信息列表
 func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e error) {
 	defer func() {
@@ -164,7 +181,7 @@ func (t *token) getBillboard(uid int64) (billboard []BillboardUser, e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		panic(fmt.Errorf("获取最近七日内的礼物贡献榜失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("获取主播最近七日内的礼物贡献榜失败，响应为 %s", string(body)))
 	}
 
 	billboardArray := v.GetArray("data", "list")
@@ -609,6 +626,38 @@ func getUserMedal(uid int64) (medal *MedalDetail, e error) {
 	return medal, nil
 }
 
+// 从json里获取用户信息
+func getUserProfileJSON(v *fastjson.Value) *UserProfile {
+	profile := new(UserProfile)
+	o := v.GetObject()
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "name":
+			profile.Nickname = string(v.GetStringBytes())
+		case "headUrl":
+			profile.Avatar = string(v.GetStringBytes())
+		case "avatarFrameMobileImg":
+			profile.AvatarFrame = string(v.GetStringBytes())
+		case "followingCountValue":
+			profile.FollowingCount = v.GetInt()
+		case "fanCountValue":
+			profile.FansCount = v.GetInt()
+		case "contributeCountValue":
+			profile.ContributeCount = v.GetInt()
+		case "signature":
+			profile.Signature = string(v.GetStringBytes())
+		case "verifiedText":
+			profile.VerifiedText = string(v.GetStringBytes())
+		case "isJoinUpCollege":
+			profile.IsJoinUpCollege = v.GetBool()
+		case "isFollowing":
+			profile.IsFollowing = v.GetBool()
+		}
+	})
+
+	return profile
+}
+
 // 从json里获取用户直播信息
 func getUserLiveInfoJSON(v *fastjson.Value) *UserLiveInfo {
 	info := new(UserLiveInfo)
@@ -616,33 +665,8 @@ func getUserLiveInfoJSON(v *fastjson.Value) *UserLiveInfo {
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
 		case "user":
-			o := v.GetObject()
-			o.Visit(func(k []byte, v *fastjson.Value) {
-				switch string(k) {
-				case "name":
-					info.Profile.Nickname = string(v.GetStringBytes())
-				case "headUrl":
-					info.Profile.Avatar = string(v.GetStringBytes())
-				case "avatarFrameMobileImg":
-					info.Profile.AvatarFrame = string(v.GetStringBytes())
-				case "followingCountValue":
-					info.Profile.FollowingCount = v.GetInt()
-				case "fanCountValue":
-					info.Profile.FansCount = v.GetInt()
-				case "contributeCountValue":
-					info.Profile.ContributeCount = v.GetInt()
-				case "signature":
-					info.Profile.Signature = string(v.GetStringBytes())
-				case "verifiedText":
-					info.Profile.VerifiedText = string(v.GetStringBytes())
-				case "isJoinUpCollege":
-					info.Profile.IsJoinUpCollege = v.GetBool()
-				case "isFollowing":
-					info.Profile.IsFollowing = v.GetBool()
-				}
-			})
+			info.Profile = *getUserProfileJSON(v)
 		case "authorId":
-			info.Profile.UserID = v.GetInt64()
 		case "type":
 			info.LiveType = *getLiveType(v)
 		case "liveId":
@@ -671,6 +695,8 @@ func getUserLiveInfoJSON(v *fastjson.Value) *UserLiveInfo {
 			info.PaidShowUserBuyStatus = v.GetBool()
 		}
 	})
+	info.Profile.UserID = v.GetInt64("authorId")
+
 	return info
 }
 
@@ -698,6 +724,75 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 	}
 
 	return getUserLiveInfoJSON(v), nil
+}
+
+// 获取指定主播的守护榜
+func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getMedalRankList() error: %w", err)
+		}
+	}()
+
+	client := &httpClient{
+		url:         fmt.Sprintf(medalRankURL, uid),
+		method:      "POST",
+		cookies:     cookies,
+		contentType: formContentType,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取指定主播的守护榜失败，响应为 %s", string(body)))
+	}
+
+	medalRankList = new(MedalRankList)
+	o := v.GetObject()
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "result":
+		case "host-name":
+		case "friendshipDegreeRank":
+			list := v.GetArray()
+			medalRankList.RankList = make([]UserMedalInfo, len(list))
+			for i, l := range list {
+				o := l.GetObject()
+				o.Visit(func(k []byte, v *fastjson.Value) {
+					switch string(k) {
+					case "userId":
+					case "userInfo":
+						medalRankList.RankList[i].UserProfile = *getUserProfileJSON(v)
+					case "friendshipDegree":
+						medalRankList.RankList[i].FriendshipDegree = v.GetInt()
+					case "medalLevel":
+						medalRankList.RankList[i].Level = v.GetInt()
+					default:
+						log.Printf("用户的守护徽章信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+					}
+				})
+				medalRankList.RankList[i].UserID = l.GetInt64("userId")
+			}
+		case "clubName":
+			medalRankList.ClubName = string(v.GetStringBytes())
+		case "fansTotalCount":
+			medalRankList.MedalCount = v.GetInt()
+		case "isInFansClub":
+			medalRankList.HasMedal = v.GetBool()
+		case "curUserFriendshipDegree":
+			medalRankList.UserFriendshipDegree = v.GetInt()
+		case "curUserRankIndex":
+			medalRankList.UserRank, err = strconv.Atoi(string(v.GetStringBytes()))
+			checkErr(err)
+		default:
+			log.Printf("指定主播的守护榜里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+		}
+	})
+
+	return medalRankList, nil
 }
 
 // 获取正在直播的直播间列表
@@ -738,6 +833,7 @@ func getLiveList(count int, page int, cookies Cookies) (liveList []UserLiveInfo,
 	return liveList, nil
 }
 
+// 获取全部正在直播的直播间列表
 func getAllLiveList(cookies Cookies) (liveList []UserLiveInfo, e error) {
 	return getLiveList(1000000, 0, cookies)
 }
@@ -839,6 +935,11 @@ func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, ac.t.Cookies)
 }
 
+// GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），不需要设置主播uid
+func (ac *AcFunLive) GetMedalRankList(uid int64) (medalRankList *MedalRankList, e error) {
+	return getMedalRankList(uid, ac.t.Cookies)
+}
+
 // GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），不需要设置主播uid
 func (ac *AcFunLive) GetLiveList(count int, page int) ([]UserLiveInfo, error) {
 	return getLiveList(count, page, ac.t.Cookies)
@@ -854,17 +955,22 @@ func GetUserMedal(uid int64) (medal *MedalDetail, e error) {
 	return getUserMedal(uid)
 }
 
-// GetUserLiveInfo 返回uid指定用户的直播信息，不需要设置主播uid
+// GetUserLiveInfo 返回uid指定用户的直播信息
 func GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, nil)
 }
 
-// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），不需要设置主播uid
+// GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户）
+func GetMedalRankList(uid int64) (medalRankList *MedalRankList, e error) {
+	return getMedalRankList(uid, nil)
+}
+
+// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起）
 func GetLiveList(count int, page int) ([]UserLiveInfo, error) {
 	return getLiveList(count, page, nil)
 }
 
-// GetAllLiveList 返回全部正在直播的直播间列表，不需要设置主播uid
+// GetAllLiveList 返回全部正在直播的直播间列表
 func GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(nil)
 }
