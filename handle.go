@@ -376,7 +376,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, bananaInfo)
 			checkErr(err)
 			if event {
-				ac.callEvent(bananaCountInfo, bananaInfo.BananaCount)
+				ac.callEvent(bananaCountEvent, bananaInfo.BananaCount)
 			} else {
 				ac.info.Lock()
 				ac.info.AllBananaCount = bananaInfo.BananaCount
@@ -392,7 +392,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				LikeDelta:     int(stateInfo.LikeDelta),
 			}
 			if event {
-				ac.callEvent(displayInfo, &info)
+				ac.callEvent(displayEvent, &info)
 			} else {
 				ac.info.Lock()
 				ac.info.DisplayInfo = info
@@ -417,7 +417,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				users[i] = u
 			}
 			if event {
-				ac.callEvent(topUsersInfo, users)
+				ac.callEvent(topUsersEvent, users)
 			} else {
 				ac.info.Lock()
 				ac.info.TopUsers = users
@@ -443,7 +443,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				danmu[i] = d
 			}
 			if event {
-				ac.callEvent(recentCommentInfo, danmu)
+				ac.callEvent(recentCommentEvent, danmu)
 			} else {
 				ac.info.Lock()
 				ac.info.RecentComment = danmu
@@ -454,7 +454,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, chatCall)
 			checkErr(err)
 			if event {
-				ac.callEvent(chatCallInfo, &ChatCall{
+				ac.callEvent(chatCallEvent, &ChatCall{
 					ChatID:   chatCall.ChatId,
 					LiveID:   chatCall.LiveId,
 					CallTime: chatCall.CallTimestampMs,
@@ -466,10 +466,10 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			checkErr(err)
 			log.Printf("CommonStateSignalChatAccept: %+v\n", chatAccept)
 			if event {
-				ac.callEvent(chatAcceptInfo, &ChatAccept{
-					ChatID:          chatAccept.ChatId,
-					MediaType:       ChatMediaType(chatAccept.MediaType),
-					ArraySignalInfo: chatAccept.ArraySignalInfo,
+				ac.callEvent(chatAcceptEvent, &ChatAccept{
+					ChatID:     chatAccept.ChatId,
+					MediaType:  ChatMediaType(chatAccept.MediaType),
+					SignalInfo: chatAccept.AryaSignalInfo,
 				})
 			}
 		case "CommonStateSignalChatReady":
@@ -482,7 +482,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			}
 			ac.t.getMoreInfo(&guest, chatReady.GuestUserInfo)
 			if event {
-				ac.callEvent(chatReadyInfo, &ChatReady{
+				ac.callEvent(chatReadyEvent, &ChatReady{
 					ChatID:    chatReady.ChatId,
 					Guest:     guest,
 					MediaType: ChatMediaType(chatReady.MediaType),
@@ -493,9 +493,89 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, chatEnd)
 			checkErr(err)
 			if event {
-				ac.callEvent(chatEndInfo, &ChatEnd{
+				ac.callEvent(chatEndEvent, &ChatEnd{
 					ChatID:  chatEnd.ChatId,
 					EndType: ChatEndType(chatEnd.EndType),
+				})
+			}
+		case "CommonStateSignalAuthorChatCall":
+			chatCall := &acproto.CommonStateSignalAuthorChatCall{}
+			err = proto.Unmarshal(item.Payload, chatCall)
+			checkErr(err)
+			inviter := UserInfo{
+				UserID:   chatCall.InviterUserInfo.Player.UserId,
+				Nickname: chatCall.InviterUserInfo.Player.Nickname,
+			}
+			ac.t.getMoreInfo(&inviter, chatCall.InviterUserInfo.Player)
+			if event {
+				ac.callEvent(authorChatCallEvent, &AuthorChatCall{
+					Inviter: AuthorChatPlayerInfo{
+						UserInfo:               inviter,
+						LiveID:                 chatCall.InviterUserInfo.LiveId,
+						EnableJumpPeerLiveRoom: chatCall.InviterUserInfo.EnableJumpPeerLiveRoom,
+					},
+					ChatID:   chatCall.AuthorChatId,
+					CallTime: chatCall.CallTimestampMs,
+				})
+			}
+		case "CommonStateSignalAuthorChatAccept":
+			chatAccept := &acproto.CommonStateSignalAuthorChatAccept{}
+			err = proto.Unmarshal(item.Payload, chatAccept)
+			checkErr(err)
+			if event {
+				ac.callEvent(authorChatAcceptEvent, &AuthorChatAccept{
+					ChatID:     chatAccept.AuthorChatId,
+					SignalInfo: chatAccept.AryaSignalInfo,
+				})
+			}
+		case "CommonStateSignalAuthorChatReady":
+			chatReady := &acproto.CommonStateSignalAuthorChatReady{}
+			err = proto.Unmarshal(item.Payload, chatReady)
+			checkErr(err)
+			inviter := UserInfo{
+				UserID:   chatReady.InviterUserInfo.Player.UserId,
+				Nickname: chatReady.InviterUserInfo.Player.Nickname,
+			}
+			ac.t.getMoreInfo(&inviter, chatReady.InviterUserInfo.Player)
+			invitee := UserInfo{
+				UserID:   chatReady.InviteeUserInfo.Player.UserId,
+				Nickname: chatReady.InviteeUserInfo.Player.Nickname,
+			}
+			ac.t.getMoreInfo(&invitee, chatReady.InviteeUserInfo.Player)
+			if event {
+				ac.callEvent(authorChatReadyEvent, &AuthorChatReady{
+					Inviter: AuthorChatPlayerInfo{
+						UserInfo:               inviter,
+						LiveID:                 chatReady.InviterUserInfo.LiveId,
+						EnableJumpPeerLiveRoom: chatReady.InviterUserInfo.EnableJumpPeerLiveRoom,
+					},
+					Invitee: AuthorChatPlayerInfo{
+						UserInfo:               invitee,
+						LiveID:                 chatReady.InviteeUserInfo.LiveId,
+						EnableJumpPeerLiveRoom: chatReady.InviteeUserInfo.EnableJumpPeerLiveRoom,
+					},
+					ChatID: chatReady.AuthorChatId,
+				})
+			}
+		case "CommonStateSignalAuthorChatEnd":
+			chatEnd := &acproto.CommonStateSignalAuthorChatEnd{}
+			err = proto.Unmarshal(item.Payload, chatEnd)
+			checkErr(err)
+			if event {
+				ac.callEvent(authorChatEndEvent, &AuthorChatEnd{
+					ChatID:    chatEnd.AuthorChatId,
+					EndType:   ChatEndType(chatEnd.EndType),
+					EndLiveID: chatEnd.EndLiveId,
+				})
+			}
+		case "CommonStateSignalAuthorChatChangeSoundConfig":
+			chatConfig := &acproto.CommonStateSignalAuthorChatChangeSoundConfig{}
+			err = proto.Unmarshal(item.Payload, chatConfig)
+			checkErr(err)
+			if event {
+				ac.callEvent(authorChatChangeSoundConfigEvent, &AuthorChatChangeSoundConfig{
+					ChatID:                chatConfig.AuthorChatId,
+					SoundConfigChangeType: SoundConfigChangeType(chatConfig.SoundConfigChangeType),
 				})
 			}
 		case "CommonStateSignalCurrentRedpackList":
@@ -521,7 +601,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				redpacks[i] = r
 			}
 			if event {
-				ac.callEvent(redpackListInfo, redpacks)
+				ac.callEvent(redpackListEvent, redpacks)
 			} else {
 				ac.info.Lock()
 				ac.info.RedpackList = redpacks
@@ -549,7 +629,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, kickedOut)
 			checkErr(err)
 			if event {
-				ac.callEvent(kickedOutInfo, kickedOut.Reason)
+				ac.callEvent(kickedOutEvent, kickedOut.Reason)
 			} else {
 				ac.info.Lock()
 				ac.info.KickedOut = kickedOut.Reason
@@ -560,7 +640,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, violationAlert)
 			checkErr(err)
 			if event {
-				ac.callEvent(violationAlertInfo, violationAlert.ViolationContent)
+				ac.callEvent(violationAlertEvent, violationAlert.ViolationContent)
 			} else {
 				ac.info.Lock()
 				ac.info.ViolationAlert = violationAlert.ViolationContent
@@ -571,7 +651,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, liveManagerState)
 			checkErr(err)
 			if event {
-				ac.callEvent(managerStateInfo, liveManagerState.State)
+				ac.callEvent(managerStateEvent, liveManagerState.State)
 			} else {
 				ac.info.Lock()
 				ac.info.LiveManagerState = ManagerState(liveManagerState.State)

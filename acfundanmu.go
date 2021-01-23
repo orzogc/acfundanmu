@@ -12,7 +12,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-// 队列长度
+// 弹幕队列长度
 const queueLen = 1000
 
 // ManagerType 就是房管类型
@@ -83,6 +83,20 @@ const (
 	ChatEndGuestHeartbeatTimeout
 	// ChatEndAuthorHeartbeatTimeout 连麦发起者（主播）Heartbeat超时
 	ChatEndAuthorHeartbeatTimeout
+	// ChatEndPeerLiveStopped 直播下播？
+	ChatEndPeerLiveStopped
+)
+
+// SoundConfigChangeType 声音设置更改的类型
+type SoundConfigChangeType int32
+
+const (
+	// SoundConfigChangeUnknown 未知的声音设置更改的类型
+	SoundConfigChangeUnknown SoundConfigChangeType = iota
+	// SoundConfigChangeOpenSound 打开声音
+	SoundConfigChangeOpenSound
+	// SoundConfigChangeCloseSound 关闭声音
+	SoundConfigChangeCloseSound
 )
 
 // GiftDetail 就是礼物的详细信息
@@ -240,11 +254,11 @@ type ChatCall struct {
 	CallTime int64  `json:"callTime"` // 连麦发起时间，是以毫秒为单位的Unix时间
 }
 
-// ChatAccept 用户接受连麦？一般不会出现这个信号
+// ChatAccept 用户接受连麦
 type ChatAccept struct {
-	ChatID          string        `json:"chatID"`    // 连麦ID
-	MediaType       ChatMediaType `json:"mediaType"` // 连麦类型
-	ArraySignalInfo string        `json:"arraySignalInfo"`
+	ChatID     string        `json:"chatID"`    // 连麦ID
+	MediaType  ChatMediaType `json:"mediaType"` // 连麦类型
+	SignalInfo string        `json:"signalInfo"`
 }
 
 // ChatReady 用户接受连麦的信息
@@ -258,6 +272,46 @@ type ChatReady struct {
 type ChatEnd struct {
 	ChatID  string      `json:"chatID"`  // 连麦ID
 	EndType ChatEndType `json:"endType"` // 连麦结束类型
+}
+
+// AuthorChatPlayerInfo 主播之间连麦的主播信息
+type AuthorChatPlayerInfo struct {
+	UserInfo               `json:"userInfo"`
+	LiveID                 string `json:"liveID"`                 // 直播ID
+	EnableJumpPeerLiveRoom bool   `json:"enableJumpPeerLiveRoom"` // 允许跳转到连麦的主播直播间？
+}
+
+// AuthorChatCall 主播发起连麦
+type AuthorChatCall struct {
+	Inviter  AuthorChatPlayerInfo `json:"inviter"`  // 发起连麦的主播的用户信息
+	ChatID   string               `json:"chatID"`   // 连麦ID
+	CallTime int64                `json:"callTime"` // 连麦发起时间，是以毫秒为单位的Unix时间
+}
+
+// AuthorChatAccept 主播接受连麦
+type AuthorChatAccept struct {
+	ChatID     string `json:"chatID"` // 连麦ID
+	SignalInfo string `json:"signalInfo"`
+}
+
+// AuthorChatReady 主播接受连麦的信息
+type AuthorChatReady struct {
+	Inviter AuthorChatPlayerInfo `json:"inviter"` // 发起连麦的主播的用户信息
+	Invitee AuthorChatPlayerInfo `json:"invitee"` // 接受连麦的主播的用户信息
+	ChatID  string               `json:"chatID"`  // 连麦ID
+}
+
+// AuthorChatEnd 主播连麦结束
+type AuthorChatEnd struct {
+	ChatID    string      `json:"chatID"`    // 连麦ID
+	EndType   ChatEndType `json:"endType"`   // 连麦结束类型
+	EndLiveID string      `json:"endLiveID"` // 结束连麦的直播ID
+}
+
+// AuthorChatChangeSoundConfig 主播连麦更改声音设置
+type AuthorChatChangeSoundConfig struct {
+	ChatID                string                `json:"chatID"`                // 连麦ID
+	SoundConfigChangeType SoundConfigChangeType `json:"soundConfigChangeType"` // 声音设置更改的类型
 }
 
 // Cookies 就是AcFun帐号的cookies
