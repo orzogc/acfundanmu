@@ -46,7 +46,8 @@ const (
 	playbackURL        = "https://api.kuaishouzt.com/rest/zt/live/playBack/startPlay?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	userMedalURL       = "https://live.acfun.cn/rest/pc-direct/fansClub/user/info?userId=%d"
 	medalRankURL       = "https://live.acfun.cn/rest/pc-direct/fansClub/friendshipDegreeRankInfo?uperId=%d"
-	medalInfoURL       = "https://api-new.app.acfun.cn/rest/app/fansClub/live/medalInfo?uperId=%d"
+	medalDetailURL     = "https://api-new.app.acfun.cn/rest/app/fansClub/fans/medal/detail?uperId=%d"
+	medalListURL       = "https://api-new.app.acfun.cn/rest/app/fansClub/live/medalInfo?uperId=%d"
 	liveInfoURL        = "https://api-new.app.acfun.cn/rest/app/live/info?authorId=%d"
 	liveListURL        = "https://api-new.app.acfun.cn/rest/app/live/channel"
 )
