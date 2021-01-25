@@ -905,8 +905,8 @@ func (ac *AcFunLive) GetGiftList() map[int64]GiftDetail {
 	return gifts
 }
 
-// GetAllGift 返回全部礼物的数据，不需要设置主播uid，不需要调用StartDanmu()
-func (ac *AcFunLive) GetAllGift() (map[int64]GiftDetail, error) {
+// GetAllGiftList 返回全部礼物的数据，不需要设置主播uid，不需要调用StartDanmu()
+func (ac *AcFunLive) GetAllGiftList() (map[int64]GiftDetail, error) {
 	return ac.t.getAllGift()
 }
 
