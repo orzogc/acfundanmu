@@ -42,30 +42,28 @@ type Medal struct {
 // MedalDegree 就是守护徽章的亲密度信息
 type MedalDegree struct {
 	UperID               int64 `json:"uperID"`               // UP主的uid
-	GiftDegree           int   `json:"giftDegree"`           // 送直播礼物增加的亲密度
-	GiftDegreeLimit      int   `json:"giftDegreeLimit"`      // 送直播礼物增加的亲密度上限
-	PeachDegree          int   `json:"peachDegree"`          // 投桃增加的亲密度
-	PeachDegreeLimit     int   `json:"peachDegreeLimit"`     // 投桃增加的亲密度上限
-	LiveWatchDegree      int   `json:"liveWatchDegree"`      // 看直播时长增加的亲密度
-	LiveWatchDegreeLimit int   `json:"liveWatchDegreeLimit"` // 看直播时长增加的亲密度上限
-	BananaDegree         int   `json:"bananaDegree"`         // 投蕉增加的亲密度
-	BananaDegreeLimit    int   `json:"bananaDegreeLimit"`    // 投蕉增加的亲密度上限
+	GiftDegree           int   `json:"giftDegree"`           // 本日送直播礼物增加的亲密度
+	GiftDegreeLimit      int   `json:"giftDegreeLimit"`      // 本日送直播礼物增加的亲密度上限
+	PeachDegree          int   `json:"peachDegree"`          // 本日投桃增加的亲密度
+	PeachDegreeLimit     int   `json:"peachDegreeLimit"`     // 本日投桃增加的亲密度上限
+	LiveWatchDegree      int   `json:"liveWatchDegree"`      // 本日看直播时长增加的亲密度
+	LiveWatchDegreeLimit int   `json:"liveWatchDegreeLimit"` // 本日看直播时长增加的亲密度上限
+	BananaDegree         int   `json:"bananaDegree"`         // 本日投蕉增加的亲密度
+	BananaDegreeLimit    int   `json:"bananaDegreeLimit"`    // 本日投蕉增加的亲密度上限
 }
 
 // MedalDetail 就是登陆用户的守护徽章的详细信息
 type MedalDetail struct {
 	Medal       Medal       `json:"medal"`       // 守护徽章信息
 	MedalDegree MedalDegree `json:"medalDegree"` // 守护徽章亲密度信息
-	UserRank    int         `json:"userRank"`    // 登陆用户的主播守护徽章的排名
+	UserRank    int         `json:"userRank"`    // 登陆用户的主播守护徽章亲密度的排名
+	ClubName    string      `json:"clubName"`    // 守护徽章名字
 }
 
 // MedalList 就是登陆用户拥有的守护徽章列表
 type MedalList struct {
 	MedalList   []Medal     `json:"medalList"`   // 用户拥有的守护徽章列表
-	Medal       Medal       `json:"medal"`       // 用户的指定主播的守护徽章信息
-	MedalDegree MedalDegree `json:"medalDegree"` // 用户的指定主播的守护徽章亲密度信息
-	ClubName    string      `json:"clubName"`    // 指定主播的守护徽章名字
-	UserRank    int         `json:"userRank"`    // 用户的指定主播守护徽章的排名
+	MedalDetail MedalDetail `json:"medalDetail"` // 用户的指定主播的守护徽章详细信息
 }
 
 // LuckyUser 就是抢到红包的用户，没有Medal和ManagerType
@@ -656,6 +654,7 @@ func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 			log.Printf("守护徽章详细信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
 	})
+	medal.ClubName = medal.Medal.ClubName
 
 	return medal, nil
 }
@@ -697,19 +696,19 @@ func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 		case "liveGiftConfig": // 忽略
 		case "medalList":
 			list := v.GetArray()
-			medalList.MedalList = make([]Medal, len(list))
-			for i, l := range list {
-				medalList.MedalList[i] = *getMedalJSON(l, t.UserID)
+			medalList.MedalList = make([]Medal, 0, len(list))
+			for _, l := range list {
+				medalList.MedalList = append(medalList.MedalList, *getMedalJSON(l, t.UserID))
 			}
 		case "medal":
-			medalList.Medal = *getMedalJSON(v, t.UserID)
+			medalList.MedalDetail.Medal = *getMedalJSON(v, t.UserID)
 		case "medalDegreeLimit":
-			medalList.MedalDegree = *getMedalDegreeJSON(v)
-		case "clubName":
-			medalList.ClubName = string(v.GetStringBytes())
+			medalList.MedalDetail.MedalDegree = *getMedalDegreeJSON(v)
 		case "rankIndex":
-			medalList.UserRank, err = strconv.Atoi(string(v.GetStringBytes()))
+			medalList.MedalDetail.UserRank, err = strconv.Atoi(string(v.GetStringBytes()))
 			checkErr(err)
+		case "clubName":
+			medalList.MedalDetail.ClubName = string(v.GetStringBytes())
 		default:
 			log.Printf("登陆帐号拥有的守护徽章列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
