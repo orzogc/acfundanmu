@@ -67,8 +67,9 @@ const (
 	obsConfigURL     = "https://api.kuaishouzt.com/rest/zt/live/web/obs/config?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	obsStatusURL     = "https://api.kuaishouzt.com/rest/zt/live/web/obs/status?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	transcodeInfoURL = "https://api.kuaishouzt.com/rest/zt/live/web/obs/transcodeInfo?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	startPushURL     = `https://api.kuaishouzt.com/rest/zt/live/web/obs/startPush?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&acfun.midground.api_st=%s&videoPushReq=&caption=%s&streamName=%s&isPanoramic=%v&bizCustomData=`
+	startPushURL     = `https://api.kuaishouzt.com/rest/zt/live/web/obs/startPush?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&acfun.midground.api_st=%s&videoPushReq=&streamName=%s&isPanoramic=%v`
 	stopPushURL      = "https://api.kuaishouzt.com/rest/zt/live/web/obs/stopPush?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	changeCoverURL   = `https://api.kuaishouzt.com/rest/zt/live/web/changeCover?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&acfun.midground.api_st=%s&videoPushReq=&liveId=%s`
 )
 
 type token struct {

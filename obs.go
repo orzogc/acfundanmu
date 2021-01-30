@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -389,8 +388,48 @@ func (t *token) getTranscodeInfo(streamName string) (info []TranscodeInfo, e err
 	return info, nil
 }
 
+func fileFormData(file string) (data []byte, contentType string, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("fileFormData() error: %w", err)
+		}
+	}()
+
+	f, err := os.Open(file)
+	checkErr(err)
+	defer f.Close()
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+	//defer w.Close()
+	fw, err := w.CreateFormFile("cover", filepath.Base(file))
+	checkErr(err)
+	_, err = io.Copy(fw, f)
+	checkErr(err)
+	err = w.Close()
+	checkErr(err)
+
+	return buf.Bytes(), w.FormDataContentType(), nil
+}
+
+func pushQuery(title string, liveType *LiveType) (query string) {
+	args := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(args)
+	if title != "" {
+		args.Set("caption", title)
+	}
+	if liveType != nil {
+		args.Set("bizCustomData", fmt.Sprintf(pushType, liveType.SubCategoryID, liveType.CategoryID, liveType.SubCategoryID))
+	}
+	query = args.String()
+	if query != "" {
+		query = "&" + query
+	}
+
+	return query
+}
+
 // 启动直播
-func (t *token) startLive(coverFile, title, streamName string, isPanoramic bool, liveType *LiveType) (liveID string, e error) {
+func (t *token) startLive(title, coverFile, streamName string, isPanoramic bool, liveType *LiveType) (liveID string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("startLive() error: %w", err)
@@ -401,26 +440,21 @@ func (t *token) startLive(coverFile, title, streamName string, isPanoramic bool,
 		panic(fmt.Errorf("启动直播需要登陆AcFun帐号"))
 	}
 
-	file, err := os.Open(coverFile)
-	checkErr(err)
-	defer file.Close()
-	var buf bytes.Buffer
-	w := multipart.NewWriter(&buf)
-	//defer w.Close()
-	fw, err := w.CreateFormFile("cover", filepath.Base(coverFile))
-	checkErr(err)
-	_, err = io.Copy(fw, file)
-	checkErr(err)
-	err = w.Close()
-	checkErr(err)
+	var data []byte
+	contentType := formContentType
+	var err error
+	if coverFile != "" {
+		data, contentType, err = fileFormData(coverFile)
+		checkErr(err)
+	}
+	query := pushQuery(title, liveType)
 
-	uri := fmt.Sprintf(startPushURL, t.UserID, t.DeviceID, t.ServiceToken, url.QueryEscape(title), streamName, isPanoramic) +
-		url.QueryEscape(fmt.Sprintf(pushType, liveType.SubCategoryID, liveType.CategoryID, liveType.SubCategoryID))
+	uri := fmt.Sprintf(startPushURL, t.UserID, t.DeviceID, t.ServiceToken, streamName, isPanoramic) + query
 	client := &httpClient{
 		url:         uri,
-		body:        buf.Bytes(),
+		body:        data,
 		method:      "POST",
-		contentType: w.FormDataContentType(),
+		contentType: contentType,
 		referer:     t.livePage,
 	}
 	body, err := client.request()
@@ -439,10 +473,10 @@ func (t *token) startLive(coverFile, title, streamName string, isPanoramic bool,
 }
 
 // 停止直播
-func (t *token) stopPush(liveID string) (info *StopPushInfo, e error) {
+func (t *token) stopLive(liveID string) (info *StopPushInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("stopPush() error: %w", err)
+			e = fmt.Errorf("stopLive() error: %w", err)
 		}
 	}()
 
@@ -477,6 +511,48 @@ func (t *token) stopPush(liveID string) (info *StopPushInfo, e error) {
 	})
 
 	return info, nil
+}
+
+// 更改直播间标题和封面
+func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("changeTitleAndCover() error: %w", err)
+		}
+	}()
+
+	if len(t.Cookies) == 0 {
+		panic(fmt.Errorf("更改直播间标题和封面需要登陆AcFun帐号"))
+	}
+
+	var data []byte
+	contentType := formContentType
+	var err error
+	if coverFile != "" {
+		data, contentType, err = fileFormData(coverFile)
+		checkErr(err)
+	}
+	query := pushQuery(title, nil)
+
+	uri := fmt.Sprintf(changeCoverURL, t.UserID, t.DeviceID, t.ServiceToken, liveID) + query
+	client := &httpClient{
+		url:         uri,
+		body:        data,
+		method:      "POST",
+		contentType: contentType,
+		referer:     t.livePage,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	var p fastjson.Parser
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if v.GetInt("result") != 1 {
+		panic(fmt.Errorf("更改直播间标题和封面失败，响应为 %s", string(body)))
+	}
+
+	return nil
 }
 
 // CheckLiveAuth 检测登陆帐号是否有直播权限，不需要设置主播uid，不需要调用StartDanmu()
@@ -514,12 +590,18 @@ func (ac *AcFunLive) GetTranscodeInfo(streamName string) ([]TranscodeInfo, error
 	return ac.t.getTranscodeInfo(streamName)
 }
 
-// StartLive 启动直播，coverFile为直播间封面图片（可以是gif）的路径，isPanoramic为是否全景直播，推流成功服务器开始转码后调用，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
-func (ac *AcFunLive) StartLive(coverFile, title, streamName string, isPanoramic bool, liveType *LiveType) (liveID string, e error) {
-	return ac.t.startLive(coverFile, title, streamName, isPanoramic, liveType)
+// StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的路径，isPanoramic为是否全景直播，推流成功服务器开始转码后调用
+// 需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+func (ac *AcFunLive) StartLive(title, coverFile, streamName string, isPanoramic bool, liveType *LiveType) (liveID string, e error) {
+	return ac.t.startLive(title, coverFile, streamName, isPanoramic, liveType)
 }
 
-// StopPush 停止直播，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
-func (ac *AcFunLive) StopPush(liveID string) (*StopPushInfo, error) {
-	return ac.t.stopPush(liveID)
+// StopLive 停止直播，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+func (ac *AcFunLive) StopLive(liveID string) (*StopPushInfo, error) {
+	return ac.t.stopLive(liveID)
+}
+
+// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的路径，不需要设置主播uid，不需要调用StartDanmu()
+func (ac *AcFunLive) ChangeTitleAndCover(title, coverFile, liveID string) error {
+	return ac.t.changeTitleAndCover(title, coverFile, liveID)
 }

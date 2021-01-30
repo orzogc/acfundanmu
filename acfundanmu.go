@@ -383,6 +383,9 @@ type Option func(*AcFunLive)
 
 // SetLiverUID 设置主播uid
 func SetLiverUID(uid int64) Option {
+	if uid <= 0 {
+		return func(ac *AcFunLive) {}
+	}
 	return func(ac *AcFunLive) {
 		ac.t.liverUID = uid
 		ac.t.livePage = fmt.Sprintf(liveURL, uid)
@@ -398,6 +401,9 @@ func SetCookies(cookies Cookies) Option {
 
 // SetTokenInfo 设置TokenInfo
 func SetTokenInfo(tokenInfo *TokenInfo) Option {
+	if tokenInfo == nil {
+		return func(ac *AcFunLive) {}
+	}
 	return func(ac *AcFunLive) {
 		ac.t.TokenInfo = TokenInfo{
 			UserID:       tokenInfo.UserID,
