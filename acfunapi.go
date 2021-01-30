@@ -23,9 +23,12 @@ type BillboardUser WatchingUser
 
 // Summary 就是直播的总结信息
 type Summary struct {
-	LiveDuration int64  `json:"liveDuration"` // 直播时长，单位为毫秒
-	LikeCount    string `json:"likeCount"`    // 点赞总数
-	WatchCount   string `json:"watchCount"`   // 观看过直播的人数总数
+	Duration     int64 `json:"duration"`     // 直播时长，单位为毫秒
+	LikeCount    int   `json:"likeCount"`    // 点赞总数
+	WatchCount   int   `json:"watchCount"`   // 观看过直播的人数总数
+	GiftCount    int   `json:"giftCount"`    // 直播收到的付费礼物数量
+	DiamondCount int   `json:"diamondCount"` // 直播收到的付费礼物对应的钻石数量，100钻石=1AC币
+	BananaCount  int   `json:"bananaCount"`  // 直播收到的香蕉数量
 }
 
 // Medal 就是登陆帐号的守护徽章信息
@@ -256,16 +259,23 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 		panic(fmt.Errorf("获取直播总结信息失败，响应为 %s", string(body)))
 	}
 
-	summary = &Summary{}
+	summary = new(Summary)
 	o := v.GetObject("data")
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
 		case "liveDurationMs":
-			summary.LiveDuration = v.GetInt64()
+			summary.Duration = v.GetInt64()
 		case "likeCount":
-			summary.LikeCount = string(v.GetStringBytes())
+			summary.LikeCount, err = strconv.Atoi(string(v.GetStringBytes()))
+			checkErr(err)
 		case "watchCount":
-			summary.WatchCount = string(v.GetStringBytes())
+			summary.WatchCount, err = strconv.Atoi(string(v.GetStringBytes()))
+			checkErr(err)
+		case "payWalletTypeToReceiveCount":
+			summary.GiftCount = v.GetInt("1")
+		case "payWalletTypeToReceiveCurrency":
+			summary.DiamondCount = v.GetInt("1")
+			summary.BananaCount = v.GetInt("2")
 		default:
 			log.Printf("直播总结信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
@@ -739,7 +749,7 @@ func getUserMedal(uid int64) (medal *Medal, e error) {
 		panic(fmt.Errorf("获取指定用户正在佩戴的守护徽章信息失败，响应为 %s", string(body)))
 	}
 
-	medal = &Medal{}
+	medal = new(Medal)
 	o := v.GetObject("wearMedalInfo")
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
@@ -1022,7 +1032,7 @@ func (ac *AcFunLive) GetSummaryWithLiveID(liveID string) (*Summary, error) {
 	return ac.t.getSummary(liveID)
 }
 
-// GetLuckList 返回抢到红包的用户列表，需要调用Login()登陆AcFun帐号，不需要调用StartDanmu()
+// GetLuckList 返回抢到红包的用户列表，需要登陆AcFun帐号，不需要调用StartDanmu()
 func (ac *AcFunLive) GetLuckList(liveID, redpackID string) ([]LuckyUser, error) {
 	return ac.t.getLuckList(liveID, redpackID)
 }
@@ -1046,27 +1056,27 @@ func (ac *AcFunLive) GetAllGiftList() (map[int64]GiftDetail, error) {
 	return ac.t.getAllGift()
 }
 
-// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要调用Login()登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetWalletBalance() (accoins int, bananas int, e error) {
 	return ac.t.getWalletBalance()
 }
 
-// GetKickHistory 返回主播踢人的历史记录，需要调用Login()登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
+// GetKickHistory 返回主播踢人的历史记录，需要登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
 func (ac *AcFunLive) GetKickHistory() (e error) {
 	return ac.t.getKickHistory()
 }
 
-// GetManagerList 返回主播的房管列表，需要调用Login()登陆主播的AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetManagerList 返回主播的房管列表，需要登陆主播的AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetManagerList() ([]Manager, error) {
 	return ac.t.getManagerList()
 }
 
-// GetMedalDetail 返回登陆帐号拥有的指定主播的守护徽章详细信息，需要调用Login()登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetMedalDetail 返回登陆帐号拥有的指定主播的守护徽章详细信息，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetMedalDetail(uid int64) (*MedalDetail, error) {
 	return ac.t.getMedalDetail(uid)
 }
 
-// GetMedalList 返回登陆用户拥有的守护徽章列表，uid为想要获取守护徽章详细信息的主播的uid，可以为0，可用于获取指定主播的守护徽章名字，需要调用Login()登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetMedalList 返回登陆用户拥有的守护徽章列表，uid为想要获取守护徽章详细信息的主播的uid，可以为0，可用于获取指定主播的守护徽章名字，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
 func (ac *AcFunLive) GetMedalList(uid int64) (*MedalList, error) {
 	return ac.t.getMedalList(uid)
 }

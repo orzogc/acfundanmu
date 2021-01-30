@@ -57,6 +57,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 
 	if len(c.body) != 0 {
 		req.SetBody(c.body)
+		//req.Header.SetContentLength(len(c.body))
 	}
 
 	if c.method != "" {

@@ -104,14 +104,14 @@ type GiftDetail struct {
 	GiftID                 int64  `json:"giftID"`                 // 礼物ID
 	GiftName               string `json:"giftName"`               // 礼物名字
 	ARLiveName             string `json:"arLiveName"`             // 不为空时礼物属于虚拟偶像区的特殊礼物
-	PayWalletType          int    `json:"payWalletType"`          // 1为非免费礼物，2为免费礼物
-	Price                  int    `json:"price"`                  // 礼物价格，非免费礼物时单位为AC币，免费礼物（香蕉）时为1
+	PayWalletType          int    `json:"payWalletType"`          // 1为付费礼物，2为免费礼物
+	Price                  int    `json:"price"`                  // 礼物价格，付费礼物时单位为AC币，免费礼物（香蕉）时为1
 	WebpPic                string `json:"webpPic"`                // 礼物的webp格式图片（动图）
 	PngPic                 string `json:"pngPic"`                 // 礼物的png格式图片（大）
 	SmallPngPic            string `json:"smallPngPic"`            // 礼物的png格式图片（小）
 	AllowBatchSendSizeList []int  `json:"allowBatchSendSizeList"` // 网页或APP单次能够赠送的礼物数量列表
-	CanCombo               bool   `json:"canCombo"`               // 是否能连击，一般免费礼物（香蕉）不能连击，其余能连击
-	CanDraw                bool   `json:"canDraw"`                // 是否能涂鸦？
+	CanCombo               bool   `json:"canCombo"`               // 是否能连击
+	CanDraw                bool   `json:"canDraw"`                // 是否能涂鸦
 	MagicFaceID            int    `json:"magicFaceID"`
 	Description            string `json:"description"`  // 礼物的描述
 	RedpackPrice           int    `json:"redpackPrice"` // 礼物红包价格总额，单位为AC币
@@ -212,7 +212,7 @@ type Gift struct {
 	GiftDetail          `json:"giftDetail"`
 	Count               int32        `json:"count"`               // 礼物单次赠送的数量，礼物总数是Count * Combo
 	Combo               int32        `json:"combo"`               // 礼物连击数量，礼物总数是Count * Combo
-	Value               int64        `json:"value"`               // 礼物价值，非免费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
+	Value               int64        `json:"value"`               // 礼物价值，付费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID             string       `json:"comboID"`             // 礼物连击ID
 	SlotDisplayDuration int64        `json:"slotDisplayDuration"` // 应该是礼物动画持续的时间，单位为毫秒，送礼物后在该时间内再送一次可以实现礼物连击
 	ExpireDuration      int64        `json:"ExpireDuration"`
@@ -330,8 +330,8 @@ type TokenInfo struct {
 type StreamURL struct {
 	URL         string `json:"url"`         // 直播源链接
 	Bitrate     int    `json:"bitrate"`     // 直播源码率，不一定是实际码率
-	QualityType string `json:"qualityType"` // 直播源类型，一般是"STANDARD"、"HIGH"、"SUPER"、"BLUE_RAY"
-	QualityName string `json:"qualityName"` // 直播源类型的中文名字，一般是"高清"、"超清"、"蓝光 4M"、"蓝光 5M"、"蓝光 6M"、"蓝光 7M"、"蓝光 8M"
+	QualityType string `json:"qualityType"` // 直播源类型，一般是"SMOOTH"、"STANDARD"、"HIGH"、"SUPER"、"BLUE_RAY"
+	QualityName string `json:"qualityName"` // 直播源类型的中文名字，一般是"流畅"、"高清"、"超清"、"蓝光 4M"、"蓝光 5M"、"蓝光 6M"、"蓝光 7M"、"蓝光 8M"
 }
 
 // StreamInfo 就是直播的直播源信息

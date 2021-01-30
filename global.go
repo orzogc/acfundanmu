@@ -8,7 +8,7 @@ const (
 	visitorSt      = "acfun.api.visitor_st"
 	midgroundSt    = "acfun.midground.api_st"
 	acfunSignInURL = "https://id.app.acfun.cn/rest/web/login/signin"
-	liveHost       = "https://live.acfun.cn/"
+	liveHost       = "https://live.acfun.cn"
 	liveURL        = "https://live.acfun.cn/live/%d"
 	loginURL       = "https://id.app.acfun.cn/rest/app/visitor/login"
 	getTokenURL    = "https://id.app.acfun.cn/rest/web/token/get"
@@ -31,6 +31,7 @@ const (
 	retryCount uint32 = 1
 
 	formContentType = "application/x-www-form-urlencoded"
+	pushType        = `{"typeId":%d,"type":[%d,%d]}`
 )
 
 const (
@@ -62,7 +63,12 @@ const (
 const (
 	checkLiveAuthURL = "https://member.acfun.cn/common/api/checkLiveAuth"
 	liveTypeListURL  = "https://member.acfun.cn/common/api/getLiveTypeList"
+	getQiniuTokenURL = "https://member.acfun.cn/common/api/getQiniuToken"
 	obsConfigURL     = "https://api.kuaishouzt.com/rest/zt/live/web/obs/config?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	obsStatusURL     = "https://api.kuaishouzt.com/rest/zt/live/web/obs/status?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	transcodeInfoURL = "https://api.kuaishouzt.com/rest/zt/live/web/obs/transcodeInfo?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	startPushURL     = `https://api.kuaishouzt.com/rest/zt/live/web/obs/startPush?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&acfun.midground.api_st=%s&videoPushReq=&caption=%s&streamName=%s&isPanoramic=%v&bizCustomData=`
+	stopPushURL      = "https://api.kuaishouzt.com/rest/zt/live/web/obs/stopPush?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 )
 
 type token struct {
