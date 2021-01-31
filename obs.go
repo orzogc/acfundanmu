@@ -555,27 +555,27 @@ func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 	return nil
 }
 
-// CheckLiveAuth 检测登陆帐号是否有直播权限，不需要设置主播uid，不需要调用StartDanmu()
+// CheckLiveAuth 检测登陆帐号是否有直播权限，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) CheckLiveAuth() (bool, error) {
 	return ac.t.checkLiveAuth()
 }
 
-// GetLiveTypeList 返回直播分类列表，不需要设置主播uid，不需要调用StartDanmu()
+// GetLiveTypeList 返回直播分类列表
 func (ac *AcFunLive) GetLiveTypeList() ([]LiveType, error) {
 	return ac.t.getLiveTypeList()
 }
 
-// GetOBSConfig 返回OBS推流设置，需要登陆主播的AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetOBSConfig 返回OBS推流设置，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) GetOBSConfig() (*OBSConfig, error) {
 	return ac.t.getOBSConfig()
 }
 
-// GetOBSStatus 返回OBS直播状态，需要登陆主播的AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetOBSStatus 返回OBS直播状态，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) GetOBSStatus() (*OBSStatus, error) {
 	return ac.t.getOBSStatus()
 }
 
-// GetQiniuToken 返回七牛云上传token，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetQiniuToken 返回七牛云上传token，需要登陆AcFun帐号
 func (ac *AcFunLive) GetQiniuToken() (*QiniuToken, error) {
 	return ac.t.getQiniuToken()
 }
@@ -585,23 +585,23 @@ func (token *QiniuToken) UploadImage(file string) (fileURL string, e error) {
 	return token.uploadImage(file)
 }
 
-// GetTranscodeInfo 返回转码信息，OBS推流后调用，返回的info长度不为0说明推流成功，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetTranscodeInfo 返回转码信息，OBS推流后调用，返回的info长度不为0说明推流成功，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) GetTranscodeInfo(streamName string) ([]TranscodeInfo, error) {
 	return ac.t.getTranscodeInfo(streamName)
 }
 
 // StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的路径，portrait为是否手机直播，panoramic为是否全景直播。
-// 推流成功服务器开始转码（用GetTranscodeInfo()判断）后调用，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// 推流成功服务器开始转码（用GetTranscodeInfo()判断）后调用，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) StartLive(title, coverFile, streamName string, portrait, panoramic bool, liveType *LiveType) (liveID string, e error) {
 	return ac.t.startLive(title, coverFile, streamName, portrait, panoramic, liveType)
 }
 
-// StopLive 停止直播，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// StopLive 停止直播，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) StopLive(liveID string) (*StopPushInfo, error) {
 	return ac.t.stopLive(liveID)
 }
 
-// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的路径，不需要设置主播uid，不需要调用StartDanmu()
+// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的路径，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) ChangeTitleAndCover(title, coverFile, liveID string) error {
 	return ac.t.changeTitleAndCover(title, coverFile, liveID)
 }

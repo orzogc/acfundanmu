@@ -1007,42 +1007,42 @@ func (pb *Playback) Distinguish() (aliURL, txURL string) {
 	return aliURL, txURL
 }
 
-// GetWatchingList 返回直播间排名前50的在线观众信息列表，不需要调用StartDanmu()
+// GetWatchingList 返回直播间排名前50的在线观众信息列表，需要设置主播uid
 func (ac *AcFunLive) GetWatchingList() ([]WatchingUser, error) {
 	return ac.t.getWatchingList(ac.t.liveID)
 }
 
-// GetWatchingListWithLiveID 返回直播间排名前50的在线观众信息列表，需要liveID，不需要设置主播uid，不需要调用StartDanmu()
+// GetWatchingListWithLiveID 返回直播间排名前50的在线观众信息列表
 func (ac *AcFunLive) GetWatchingListWithLiveID(liveID string) ([]WatchingUser, error) {
 	return ac.t.getWatchingList(liveID)
 }
 
-// GetBillboard 返回指定主播最近七日内的礼物贡献榜前50名观众的详细信息，不需要设置主播uid，不需要调用StartDanmu()
+// GetBillboard 返回指定uid的主播最近七日内的礼物贡献榜前50名观众的详细信息
 func (ac *AcFunLive) GetBillboard(uid int64) ([]BillboardUser, error) {
 	return ac.t.getBillboard(uid)
 }
 
-// GetSummary 返回直播总结信息，不需要调用StartDanmu()
+// GetSummary 返回直播总结信息，需要设置主播uid
 func (ac *AcFunLive) GetSummary() (*Summary, error) {
 	return ac.t.getSummary(ac.t.liveID)
 }
 
-// GetSummaryWithLiveID 返回直播总结信息，需要liveID，不需要设置主播uid，不需要调用StartDanmu()
+// GetSummaryWithLiveID 返回直播总结信息
 func (ac *AcFunLive) GetSummaryWithLiveID(liveID string) (*Summary, error) {
 	return ac.t.getSummary(liveID)
 }
 
-// GetLuckList 返回抢到红包的用户列表，需要登陆AcFun帐号，不需要调用StartDanmu()
+// GetLuckList 返回抢到红包的用户列表，需要登陆AcFun帐号
 func (ac *AcFunLive) GetLuckList(liveID, redpackID string) ([]LuckyUser, error) {
 	return ac.t.getLuckList(liveID, redpackID)
 }
 
-// GetPlayback 返回直播回放的相关信息，需要liveID，不需要设置主播uid，不需要调用StartDanmu()，目前部分直播没有回放
+// GetPlayback 返回直播回放的相关信息，目前部分直播没有回放
 func (ac *AcFunLive) GetPlayback(liveID string) (*Playback, error) {
 	return ac.t.getPlayback(liveID)
 }
 
-// GetGiftList 返回指定主播直播间的礼物数据，不需要调用StartDanmu()
+// GetGiftList 返回指定主播直播间的礼物数据，需要设置主播uid
 func (ac *AcFunLive) GetGiftList() map[int64]GiftDetail {
 	gifts := make(map[int64]GiftDetail)
 	for k, v := range ac.t.gifts {
@@ -1051,52 +1051,52 @@ func (ac *AcFunLive) GetGiftList() map[int64]GiftDetail {
 	return gifts
 }
 
-// GetAllGiftList 返回全部礼物的数据，不需要设置主播uid，不需要调用StartDanmu()
+// GetAllGiftList 返回全部礼物的数据
 func (ac *AcFunLive) GetAllGiftList() (map[int64]GiftDetail, error) {
 	return ac.t.getAllGift()
 }
 
-// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要登陆AcFun帐号
 func (ac *AcFunLive) GetWalletBalance() (accoins int, bananas int, e error) {
 	return ac.t.getWalletBalance()
 }
 
-// GetKickHistory 返回主播踢人的历史记录，需要登陆主播的AcFun帐号，不需要调用StartDanmu()，未测试
+// GetKickHistory 返回主播踢人的历史记录，需要登陆主播的AcFun帐号，未测试
 func (ac *AcFunLive) GetKickHistory() (e error) {
 	return ac.t.getKickHistory()
 }
 
-// GetManagerList 返回主播的房管列表，需要登陆主播的AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetManagerList 返回主播的房管列表，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) GetManagerList() ([]Manager, error) {
 	return ac.t.getManagerList()
 }
 
-// GetMedalDetail 返回登陆帐号拥有的指定主播的守护徽章详细信息，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetMedalDetail 返回登陆帐号拥有的指定主播的守护徽章详细信息，需要登陆AcFun帐号
 func (ac *AcFunLive) GetMedalDetail(uid int64) (*MedalDetail, error) {
 	return ac.t.getMedalDetail(uid)
 }
 
-// GetMedalList 返回登陆用户拥有的守护徽章列表，uid为想要获取守护徽章详细信息的主播的uid，可以为0，可用于获取指定主播的守护徽章名字，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// GetMedalList 返回登陆用户拥有的守护徽章列表，uid为想要获取守护徽章详细信息的主播的uid，可以为0，可用于获取指定主播的守护徽章名字，需要登陆AcFun帐号
 func (ac *AcFunLive) GetMedalList(uid int64) (*MedalList, error) {
 	return ac.t.getMedalList(uid)
 }
 
-// GetUserLiveInfo 返回uid指定用户的直播信息，不需要设置主播uid，不需要调用StartDanmu()
+// GetUserLiveInfo 返回uid指定用户的直播信息
 func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, ac.t.Cookies)
 }
 
-// GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），可用于获取指定主播的守护徽章名字，不需要设置主播uid，不需要调用StartDanmu()
+// GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），可用于获取指定主播的守护徽章名字
 func (ac *AcFunLive) GetMedalRankList(uid int64) (medalRankList *MedalRankList, e error) {
 	return getMedalRankList(uid, ac.t.Cookies)
 }
 
-// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），不需要设置主播uid，不需要调用StartDanmu()
+// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起）
 func (ac *AcFunLive) GetLiveList(count int, page int) ([]UserLiveInfo, error) {
 	return getLiveList(count, page, ac.t.Cookies)
 }
 
-// GetAllLiveList 返回全部正在直播的直播间列表，不需要设置主播uid，不需要调用StartDanmu()
+// GetAllLiveList 返回全部正在直播的直播间列表
 func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(ac.t.Cookies)
 }

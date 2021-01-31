@@ -122,22 +122,22 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 	return nil
 }
 
-// ManagerKick 房管踢人，需要登陆AcFun帐号，不需要调用StartDanmu()
+// ManagerKick 房管踢人，需要登陆AcFun帐号，需要设置主播uid
 func (ac *AcFunLive) ManagerKick(kickedUID int64) error {
 	return ac.t.managerKick(kickedUID)
 }
 
-// AuthorKick 主播踢人，需要登陆AcFun帐号，不需要调用StartDanmu()
+// AuthorKick 主播踢人，需要登陆AcFun帐号，需要设置主播uid
 func (ac *AcFunLive) AuthorKick(kickedUID int64) error {
 	return ac.t.authorKick(kickedUID)
 }
 
-// AddManager 主播添加房管，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// AddManager 主播添加房管，需要登陆AcFun帐号
 func (ac *AcFunLive) AddManager(managerUID int64) error {
 	return ac.t.addManager(managerUID)
 }
 
-// DeleteManager 主播删除房管，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+// DeleteManager 主播删除房管，需要登陆AcFun帐号
 func (ac *AcFunLive) DeleteManager(managerUID int64) error {
 	return ac.t.deleteManager(managerUID)
 }
