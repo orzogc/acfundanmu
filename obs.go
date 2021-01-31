@@ -32,13 +32,13 @@ type PushConfig struct {
 	StreamPullAddress string   `json:"streamPullAddress"` // 拉流地址，也就是直播源地址
 	StreamPushAddress []string `json:"streamPushAddress"` // 推流地址，目前分为阿里云和腾讯云两种
 	Panoramic         bool     `json:"panoramic"`         // 是否全景直播
-	Interval          int64    `json:"interval"`          // 发送TranscodeInfo的时间间隔，单位为毫秒
+	Interval          int64    `json:"interval"`          // 查询转码信息的时间间隔，单位为毫秒
 	RTMPServer        string   `json:"rtmpServer"`        // RTMP服务器
 	StreamKey         string   `json:"streamKey"`         // 直播码/串流密钥
 }
 
-// PushStatus 就是推流状态
-type PushStatus struct {
+// LiveStatus 就是直播状态
+type LiveStatus struct {
 	LiveID        string `json:"liveID"`        // 直播ID
 	StreamName    string `json:"streamName"`    // 直播源名字
 	Title         string `json:"title"`         // 直播间标题
@@ -210,16 +210,16 @@ func (t *token) getPushConfig() (config *PushConfig, e error) {
 	return config, nil
 }
 
-// 获取推流状态
-func (t *token) getPushStatus() (status *PushStatus, e error) {
+// 获取直播状态
+func (t *token) getLiveStatus() (status *LiveStatus, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getPushStatus() error: %w", err)
+			e = fmt.Errorf("getLiveStatus() error: %w", err)
 		}
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取推流状态需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取直播状态需要登陆AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -231,10 +231,10 @@ func (t *token) getPushStatus() (status *PushStatus, e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		panic(fmt.Errorf("获取推流状态失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("获取直播状态失败，响应为 %s", string(body)))
 	}
 
-	status = new(PushStatus)
+	status = new(LiveStatus)
 	o := v.GetObject("data")
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
@@ -255,7 +255,7 @@ func (t *token) getPushStatus() (status *PushStatus, e error) {
 		case "bizCustomData":
 			status.BizCustomData = string(v.GetStringBytes())
 		default:
-			log.Printf("推流状态里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+			log.Printf("直播状态里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
 	})
 
@@ -570,9 +570,9 @@ func (ac *AcFunLive) GetPushConfig() (*PushConfig, error) {
 	return ac.t.getPushConfig()
 }
 
-// GetPushStatus 返回推流状态，需要登陆主播的AcFun帐号
-func (ac *AcFunLive) GetPushStatus() (*PushStatus, error) {
-	return ac.t.getPushStatus()
+// GetLiveStatus 返回直播状态，需要登陆主播的AcFun帐号并启动直播后调用
+func (ac *AcFunLive) GetLiveStatus() (*LiveStatus, error) {
+	return ac.t.getLiveStatus()
 }
 
 // GetQiniuToken 返回七牛云上传token，需要登陆AcFun帐号
@@ -590,7 +590,7 @@ func (ac *AcFunLive) GetTranscodeInfo(streamName string) ([]TranscodeInfo, error
 	return ac.t.getTranscodeInfo(streamName)
 }
 
-// StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的路径，portrait为是否手机直播，panoramic为是否全景直播。
+// StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的本地路径，portrait为是否手机直播，panoramic为是否全景直播。
 // 推流成功服务器开始转码（用GetTranscodeInfo()判断）后调用，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) StartLive(title, coverFile, streamName string, portrait, panoramic bool, liveType *LiveType) (liveID string, e error) {
 	return ac.t.startLive(title, coverFile, streamName, portrait, panoramic, liveType)
@@ -601,7 +601,7 @@ func (ac *AcFunLive) StopLive(liveID string) (*StopPushInfo, error) {
 	return ac.t.stopLive(liveID)
 }
 
-// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的路径，需要登陆主播的AcFun帐号
+// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的本地路径，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) ChangeTitleAndCover(title, coverFile, liveID string) error {
 	return ac.t.changeTitleAndCover(title, coverFile, liveID)
 }
