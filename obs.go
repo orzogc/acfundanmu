@@ -26,8 +26,8 @@ type LiveType struct {
 	SubCategoryName string `json:"subCategoryName"` // 直播次分类名字
 }
 
-// OBSConfig 就是OBS的推流设置
-type OBSConfig struct {
+// PushConfig 就是推流设置
+type PushConfig struct {
 	StreamName        string   `json:"streamName"`        // 直播源名字（ID）
 	StreamPullAddress string   `json:"streamPullAddress"` // 拉流地址，也就是直播源地址
 	StreamPushAddress []string `json:"streamPushAddress"` // 推流地址，目前分为阿里云和腾讯云两种
@@ -37,8 +37,8 @@ type OBSConfig struct {
 	StreamKey         string   `json:"streamKey"`         // 直播码/串流密钥
 }
 
-// OBSStatus 就是OBS直播状态
-type OBSStatus struct {
+// PushStatus 就是推流状态
+type PushStatus struct {
 	LiveID        string `json:"liveID"`        // 直播ID
 	StreamName    string `json:"streamName"`    // 直播源名字
 	Title         string `json:"title"`         // 直播间标题
@@ -156,16 +156,16 @@ func (t *token) getLiveTypeList() (list []LiveType, e error) {
 	return list, nil
 }
 
-// 获取OBS推流设置
-func (t *token) getOBSConfig() (config *OBSConfig, e error) {
+// 获取推流设置
+func (t *token) getPushConfig() (config *PushConfig, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getOBSConfig() error: %w", err)
+			e = fmt.Errorf("getPushConfig() error: %w", err)
 		}
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取OBS推流设置需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取推流设置需要登陆AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -177,10 +177,10 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		panic(fmt.Errorf("获取OBS推流设置失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("获取推流设置失败，响应为 %s", string(body)))
 	}
 
-	config = new(OBSConfig)
+	config = new(PushConfig)
 	o := v.GetObject("data")
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
@@ -199,7 +199,7 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 		case "intervalMillis":
 			config.Interval = v.GetInt64()
 		default:
-			log.Printf("OBS推流设置里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+			log.Printf("推流设置里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
 	})
 
@@ -210,16 +210,16 @@ func (t *token) getOBSConfig() (config *OBSConfig, e error) {
 	return config, nil
 }
 
-// 获取OBS直播状态
-func (t *token) getOBSStatus() (status *OBSStatus, e error) {
+// 获取推流状态
+func (t *token) getPushStatus() (status *PushStatus, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getOBSStatus() error: %w", err)
+			e = fmt.Errorf("getPushStatus() error: %w", err)
 		}
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取OBS直播状态需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取推流状态需要登陆AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -231,10 +231,10 @@ func (t *token) getOBSStatus() (status *OBSStatus, e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
-		panic(fmt.Errorf("获取OBS直播状态失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("获取推流状态失败，响应为 %s", string(body)))
 	}
 
-	status = new(OBSStatus)
+	status = new(PushStatus)
 	o := v.GetObject("data")
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
@@ -255,7 +255,7 @@ func (t *token) getOBSStatus() (status *OBSStatus, e error) {
 		case "bizCustomData":
 			status.BizCustomData = string(v.GetStringBytes())
 		default:
-			log.Printf("OBS直播状态里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+			log.Printf("推流状态里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
 	})
 
@@ -565,14 +565,14 @@ func (ac *AcFunLive) GetLiveTypeList() ([]LiveType, error) {
 	return ac.t.getLiveTypeList()
 }
 
-// GetOBSConfig 返回OBS推流设置，需要登陆主播的AcFun帐号
-func (ac *AcFunLive) GetOBSConfig() (*OBSConfig, error) {
-	return ac.t.getOBSConfig()
+// GetPushConfig 返回推流设置，需要登陆主播的AcFun帐号
+func (ac *AcFunLive) GetPushConfig() (*PushConfig, error) {
+	return ac.t.getPushConfig()
 }
 
-// GetOBSStatus 返回OBS直播状态，需要登陆主播的AcFun帐号
-func (ac *AcFunLive) GetOBSStatus() (*OBSStatus, error) {
-	return ac.t.getOBSStatus()
+// GetPushStatus 返回推流状态，需要登陆主播的AcFun帐号
+func (ac *AcFunLive) GetPushStatus() (*PushStatus, error) {
+	return ac.t.getPushStatus()
 }
 
 // GetQiniuToken 返回七牛云上传token，需要登陆AcFun帐号
@@ -585,7 +585,7 @@ func (token *QiniuToken) UploadImage(file string) (fileURL string, e error) {
 	return token.uploadImage(file)
 }
 
-// GetTranscodeInfo 返回转码信息，OBS推流后调用，返回的info长度不为0说明推流成功，需要登陆主播的AcFun帐号
+// GetTranscodeInfo 返回转码信息，推流后调用，返回的info长度不为0说明推流成功，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) GetTranscodeInfo(streamName string) ([]TranscodeInfo, error) {
 	return ac.t.getTranscodeInfo(streamName)
 }
