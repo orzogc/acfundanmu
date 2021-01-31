@@ -230,3 +230,8 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 
 	return clientSign, nil
 }
+
+// FetchKuaiShouAPI 获取快手API的响应，测试用
+func (ac *AcFunLive) FetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (body []byte, e error) {
+	return ac.t.fetchKuaiShouAPI(url, form, sign)
+}

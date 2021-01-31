@@ -429,7 +429,7 @@ func pushQuery(title string, liveType *LiveType) (query string) {
 }
 
 // 启动直播
-func (t *token) startLive(title, coverFile, streamName string, isPanoramic bool, liveType *LiveType) (liveID string, e error) {
+func (t *token) startLive(title, coverFile, streamName string, portrait, panoramic bool, liveType *LiveType) (liveID string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("startLive() error: %w", err)
@@ -449,7 +449,7 @@ func (t *token) startLive(title, coverFile, streamName string, isPanoramic bool,
 	}
 	query := pushQuery(title, liveType)
 
-	uri := fmt.Sprintf(startPushURL, t.UserID, t.DeviceID, t.ServiceToken, streamName, isPanoramic) + query
+	uri := fmt.Sprintf(startPushURL, t.UserID, t.DeviceID, t.ServiceToken, streamName, portrait, panoramic) + query
 	client := &httpClient{
 		url:         uri,
 		body:        data,
@@ -590,10 +590,10 @@ func (ac *AcFunLive) GetTranscodeInfo(streamName string) ([]TranscodeInfo, error
 	return ac.t.getTranscodeInfo(streamName)
 }
 
-// StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的路径，isPanoramic为是否全景直播，推流成功服务器开始转码后调用
-// 需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
-func (ac *AcFunLive) StartLive(title, coverFile, streamName string, isPanoramic bool, liveType *LiveType) (liveID string, e error) {
-	return ac.t.startLive(title, coverFile, streamName, isPanoramic, liveType)
+// StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的路径，portrait为是否手机直播，panoramic为是否全景直播。
+// 推流成功服务器开始转码（用GetTranscodeInfo()判断）后调用，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
+func (ac *AcFunLive) StartLive(title, coverFile, streamName string, portrait, panoramic bool, liveType *LiveType) (liveID string, e error) {
+	return ac.t.startLive(title, coverFile, streamName, portrait, panoramic, liveType)
 }
 
 // StopLive 停止直播，需要登陆AcFun帐号，不需要设置主播uid，不需要调用StartDanmu()
