@@ -464,7 +464,6 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			chatAccept := &acproto.CommonStateSignalChatAccept{}
 			err = proto.Unmarshal(item.Payload, chatAccept)
 			checkErr(err)
-			log.Printf("CommonStateSignalChatAccept: %+v\n", chatAccept)
 			if event {
 				ac.callEvent(chatAcceptEvent, &ChatAccept{
 					ChatID:     chatAccept.ChatId,

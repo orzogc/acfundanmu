@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
-	"os"
+	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -388,22 +388,34 @@ func (t *token) getTranscodeInfo(streamName string) (info []TranscodeInfo, e err
 	return info, nil
 }
 
-func fileFormData(file string) (data []byte, contentType string, e error) {
+// 读取文件
+func loadFile(file string) (data []byte, contentType string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("fileFormData() error: %w", err)
+			e = fmt.Errorf("loadFile() error: %w", err)
 		}
 	}()
 
-	f, err := os.Open(file)
-	checkErr(err)
-	defer f.Close()
+	var fileData []byte
+	if u, err := url.Parse(file); err == nil && u.Scheme != "" && u.Host != "" {
+		client := &httpClient{
+			url:     file,
+			method:  "GET",
+			referer: liveHost,
+		}
+		fileData, err = client.request()
+		checkErr(err)
+	} else {
+		fileData, err = ioutil.ReadFile(file)
+		checkErr(err)
+	}
+
 	var buf bytes.Buffer
 	w := multipart.NewWriter(&buf)
 	//defer w.Close()
 	fw, err := w.CreateFormFile("cover", filepath.Base(file))
 	checkErr(err)
-	_, err = io.Copy(fw, f)
+	_, err = fw.Write(fileData)
 	checkErr(err)
 	err = w.Close()
 	checkErr(err)
@@ -411,12 +423,11 @@ func fileFormData(file string) (data []byte, contentType string, e error) {
 	return buf.Bytes(), w.FormDataContentType(), nil
 }
 
+// 推流地址的query
 func pushQuery(title string, liveType *LiveType) (query string) {
 	args := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(args)
-	if title != "" {
-		args.Set("caption", title)
-	}
+	args.Set("caption", title)
 	if liveType != nil {
 		args.Set("bizCustomData", fmt.Sprintf(pushType, liveType.SubCategoryID, liveType.CategoryID, liveType.SubCategoryID))
 	}
@@ -444,7 +455,7 @@ func (t *token) startLive(title, coverFile, streamName string, portrait, panoram
 	contentType := formContentType
 	var err error
 	if coverFile != "" {
-		data, contentType, err = fileFormData(coverFile)
+		data, contentType, err = loadFile(coverFile)
 		checkErr(err)
 	}
 	query := pushQuery(title, liveType)
@@ -529,7 +540,7 @@ func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 	contentType := formContentType
 	var err error
 	if coverFile != "" {
-		data, contentType, err = fileFormData(coverFile)
+		data, contentType, err = loadFile(coverFile)
 		checkErr(err)
 	}
 	query := pushQuery(title, nil)
@@ -580,8 +591,17 @@ func (ac *AcFunLive) GetQiniuToken() (*QiniuToken, error) {
 	return ac.t.getQiniuToken()
 }
 
-// UploadImage 上传图片，file为图片的路径，返回图片链接fileURL
-func (token *QiniuToken) UploadImage(file string) (fileURL string, e error) {
+// UploadImage 上传图片到AcFun服务器，file为图片的路径，返回图片链接fileURL
+func (token *QiniuToken) UploadImage(file string) (fileURL string, err error) {
+	return token.uploadImage(file)
+}
+
+// UploadImage 上传图片到AcFun服务器，file为图片的路径，返回图片链接fileURL
+func (ac *AcFunLive) UploadImage(file string) (fileURL string, err error) {
+	token, err := ac.GetQiniuToken()
+	if err != nil {
+		return "", err
+	}
 	return token.uploadImage(file)
 }
 
@@ -590,7 +610,7 @@ func (ac *AcFunLive) GetTranscodeInfo(streamName string) ([]TranscodeInfo, error
 	return ac.t.getTranscodeInfo(streamName)
 }
 
-// StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的本地路径，portrait为是否手机直播，panoramic为是否全景直播。
+// StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的本地路径或网络链接，portrait为是否手机直播，panoramic为是否全景直播。
 // 推流成功服务器开始转码（用GetTranscodeInfo()判断）后调用，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) StartLive(title, coverFile, streamName string, portrait, panoramic bool, liveType *LiveType) (liveID string, e error) {
 	return ac.t.startLive(title, coverFile, streamName, portrait, panoramic, liveType)
@@ -601,7 +621,7 @@ func (ac *AcFunLive) StopLive(liveID string) (*StopPushInfo, error) {
 	return ac.t.stopLive(liveID)
 }
 
-// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的本地路径，需要登陆主播的AcFun帐号
+// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的本地路径或网络链接，coverFile为空字符串时只更改标题，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) ChangeTitleAndCover(title, coverFile, liveID string) error {
 	return ac.t.changeTitleAndCover(title, coverFile, liveID)
 }
