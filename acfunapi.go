@@ -155,8 +155,8 @@ func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e e
 	body, err := t.fetchKuaiShouAPI(watchingListURL, form, false)
 	checkErr(err)
 
-	p := t.watchParser.Get()
-	defer t.watchParser.Put(p)
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -206,8 +206,8 @@ func (t *token) getBillboard(uid int64) (billboard []BillboardUser, e error) {
 	body, err := t.fetchKuaiShouAPI(billboardURL, form, false)
 	checkErr(err)
 
-	p := t.watchParser.Get()
-	defer t.watchParser.Put(p)
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -252,7 +252,8 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 	body, err := t.fetchKuaiShouAPI(endSummaryURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -303,8 +304,8 @@ func (t *token) getLuckList(liveID, redpackID string) (luckyList []LuckyUser, e 
 	body, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
 	checkErr(err)
 
-	p := t.watchParser.Get()
-	defer t.watchParser.Put(p)
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -356,7 +357,8 @@ func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 	body, err := t.fetchKuaiShouAPI(playbackURL, form, true)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -400,7 +402,8 @@ func (t *token) getPlayURL() (e error) {
 	body, err := t.fetchKuaiShouAPI(getPlayURL, nil, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -426,7 +429,8 @@ func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 	body, err := t.fetchKuaiShouAPI(allGiftURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -456,7 +460,8 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	body, err := t.fetchKuaiShouAPI(walletBalanceURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -493,7 +498,8 @@ func (t *token) getKickHistory() (e error) {
 	body, err := t.fetchKuaiShouAPI(kickHistoryURL, nil, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -523,7 +529,8 @@ func (t *token) getManagerList() (managerList []Manager, e error) {
 	body, err := t.fetchKuaiShouAPI(managerListURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -640,7 +647,8 @@ func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -689,7 +697,8 @@ func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -742,7 +751,8 @@ func getUserMedal(uid int64) (medal *Medal, e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -863,7 +873,8 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -889,7 +900,8 @@ func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList,
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -963,7 +975,8 @@ func getLiveList(count int, page int, cookies Cookies) (liveList []UserLiveInfo,
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {

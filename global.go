@@ -72,6 +72,11 @@ const (
 	changeCoverURL   = `https://api.kuaishouzt.com/rest/zt/live/web/changeCover?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&acfun.midground.api_st=%s&videoPushReq=&liveId=%s`
 )
 
+var (
+	generalParserPool fastjson.ParserPool
+	medalParserPool   fastjson.ParserPool
+)
+
 type token struct {
 	TokenInfo
 	liveID          string
@@ -86,8 +91,6 @@ type token struct {
 	gifts           map[int64]GiftDetail
 	liverUID        int64 // 主播uid
 	livePage        string
-	medalParser     fastjson.ParserPool
-	watchParser     fastjson.ParserPool
 }
 
 // 检查错误

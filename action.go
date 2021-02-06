@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/valyala/fasthttp"
-	"github.com/valyala/fastjson"
 )
 
 // 房管踢人
@@ -26,7 +25,8 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 	body, err := t.fetchKuaiShouAPI(managerKickURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 || v.GetBool("data", "kickSucc") != true {
@@ -54,7 +54,8 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 	body, err := t.fetchKuaiShouAPI(authorKickURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 || v.GetBool("data", "kickSucc") != true {
@@ -83,7 +84,8 @@ func (t *token) addManager(managerUID int64) (e error) {
 	body, err := t.fetchKuaiShouAPI(addManagerURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -112,7 +114,8 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 	body, err := t.fetchKuaiShouAPI(deleteManagerURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {

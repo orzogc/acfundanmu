@@ -46,13 +46,13 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 				go ac.t.wsHeartbeat(ctx, conn, 10000)
 			}
 		case "ZtLiveCsHeartbeatAck":
-			heartbeat := &acproto.ZtLiveCsHeartbeatAck{}
-			err = proto.Unmarshal(cmd.Payload, heartbeat)
-			checkErr(err)
+			//heartbeat := &acproto.ZtLiveCsHeartbeatAck{}
+			//err = proto.Unmarshal(cmd.Payload, heartbeat)
+			//checkErr(err)
 		case "ZtLiveCsUserExitAck":
-			userExit := &acproto.ZtLiveCsUserExitAck{}
-			err = proto.Unmarshal(cmd.Payload, userExit)
-			checkErr(err)
+			//userExit := &acproto.ZtLiveCsUserExitAck{}
+			//err = proto.Unmarshal(cmd.Payload, userExit)
+			//checkErr(err)
 		default:
 			log.Printf("未知的cmd.CmdAckType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				cmd.CmdAckType,
@@ -60,13 +60,13 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 				base64.StdEncoding.EncodeToString(cmd.Payload))
 		}
 	case "Basic.KeepAlive":
-		keepalive := &acproto.KeepAliveResponse{}
-		err := proto.Unmarshal(stream.PayloadData, keepalive)
-		checkErr(err)
+		//keepalive := &acproto.KeepAliveResponse{}
+		//err := proto.Unmarshal(stream.PayloadData, keepalive)
+		//checkErr(err)
 	case "Basic.Ping":
-		ping := &acproto.PingResponse{}
-		err := proto.Unmarshal(stream.PayloadData, ping)
-		checkErr(err)
+		//ping := &acproto.PingResponse{}
+		//err := proto.Unmarshal(stream.PayloadData, ping)
+		//checkErr(err)
 	case "Basic.Unregister":
 		unregister := &acproto.UnregisterResponse{}
 		err := proto.Unmarshal(stream.PayloadData, unregister)
@@ -83,9 +83,8 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 			r, err := gzip.NewReader(bytes.NewReader(message.Payload))
 			checkErr(err)
 			defer r.Close()
-			result, err := ioutil.ReadAll(r)
+			payload, err = ioutil.ReadAll(r)
 			checkErr(err)
-			payload = result
 		}
 		switch message.MessageType {
 		case "ZtLiveScActionSignal":
@@ -449,6 +448,35 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				ac.info.RecentComment = danmu
 				ac.info.Unlock()
 			}
+		case "CommonStateSignalCurrentRedpackList":
+			redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
+			err = proto.Unmarshal(item.Payload, redpackList)
+			checkErr(err)
+			redpacks := make([]Redpack, len(redpackList.Redpacks))
+			for i, redpack := range redpackList.Redpacks {
+				r := Redpack{
+					UserInfo: UserInfo{
+						UserID:   redpack.Sender.UserId,
+						Nickname: redpack.Sender.Nickname,
+					},
+					DisplayStatus:      RedpackDisplayStatus(redpack.DisplayStatus),
+					GrabBeginTime:      redpack.GrabBeginTimeMs,
+					GetTokenLatestTime: redpack.GetTokenLatestTimeMs,
+					RedpackID:          redpack.RedPackId,
+					RedpackBizUnit:     redpack.RedpackBizUnit,
+					RedpackAmount:      redpack.RedpackAmount,
+					SettleBeginTime:    redpack.SettleBeginTime,
+				}
+				ac.t.getMoreInfo(&r.UserInfo, redpack.Sender)
+				redpacks[i] = r
+			}
+			if event {
+				ac.callEvent(redpackListEvent, redpacks)
+			} else {
+				ac.info.Lock()
+				ac.info.RedpackList = redpacks
+				ac.info.Unlock()
+			}
 		case "CommonStateSignalChatCall":
 			chatCall := &acproto.CommonStateSignalChatCall{}
 			err = proto.Unmarshal(item.Payload, chatCall)
@@ -577,35 +605,6 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 					SoundConfigChangeType: SoundConfigChangeType(chatConfig.SoundConfigChangeType),
 				})
 			}
-		case "CommonStateSignalCurrentRedpackList":
-			redpackList := &acproto.CommonStateSignalCurrentRedpackList{}
-			err = proto.Unmarshal(item.Payload, redpackList)
-			checkErr(err)
-			redpacks := make([]Redpack, len(redpackList.Redpacks))
-			for i, redpack := range redpackList.Redpacks {
-				r := Redpack{
-					UserInfo: UserInfo{
-						UserID:   redpack.Sender.UserId,
-						Nickname: redpack.Sender.Nickname,
-					},
-					DisplayStatus:      RedpackDisplayStatus(redpack.DisplayStatus),
-					GrabBeginTime:      redpack.GrabBeginTimeMs,
-					GetTokenLatestTime: redpack.GetTokenLatestTimeMs,
-					RedpackID:          redpack.RedPackId,
-					RedpackBizUnit:     redpack.RedpackBizUnit,
-					RedpackAmount:      redpack.RedpackAmount,
-					SettleBeginTime:    redpack.SettleBeginTime,
-				}
-				ac.t.getMoreInfo(&r.UserInfo, redpack.Sender)
-				redpacks[i] = r
-			}
-			if event {
-				ac.callEvent(redpackListEvent, redpacks)
-			} else {
-				ac.info.Lock()
-				ac.info.RedpackList = redpacks
-				ac.info.Unlock()
-			}
 		default:
 			log.Printf("未知的State Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				item.SignalType,
@@ -672,8 +671,8 @@ func (t *token) getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
 	}
 
 	if userInfo.Badge != "" {
-		p := t.medalParser.Get()
-		defer t.medalParser.Put(p)
+		p := medalParserPool.Get()
+		defer medalParserPool.Put(p)
 		v, err := p.Parse(userInfo.Badge)
 		checkErr(err)
 		o := v.GetObject("medalInfo")

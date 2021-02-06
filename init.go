@@ -38,7 +38,8 @@ func login(account, password string) (cookies Cookies, e error) {
 	body, cookies, err := client.getCookies()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -88,7 +89,8 @@ func (t *token) getAcFunToken() (e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -148,7 +150,8 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -255,7 +258,8 @@ func (t *token) getGiftList() (e error) {
 	body, err := t.fetchKuaiShouAPI(giftURL, nil, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {

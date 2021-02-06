@@ -89,7 +89,8 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -140,7 +141,8 @@ func (t *token) getLiveTypeList() (list []LiveType, e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -173,7 +175,8 @@ func (t *token) getPushConfig() (config *PushConfig, e error) {
 	body, err := t.fetchKuaiShouAPI(obsConfigURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -227,7 +230,8 @@ func (t *token) getLiveStatus() (status *LiveStatus, e error) {
 	body, err := t.fetchKuaiShouAPI(obsStatusURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -282,7 +286,8 @@ func (t *token) getQiniuToken() (token *QiniuToken, e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
@@ -352,7 +357,8 @@ func (t *token) getTranscodeInfo(streamName string) (info []TranscodeInfo, e err
 	body, err := t.fetchKuaiShouAPI(transcodeInfoURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -471,7 +477,8 @@ func (t *token) startLive(title, coverFile, streamName string, portrait, panoram
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -501,7 +508,8 @@ func (t *token) stopLive(liveID string) (info *StopPushInfo, e error) {
 	body, err := t.fetchKuaiShouAPI(stopPushURL, form, false)
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {
@@ -556,7 +564,8 @@ func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 	body, err := client.request()
 	checkErr(err)
 
-	var p fastjson.Parser
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if v.GetInt("result") != 1 {

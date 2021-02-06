@@ -12,6 +12,12 @@ import (
 	"github.com/orzogc/acfundanmu/acproto"
 )
 
+var msgPool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, maxBytesLength)
+	},
+}
+
 // 定时发送heartbeat和keepalive数据
 func (t *token) wsHeartbeat(ctx context.Context, conn *fastws.Conn, interval int64) {
 	defer func() {
@@ -98,8 +104,8 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		defer close(msgCh)
 		var err error
 		for {
-			// nil是防止data race
-			_, msg, err = conn.ReadMessage(nil)
+			msg := msgPool.Get().([]byte)
+			_, msg, err = conn.ReadMessage(msg[:0])
 			if err != nil {
 				if !errors.Is(err, fastws.EOF) {
 					log.Printf("websocket接收数据出现错误：%v", err)
@@ -111,6 +117,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 						ac.callEvent(stopDanmu, err)
 					}
 				}
+				msgPool.Put(msg)
 				break
 			}
 			msgCh <- msg
@@ -125,9 +132,11 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 			stream, err := ac.t.decode(msg)
 			if err != nil {
 				log.Printf("解码接收到的数据出现错误：%v", err)
+				msgPool.Put(msg)
 				continue
 			}
 			payloadCh <- stream
+			msgPool.Put(msg)
 		}
 	}()
 
