@@ -12,7 +12,7 @@ require (
 	github.com/klauspost/compress v1.11.7 // indirect
 	github.com/qiniu/go-sdk/v7 v7.9.0
 	github.com/segmentio/encoding v0.2.7
-	github.com/valyala/fasthttp v1.19.0
+	github.com/valyala/fasthttp v1.20.0
 	github.com/valyala/fastjson v1.6.3
 	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
 	google.golang.org/protobuf v1.25.0

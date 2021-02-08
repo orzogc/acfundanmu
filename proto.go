@@ -281,32 +281,7 @@ func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error
 		}
 	}()
 
-	header, payload := decodeResponse(b)
-	atomic.StoreInt64(&t.headerSeqID, header.SeqId)
-
-	var err error
-	if header.EncryptionMode != acproto.PacketHeader_kEncryptionNone {
-		key := t.sessionKey
-		if header.EncryptionMode == acproto.PacketHeader_kEncryptionServiceToken {
-			key, err = base64.StdEncoding.DecodeString(t.SecurityKey)
-			checkErr(err)
-		}
-		payload = decrypt(payload, key)
-	}
-
-	if len(payload) != int(header.DecodedPayloadLen) {
-		panic(fmt.Errorf("the length of body/payload is wrong: payload %d header %d", len(payload), header.DecodedPayloadLen))
-	}
-
-	downstream = &acproto.DownstreamPayload{}
-	err = proto.Unmarshal(payload, downstream)
-	checkErr(err)
-
-	return downstream, nil
-}
-
-// 分离header和body/payload
-func decodeResponse(b []byte) (*acproto.PacketHeader, []byte) {
+	// 分离header和body/payload
 	reader := bytes.NewReader(b)
 
 	// 具体数据格式看https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu
@@ -337,26 +312,45 @@ func decodeResponse(b []byte) (*acproto.PacketHeader, []byte) {
 	checkErr(err)
 
 	// body/payload数据
-	var payloadBytes []byte
+	var payload []byte
 	if payloadLength <= maxBytesLength {
 		byt := bytesPool.Get().([]byte)
 		defer bytesPool.Put(byt)
-		payloadBytes = byt[:payloadLength]
+		payload = byt[:payloadLength]
 	} else {
-		payloadBytes = make([]byte, payloadLength)
+		payload = make([]byte, payloadLength)
 	}
-	_, err = reader.Read(payloadBytes)
+	_, err = reader.Read(payload)
 	checkErr(err)
 
 	if reader.Len() != 0 {
-		log.Printf("decodeResponse(): reader has more %d bytes", reader.Len())
+		log.Printf("decode(): reader has more %d bytes", reader.Len())
 	}
 
 	header := &acproto.PacketHeader{}
 	err = proto.Unmarshal(headerBytes, header)
 	checkErr(err)
 
-	return header, payloadBytes
+	atomic.StoreInt64(&t.headerSeqID, header.SeqId)
+
+	if header.EncryptionMode != acproto.PacketHeader_kEncryptionNone {
+		key := t.sessionKey
+		if header.EncryptionMode == acproto.PacketHeader_kEncryptionServiceToken {
+			key, err = base64.StdEncoding.DecodeString(t.SecurityKey)
+			checkErr(err)
+		}
+		payload = decrypt(payload, key)
+	}
+
+	if len(payload) != int(header.DecodedPayloadLen) {
+		panic(fmt.Errorf("decode(): the length of body/payload is wrong: payload %d header %d", len(payload), header.DecodedPayloadLen))
+	}
+
+	downstream = &acproto.DownstreamPayload{}
+	err = proto.Unmarshal(payload, downstream)
+	checkErr(err)
+
+	return downstream, nil
 }
 
 // 解密数据，解密方式为aes-128-cbc

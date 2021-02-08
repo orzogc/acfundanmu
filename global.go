@@ -64,6 +64,7 @@ const (
 	checkLiveAuthURL = "https://member.acfun.cn/common/api/checkLiveAuth"
 	liveTypeListURL  = "https://member.acfun.cn/common/api/getLiveTypeList"
 	getQiniuTokenURL = "https://member.acfun.cn/common/api/getQiniuToken"
+	liveDataURL      = "https://member.acfun.cn/dataCenter/api/liveData"
 	obsConfigURL     = "https://api.kuaishouzt.com/rest/zt/live/web/obs/config?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	obsStatusURL     = "https://api.kuaishouzt.com/rest/zt/live/web/obs/status?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	transcodeInfoURL = "https://api.kuaishouzt.com/rest/zt/live/web/obs/transcodeInfo?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"

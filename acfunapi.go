@@ -142,11 +142,44 @@ type MedalRankList struct {
 	UserRank             int             `json:"userRank"`             // 登陆用户的主播守护徽章的排名
 }
 
+// Statistics 就是直播统计数据
+type Statistics struct {
+	Duration           int64 `json:"duration"` // 直播时长，单位为毫秒
+	MaxPopularityValue int   `json:"maxPopularityValue"`
+	WatchCount         int   `json:"watchCount"`   // 观看过直播的人数总数
+	DiamondCount       int   `json:"diamondCount"` // 直播收到的付费礼物对应的钻石数量，100钻石=1AC币
+	CommentCount       int   `json:"commentCount"` // 弹幕数量
+	BananaCount        int   `json:"bananaCount"`  // 直播收到的香蕉数量
+}
+
+// LiveDetail 就是单场直播统计数据
+type LiveDetail struct {
+	LiveStartTime int64 `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
+	LiveEndTime   int64 `json:"liveEndTime"`   // 直播结束的时间，是以毫秒为单位的Unix时间
+	Statistics    `json:"statistics"`
+}
+
+// DailyData 就是单日直播统计数据
+type DailyData struct {
+	Date       string `json:"date"`      // 直播日期，格式是"20210206"
+	LiveTimes  int    `json:"liveTimes"` // 当日直播次数
+	Statistics `json:"statistics"`
+}
+
+// LiveData 就是直播统计数据
+type LiveData struct {
+	BeginDate  string                  `json:"beginDate"`  // 统计开始的日期
+	EndDate    string                  `json:"endDate"`    // 统计结束的日期
+	Overview   Statistics              `json:"overview"`   // 全部直播的统计概况
+	LiveDetail map[string][]LiveDetail `json:"liveDetail"` // 单场直播统计数据
+	DailyData  []DailyData             `json:"dailyData"`  // 单日直播统计数据
+}
+
 // 获取直播间排名前50的在线观众信息列表
 func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("watchingList() error: %w", err)
+			e = fmt.Errorf("getWatchingList() error: %w", err)
 		}
 	}()
 
@@ -487,7 +520,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 func (t *token) getKickHistory() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getAuthorKickHistory() error: %w", err)
+			e = fmt.Errorf("getKickHistory() error: %w", err)
 		}
 	}()
 
@@ -515,7 +548,7 @@ func (t *token) getKickHistory() (e error) {
 func (t *token) getManagerList() (managerList []Manager, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getAuthorManagerList() error: %w", err)
+			e = fmt.Errorf("getManagerList() error: %w", err)
 		}
 	}()
 
@@ -681,7 +714,7 @@ func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getMedalInfo() error: %w", err)
+			e = fmt.Errorf("getMedalList() error: %w", err)
 		}
 	}()
 
@@ -734,6 +767,139 @@ func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 	})
 
 	return medalList, nil
+}
+
+// 获取直播统计数据
+func (t *token) getLiveData(days int) (data *LiveData, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getLiveData() error: %w", err)
+		}
+	}()
+
+	if len(t.Cookies) == 0 {
+		panic(fmt.Errorf("获取直播统计数据需要登陆AcFun帐号"))
+	}
+
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("days", strconv.Itoa(days))
+	client := httpClient{
+		url:         liveDataURL,
+		body:        form.QueryString(),
+		method:      "POST",
+		cookies:     t.Cookies,
+		contentType: formContentType,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取直播统计数据失败，响应为 %s", string(body)))
+	}
+
+	data = new(LiveData)
+	data.LiveDetail = make(map[string][]LiveDetail)
+	o := v.GetObject()
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "result":
+		case "host-name":
+		case "days":
+		case "beginDate":
+			data.BeginDate = string(v.GetStringBytes())
+		case "endDate":
+			data.EndDate = string(v.GetStringBytes())
+		case "overview":
+			o := v.GetObject()
+			o.Visit(func(k []byte, v *fastjson.Value) {
+				switch string(k) {
+				case "totalLiveMillisecond":
+					data.Overview.Duration = v.GetInt64()
+				case "maxPopularityValue":
+					data.Overview.MaxPopularityValue = v.GetInt()
+				case "totalViewCount":
+					data.Overview.WatchCount = v.GetInt()
+				case "totalDiamondCount":
+					data.Overview.DiamondCount = v.GetInt()
+				case "totalCommentCount":
+					data.Overview.CommentCount = v.GetInt()
+				case "totalBananaCount":
+					data.Overview.BananaCount = v.GetInt()
+				default:
+					log.Printf("直播统计数据里的overview出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+				}
+			})
+		case "liveDetail":
+			o := v.GetObject()
+			o.Visit(func(k []byte, v *fastjson.Value) {
+				list := v.GetArray()
+				d := make([]LiveDetail, len(list))
+				for i, l := range list {
+					o := l.GetObject()
+					o.Visit(func(k []byte, v *fastjson.Value) {
+						switch string(k) {
+						case "startTime":
+							d[i].LiveStartTime = v.GetInt64()
+						case "endTime":
+							d[i].LiveEndTime = v.GetInt64()
+						case "liveMillisecond":
+							d[i].Duration = v.GetInt64()
+						case "maxPopularityValue":
+							d[i].MaxPopularityValue = v.GetInt()
+						case "viewCount":
+							d[i].WatchCount = v.GetInt()
+						case "diamondCount":
+							d[i].DiamondCount = v.GetInt()
+						case "commentCount":
+							d[i].CommentCount = v.GetInt()
+						case "bananaCount":
+							d[i].BananaCount = v.GetInt()
+						default:
+							log.Printf("直播统计数据里的liveDetail出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+						}
+					})
+				}
+				data.LiveDetail[string(k)] = d
+			})
+		case "dailyData":
+			list := v.GetArray()
+			data.DailyData = make([]DailyData, len(list))
+			for i, l := range list {
+				o := l.GetObject()
+				o.Visit(func(k []byte, v *fastjson.Value) {
+					switch string(k) {
+					case "date":
+						data.DailyData[i].Date = string(v.GetStringBytes())
+					case "totalLiveTimes":
+						data.DailyData[i].LiveTimes = v.GetInt()
+					case "totalLiveMillisecond":
+						data.DailyData[i].Duration = v.GetInt64()
+					case "maxPopularityValue":
+						data.DailyData[i].MaxPopularityValue = v.GetInt()
+					case "totalViewCount":
+						data.DailyData[i].WatchCount = v.GetInt()
+					case "totalDiamondCount":
+						data.DailyData[i].DiamondCount = v.GetInt()
+					case "totalCommentCount":
+						data.DailyData[i].CommentCount = v.GetInt()
+					case "totalBananaCount":
+						data.DailyData[i].BananaCount = v.GetInt()
+					default:
+						log.Printf("直播统计数据里的dailyData出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+					}
+				})
+			}
+		default:
+			log.Printf("直播统计数据里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+		}
+	})
+
+	return data, nil
 }
 
 // 获取指定用户正在佩戴的守护徽章信息
@@ -1092,6 +1258,11 @@ func (ac *AcFunLive) GetMedalDetail(uid int64) (*MedalDetail, error) {
 // GetMedalList 返回登陆用户拥有的守护徽章列表，uid为想要获取守护徽章详细信息的主播的uid，可以为0，可用于获取指定主播的守护徽章名字，需要登陆AcFun帐号
 func (ac *AcFunLive) GetMedalList(uid int64) (*MedalList, error) {
 	return ac.t.getMedalList(uid)
+}
+
+// GetLiveData 返回前days日到目前为止所有直播的统计数据，需要登陆主播的AcFun帐号
+func (ac *AcFunLive) GetLiveData(days int) (data *LiveData, e error) {
+	return ac.t.getLiveData(days)
 }
 
 // GetUserLiveInfo 返回uid指定用户的直播信息
