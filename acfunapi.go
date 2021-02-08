@@ -142,8 +142,8 @@ type MedalRankList struct {
 	UserRank             int             `json:"userRank"`             // 登陆用户的主播守护徽章的排名
 }
 
-// Statistics 就是直播统计数据
-type Statistics struct {
+// LiveStat 就是直播统计数据
+type LiveStat struct {
 	Duration           int64 `json:"duration"` // 直播时长，单位为毫秒
 	MaxPopularityValue int   `json:"maxPopularityValue"`
 	WatchCount         int   `json:"watchCount"`   // 观看过直播的人数总数
@@ -156,21 +156,21 @@ type Statistics struct {
 type LiveDetail struct {
 	LiveStartTime int64 `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
 	LiveEndTime   int64 `json:"liveEndTime"`   // 直播结束的时间，是以毫秒为单位的Unix时间
-	Statistics    `json:"statistics"`
+	LiveStat      `json:"liveStat"`
 }
 
 // DailyData 就是单日直播统计数据
 type DailyData struct {
-	Date       string `json:"date"`      // 直播日期，格式是"20210206"
-	LiveTimes  int    `json:"liveTimes"` // 当日直播次数
-	Statistics `json:"statistics"`
+	Date      string `json:"date"`      // 直播日期，格式是"20210206"
+	LiveTimes int    `json:"liveTimes"` // 当日直播次数
+	LiveStat  `json:"liveStat"`
 }
 
 // LiveData 就是直播统计数据
 type LiveData struct {
 	BeginDate  string                  `json:"beginDate"`  // 统计开始的日期
 	EndDate    string                  `json:"endDate"`    // 统计结束的日期
-	Overview   Statistics              `json:"overview"`   // 全部直播的统计概况
+	Overview   LiveStat                `json:"overview"`   // 全部直播的统计概况
 	LiveDetail map[string][]LiveDetail `json:"liveDetail"` // 单场直播统计数据
 	DailyData  []DailyData             `json:"dailyData"`  // 单日直播统计数据
 }
@@ -784,7 +784,7 @@ func (t *token) getLiveData(days int) (data *LiveData, e error) {
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("days", strconv.Itoa(days))
-	client := httpClient{
+	client := &httpClient{
 		url:         liveDataURL,
 		body:        form.QueryString(),
 		method:      "POST",
@@ -1261,7 +1261,7 @@ func (ac *AcFunLive) GetMedalList(uid int64) (*MedalList, error) {
 }
 
 // GetLiveData 返回前days日到目前为止所有直播的统计数据，需要登陆主播的AcFun帐号
-func (ac *AcFunLive) GetLiveData(days int) (data *LiveData, e error) {
+func (ac *AcFunLive) GetLiveData(days int) (*LiveData, error) {
 	return ac.t.getLiveData(days)
 }
 

@@ -125,6 +125,68 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 	return nil
 }
 
+// 佩戴守护徽章
+func (t *token) wearMedal(uid int64) (e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("wearMedal() error: %w", err)
+		}
+	}()
+
+	if len(t.Cookies) == 0 {
+		panic(fmt.Errorf("佩戴守护徽章需要登陆AcFun帐号"))
+	}
+
+	client := &httpClient{
+		url:     fmt.Sprintf(wearMedalURL, uid),
+		method:  "GET",
+		cookies: t.Cookies,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("佩戴守护徽章失败，响应为 %s", string(body)))
+	}
+
+	return nil
+}
+
+// 取消佩戴守护徽章
+func (t *token) cancelWearMedal(liverUID int64) (e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("cancelWearMedal() error: %w", err)
+		}
+	}()
+
+	if len(t.Cookies) == 0 {
+		panic(fmt.Errorf("取消佩戴守护徽章需要登陆AcFun帐号"))
+	}
+
+	client := &httpClient{
+		url:     fmt.Sprintf(cancelWearMedalURL, liverUID),
+		method:  "GET",
+		cookies: t.Cookies,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("取消佩戴守护徽章失败，响应为 %s", string(body)))
+	}
+
+	return nil
+}
+
 // ManagerKick 房管踢人，需要登陆AcFun帐号，需要设置主播uid
 func (ac *AcFunLive) ManagerKick(kickedUID int64) error {
 	return ac.t.managerKick(kickedUID)
@@ -143,4 +205,24 @@ func (ac *AcFunLive) AddManager(managerUID int64) error {
 // DeleteManager 主播删除房管，需要登陆AcFun帐号
 func (ac *AcFunLive) DeleteManager(managerUID int64) error {
 	return ac.t.deleteManager(managerUID)
+}
+
+// WearMedal 佩戴uid指定的主播的守护徽章，需要登陆AcFun帐号，如果登陆帐号没有uid指定的主播的守护徽章则会取消佩戴任何徽章
+func (ac *AcFunLive) WearMedal(uid int64) error {
+	return ac.t.wearMedal(uid)
+}
+
+// CancelWearMedalWithLiverUID 取消佩戴守护徽章，需要登陆AcFun帐号，liverUID必须是登陆帐号正在佩戴的守护徽章的主播uid
+func (ac *AcFunLive) CancelWearMedalWithLiverUID(liverUID int64) error {
+	return ac.t.cancelWearMedal(liverUID)
+}
+
+// CancelWearMedal 取消佩戴守护徽章，需要登陆AcFun帐号
+func (ac *AcFunLive) CancelWearMedal() error {
+	medal, err := getUserMedal(ac.t.UserID)
+	if err != nil {
+		return err
+	}
+
+	return ac.t.cancelWearMedal(medal.UperID)
 }

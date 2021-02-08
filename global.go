@@ -54,10 +54,12 @@ const (
 )
 
 const (
-	managerKickURL   = "https://api.kuaishouzt.com/rest/zt/live/web/manager/kick?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	authorKickURL    = "https://api.kuaishouzt.com/rest/zt/live/web/author/action/kick?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	addManagerURL    = "https://api.kuaishouzt.com/rest/zt/live/web/author/action/manager/add?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	deleteManagerURL = "https://api.kuaishouzt.com/rest/zt/live/web/author/action/manager/delete?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	managerKickURL     = "https://api.kuaishouzt.com/rest/zt/live/web/manager/kick?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	authorKickURL      = "https://api.kuaishouzt.com/rest/zt/live/web/author/action/kick?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	addManagerURL      = "https://api.kuaishouzt.com/rest/zt/live/web/author/action/manager/add?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	deleteManagerURL   = "https://api.kuaishouzt.com/rest/zt/live/web/author/action/manager/delete?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	wearMedalURL       = "https://live.acfun.cn/rest/pc-direct/fansClub/fans/medal/wear?uperId=%d"
+	cancelWearMedalURL = "https://live.acfun.cn/rest/pc-direct/fansClub/fans/medal/cancelWear?uperId=%d"
 )
 
 const (
