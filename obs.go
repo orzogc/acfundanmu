@@ -78,7 +78,7 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("检测开播权限需要登陆AcFun帐号"))
+		panic(fmt.Errorf("检测开播权限需要登陆主播的AcFun帐号"))
 	}
 
 	client := &httpClient{
@@ -167,7 +167,7 @@ func (t *token) getPushConfig() (config *PushConfig, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取推流设置需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取推流设置需要登陆主播的AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -222,7 +222,7 @@ func (t *token) getLiveStatus() (status *LiveStatus, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取直播状态需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取直播状态需要登陆主播的AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -348,7 +348,7 @@ func (t *token) getTranscodeInfo(streamName string) (info []TranscodeInfo, e err
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取转码信息需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取转码信息需要登陆主播的AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -454,7 +454,7 @@ func (t *token) startLive(title, coverFile, streamName string, portrait, panoram
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("启动直播需要登陆AcFun帐号"))
+		panic(fmt.Errorf("启动直播需要登陆主播的AcFun帐号"))
 	}
 
 	var data []byte
@@ -499,7 +499,7 @@ func (t *token) stopLive(liveID string) (info *StopPushInfo, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("停止直播需要登陆AcFun帐号"))
+		panic(fmt.Errorf("停止直播需要登陆主播的AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -541,7 +541,7 @@ func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("更改直播间标题和封面需要登陆AcFun帐号"))
+		panic(fmt.Errorf("更改直播间标题和封面需要登陆主播的AcFun帐号"))
 	}
 
 	var data []byte

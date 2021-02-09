@@ -16,7 +16,7 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("房管踢人需要登陆AcFun帐号"))
+		panic(fmt.Errorf("房管踢人需要登陆房管的AcFun帐号"))
 	}
 
 	form := t.defaultForm(t.liveID)
@@ -45,7 +45,7 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("主播踢人需要登陆AcFun帐号"))
+		panic(fmt.Errorf("主播踢人需要登陆主播的AcFun帐号"))
 	}
 
 	form := t.defaultForm(t.liveID)
@@ -74,7 +74,7 @@ func (t *token) addManager(managerUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("主播添加房管需要登陆AcFun帐号"))
+		panic(fmt.Errorf("主播添加房管需要登陆主播的AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -104,7 +104,7 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("主播删除房管需要登陆AcFun帐号"))
+		panic(fmt.Errorf("主播删除房管需要登陆主播的AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()

@@ -104,7 +104,7 @@ type UserProfile struct {
 	Signature       string `json:"signature"`       // 用户签名
 	VerifiedText    string `json:"verifiedText"`    // 用户认证信息
 	IsJoinUpCollege bool   `json:"isJoinUpCollege"` // 用户是否加入阿普学院
-	IsFollowing     bool   `json:"isFollowing"`     // 是否关注了用户
+	IsFollowing     bool   `json:"isFollowing"`     // 登陆帐号是否关注了用户
 }
 
 // UserLiveInfo 就是用户直播信息
@@ -122,7 +122,7 @@ type UserLiveInfo struct {
 	LikeCount             int         `json:"likeCount"`             // 直播间点赞总数
 	HasFansClub           bool        `json:"hasFansClub"`           // 主播是否有守护团
 	DisableDanmakuShow    bool        `json:"disableDanmakuShow"`    // 是否禁止显示弹幕？
-	PaidShowUserBuyStatus bool        `json:"paidShowUserBuyStatus"` // 用户是否购买了付费直播？
+	PaidShowUserBuyStatus bool        `json:"paidShowUserBuyStatus"` // 登陆帐号是否购买了付费直播？
 }
 
 // UserMedalInfo 就是用户的守护徽章信息
@@ -173,6 +173,25 @@ type LiveData struct {
 	Overview   LiveStat                `json:"overview"`   // 全部直播的统计概况
 	LiveDetail map[string][]LiveDetail `json:"liveDetail"` // 单场直播统计数据
 	DailyData  []DailyData             `json:"dailyData"`  // 单日直播统计数据
+}
+
+// LiveSchedule 就是直播预告
+type LiveSchedule struct {
+	ActivityID    int         `json:"activityID"`    // 活动ID
+	Profile       UserProfile `json:"profile"`       // 主播信息
+	Title         string      `json:"title"`         // 预告标题
+	Cover         string      `json:"cover"`         // 预告封面
+	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
+	LiveType      LiveType    `json:"liveType"`      // 直播分类
+	Reserve       bool        `json:"reserve"`       // 登陆帐号是否预约了该直播
+	ReserveNumber int         `json:"reserveNumber"` // 已预约用户的数量
+}
+
+// KickHistory 就是踢人历史记录
+type KickHistory struct {
+	UserID   int64  `json:"userID"`   // 用户uid
+	Nickname string `json:"nickname"` // 用户名字
+	KickTime int64  `json:"kickTime"` // 用户被踢的时间，是以毫秒为单位的Unix时间
 }
 
 // 获取直播间排名前50的在线观众信息列表
@@ -517,7 +536,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 }
 
 // 获取主播踢人的历史记录
-func (t *token) getKickHistory() (e error) {
+func (t *token) getKickHistory(count, page int) (list []KickHistory, lastPage bool, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getKickHistory() error: %w", err)
@@ -528,7 +547,11 @@ func (t *token) getKickHistory() (e error) {
 		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
-	body, err := t.fetchKuaiShouAPI(kickHistoryURL, nil, false)
+	form := t.defaultForm(t.liveID)
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("limit", strconv.Itoa(count))
+	form.Set("pcursor", strconv.Itoa(page))
+	body, err := t.fetchKuaiShouAPI(kickHistoryURL, form, false)
 	checkErr(err)
 
 	p := generalParserPool.Get()
@@ -537,11 +560,32 @@ func (t *token) getKickHistory() (e error) {
 	checkErr(err)
 	if v.GetInt("result") != 1 {
 		panic(fmt.Errorf("获取主播踢人的历史记录失败，响应为 %s", string(body)))
-	} else {
-		log.Printf("获取主播踢人的历史记录的响应为 %s", string(body))
 	}
 
-	return nil
+	v = v.Get("data")
+	kickList := v.GetArray("list")
+	list = make([]KickHistory, len(kickList))
+	for i, l := range kickList {
+		o := l.GetObject()
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "userId":
+				list[i].UserID = v.GetInt64()
+			case "nickname":
+				list[i].Nickname = string(v.GetStringBytes())
+			case "kickTime":
+				list[i].KickTime = v.GetInt64()
+			default:
+				log.Printf("主播踢人的历史记录里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+			}
+		})
+	}
+
+	if string(v.GetStringBytes("pcursor")) == "no_more" {
+		lastPage = true
+	}
+
+	return list, lastPage, nil
 }
 
 // 获取主播的房管列表
@@ -778,7 +822,7 @@ func (t *token) getLiveData(days int) (data *LiveData, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取直播统计数据需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取直播统计数据需要登陆主播的AcFun帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -949,7 +993,7 @@ func getUserMedal(uid int64) (medal *Medal, e error) {
 	return medal, nil
 }
 
-// 从json里获取用户信息
+// 从json里获取用户信息，除了UserID
 func getUserProfileJSON(v *fastjson.Value) *UserProfile {
 	profile := new(UserProfile)
 	o := v.GetObject()
@@ -1120,7 +1164,7 @@ func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList,
 }
 
 // 获取正在直播的直播间列表
-func getLiveList(count int, page int, cookies Cookies) (liveList []UserLiveInfo, e error) {
+func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, lastPage bool, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getLiveList() error: %w", err)
@@ -1155,12 +1199,78 @@ func getLiveList(count int, page int, cookies Cookies) (liveList []UserLiveInfo,
 		liveList = append(liveList, *getUserLiveInfoJSON(l))
 	}
 
-	return liveList, nil
+	if string(v.GetStringBytes("pcursor")) == "no_more" {
+		lastPage = true
+	}
+
+	return liveList, lastPage, nil
 }
 
 // 获取全部正在直播的直播间列表
-func getAllLiveList(cookies Cookies) (liveList []UserLiveInfo, e error) {
-	return getLiveList(1000000, 0, cookies)
+func getAllLiveList(cookies Cookies) ([]UserLiveInfo, error) {
+	list, _, err := getLiveList(1000000, 0, cookies)
+	return list, err
+}
+
+// 获取直播预告列表
+func getScheduleList(cookies Cookies) (scheduleList []LiveSchedule, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getScheduleList() error: %w", err)
+		}
+	}()
+
+	client := &httpClient{
+		url:     scheduleListURL,
+		method:  "POST",
+		cookies: cookies,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取直播预告列表失败，响应为 %s", string(body)))
+	}
+
+	list := v.GetArray("liveScheduleList")
+	scheduleList = make([]LiveSchedule, len(list))
+	for i, l := range list {
+		o := l.GetObject()
+		o.Visit(func(k []byte, v *fastjson.Value) {
+			switch string(k) {
+			case "requestId":
+			case "groupId":
+			case "action":
+			case "href":
+			case "authorId":
+			case "activityId":
+				scheduleList[i].ActivityID = v.GetInt()
+			case "user":
+				scheduleList[i].Profile = *getUserProfileJSON(v)
+			case "title":
+				scheduleList[i].Title = string(v.GetStringBytes())
+			case "cover":
+				scheduleList[i].Cover = string(v.GetStringBytes())
+			case "startTime":
+				scheduleList[i].LiveStartTime = v.GetInt64()
+			case "type":
+				scheduleList[i].LiveType = *getLiveType(v)
+			case "reserve":
+				scheduleList[i].Reserve = v.GetBool()
+			case "reserveNumber":
+				scheduleList[i].ReserveNumber = v.GetInt()
+			default:
+				log.Printf("直播预告列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+			}
+		})
+		scheduleList[i].Profile.UserID = l.GetInt64("authorId")
+	}
+
+	return scheduleList, nil
 }
 
 // Distinguish 返回阿里云和腾讯云链接，目前阿里云的下载速度比较快
@@ -1240,9 +1350,15 @@ func (ac *AcFunLive) GetWalletBalance() (accoins int, bananas int, e error) {
 	return ac.t.getWalletBalance()
 }
 
-// GetKickHistory 返回主播踢人的历史记录，需要登陆主播的AcFun帐号，未测试
-func (ac *AcFunLive) GetKickHistory() (e error) {
-	return ac.t.getKickHistory()
+// GetKickHistory 返回主播正在直播的那一场踢人的历史记录，count为每页的数量，page为第几页（从0开始数起），lastPage说明是否最后一页，需要登陆主播的AcFun帐号
+func (ac *AcFunLive) GetKickHistory(count, page int) (list []KickHistory, lastPage bool, e error) {
+	return ac.t.getKickHistory(count, page)
+}
+
+// GetAllKickHistory 返回主播正在直播的那一场踢人的全部历史记录，需要登陆主播的AcFun帐号
+func (ac *AcFunLive) GetAllKickHistory() ([]KickHistory, error) {
+	list, _, err := ac.t.getKickHistory(1000000, 0)
+	return list, err
 }
 
 // GetManagerList 返回主播的房管列表，需要登陆主播的AcFun帐号
@@ -1275,14 +1391,19 @@ func (ac *AcFunLive) GetMedalRankList(uid int64) (medalRankList *MedalRankList, 
 	return getMedalRankList(uid, ac.t.Cookies)
 }
 
-// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起）
-func (ac *AcFunLive) GetLiveList(count int, page int) ([]UserLiveInfo, error) {
+// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），lastPage说明是否最后一页
+func (ac *AcFunLive) GetLiveList(count, page int) (liveList []UserLiveInfo, lastPage bool, err error) {
 	return getLiveList(count, page, ac.t.Cookies)
 }
 
 // GetAllLiveList 返回全部正在直播的直播间列表
 func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(ac.t.Cookies)
+}
+
+// GetScheduleList 返回直播预告列表
+func (ac *AcFunLive) GetScheduleList() ([]LiveSchedule, error) {
+	return getScheduleList(ac.t.Cookies)
 }
 
 // GetUserMedal 返回uid指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
@@ -1300,12 +1421,17 @@ func GetMedalRankList(uid int64) (medalRankList *MedalRankList, e error) {
 	return getMedalRankList(uid, nil)
 }
 
-// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起）
-func GetLiveList(count int, page int) ([]UserLiveInfo, error) {
+// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），lastPage说明是否最后一页
+func GetLiveList(count, page int) (liveList []UserLiveInfo, lastPage bool, err error) {
 	return getLiveList(count, page, nil)
 }
 
 // GetAllLiveList 返回全部正在直播的直播间列表
 func GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(nil)
+}
+
+// GetScheduleList 返回直播预告列表
+func GetScheduleList() ([]LiveSchedule, error) {
+	return getScheduleList(nil)
 }
