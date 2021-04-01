@@ -8,13 +8,14 @@ import (
 	"time"
 
 	"github.com/dgrr/fastws"
-	"github.com/golang/protobuf/proto"
 	"github.com/orzogc/acfundanmu/acproto"
+	"google.golang.org/protobuf/proto"
 )
 
 var msgPool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, maxBytesLength)
+		b := make([]byte, maxBytesLength)
+		return &b
 	},
 }
 
@@ -94,7 +95,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.enterRoom())
 	checkErr(err)
 
-	msgCh := make(chan []byte, 100)
+	msgCh := make(chan *[]byte, 100)
 	payloadCh := make(chan *acproto.DownstreamPayload, 100)
 	hasError := false
 	var wg sync.WaitGroup
@@ -104,8 +105,8 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		defer close(msgCh)
 		var err error
 		for {
-			msg := msgPool.Get().([]byte)
-			_, msg, err = conn.ReadMessage(msg[:0])
+			msg := msgPool.Get().(*[]byte)
+			_, *msg, err = conn.ReadMessage((*msg)[:0])
 			if err != nil {
 				if !errors.Is(err, fastws.EOF) {
 					log.Printf("websocket接收数据出现错误：%v", err)
@@ -129,7 +130,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		defer wg.Done()
 		defer close(payloadCh)
 		for msg := range msgCh {
-			stream, err := ac.t.decode(msg)
+			stream, err := ac.t.decode(*msg)
 			if err != nil {
 				log.Printf("解码接收到的数据出现错误：%v", err)
 				msgPool.Put(msg)

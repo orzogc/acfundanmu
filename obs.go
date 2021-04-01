@@ -620,7 +620,7 @@ func (ac *AcFunLive) GetTranscodeInfo(streamName string) ([]TranscodeInfo, error
 }
 
 // StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的本地路径或网络链接，portrait为是否手机直播，panoramic为是否全景直播。
-// 推流成功服务器开始转码（用GetTranscodeInfo()判断）后调用，需要登陆主播的AcFun帐号
+// 推流成功服务器开始转码（用GetTranscodeInfo()判断）后调用，title和coverFile不能为空，需要登陆主播的AcFun帐号。
 func (ac *AcFunLive) StartLive(title, coverFile, streamName string, portrait, panoramic bool, liveType *LiveType) (liveID string, e error) {
 	return ac.t.startLive(title, coverFile, streamName, portrait, panoramic, liveType)
 }
@@ -630,7 +630,8 @@ func (ac *AcFunLive) StopLive(liveID string) (*StopPushInfo, error) {
 	return ac.t.stopLive(liveID)
 }
 
-// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的本地路径或网络链接，coverFile为空字符串时只更改标题，需要登陆主播的AcFun帐号
+// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的本地路径或网络链接。
+// title为空时会没有标题，coverFile为空时只更改标题，需要登陆主播的AcFun帐号。
 func (ac *AcFunLive) ChangeTitleAndCover(title, coverFile, liveID string) error {
 	return ac.t.changeTitleAndCover(title, coverFile, liveID)
 }

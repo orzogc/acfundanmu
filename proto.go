@@ -23,13 +23,15 @@ const maxBytesLength = 2000
 
 var lengthPool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, 4)
+		b := make([]byte, 4)
+		return &b
 	},
 }
 
 var bytesPool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, maxBytesLength)
+		b := make([]byte, maxBytesLength)
+		return &b
 	},
 }
 
@@ -129,6 +131,7 @@ func (t *token) unregister() []byte {
 }
 
 // Ping数据
+/*
 func (t *token) ping() []byte {
 	ping := &acproto.PingRequest{
 		PingType: acproto.PingRequest_kPostRegister,
@@ -142,6 +145,7 @@ func (t *token) ping() []byte {
 
 	return t.encode(header, body)
 }
+*/
 
 // EnterRoom数据
 func (t *token) enterRoom() []byte {
@@ -285,26 +289,26 @@ func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error
 	reader := bytes.NewReader(b)
 
 	// 具体数据格式看https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu
-	length := lengthPool.Get().([]byte)
+	length := lengthPool.Get().(*[]byte)
 	defer lengthPool.Put(length)
 	// 忽略第一个4字节数据
-	_, err := reader.Read(length)
+	_, err := reader.Read(*length)
 	checkErr(err)
 	// 读取header长度
-	_, err = reader.Read(length)
+	_, err = reader.Read(*length)
 	checkErr(err)
-	headerLength := binary.BigEndian.Uint32(length)
+	headerLength := binary.BigEndian.Uint32(*length)
 	// 读取body/payload长度
-	_, err = reader.Read(length)
+	_, err = reader.Read(*length)
 	checkErr(err)
-	payloadLength := binary.BigEndian.Uint32(length)
+	payloadLength := binary.BigEndian.Uint32(*length)
 
 	// header数据
 	var headerBytes []byte
 	if headerLength <= maxBytesLength {
-		byt := bytesPool.Get().([]byte)
+		byt := bytesPool.Get().(*[]byte)
 		defer bytesPool.Put(byt)
-		headerBytes = byt[:headerLength]
+		headerBytes = (*byt)[:headerLength]
 	} else {
 		headerBytes = make([]byte, headerLength)
 	}
@@ -314,9 +318,9 @@ func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error
 	// body/payload数据
 	var payload []byte
 	if payloadLength <= maxBytesLength {
-		byt := bytesPool.Get().([]byte)
+		byt := bytesPool.Get().(*[]byte)
 		defer bytesPool.Put(byt)
-		payload = byt[:payloadLength]
+		payload = (*byt)[:payloadLength]
 	} else {
 		payload = make([]byte, payloadLength)
 	}

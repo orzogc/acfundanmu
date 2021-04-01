@@ -29,7 +29,7 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
-	if v.GetInt("result") != 1 || v.GetBool("data", "kickSucc") != true {
+	if v.GetInt("result") != 1 || !v.GetBool("data", "kickSucc") {
 		panic(fmt.Errorf("房管踢人失败，响应为 %s", string(body)))
 	}
 
@@ -58,7 +58,7 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
-	if v.GetInt("result") != 1 || v.GetBool("data", "kickSucc") != true {
+	if v.GetInt("result") != 1 || !v.GetBool("data", "kickSucc") {
 		panic(fmt.Errorf("主播踢人失败，响应为 %s", string(body)))
 	}
 

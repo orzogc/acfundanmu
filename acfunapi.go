@@ -148,7 +148,7 @@ type LiveStat struct {
 	MaxPopularityValue int   `json:"maxPopularityValue"`
 	WatchCount         int   `json:"watchCount"`   // 观看过直播的人数总数
 	DiamondCount       int   `json:"diamondCount"` // 直播收到的付费礼物对应的钻石数量，100钻石=1AC币
-	CommentCount       int   `json:"commentCount"` // 弹幕数量
+	CommentCount       int   `json:"commentCount"` // 直播弹幕数量
 	BananaCount        int   `json:"bananaCount"`  // 直播收到的香蕉数量
 }
 
@@ -161,7 +161,7 @@ type LiveDetail struct {
 
 // DailyData 就是单日直播统计数据
 type DailyData struct {
-	Date      string `json:"date"`      // 直播日期，格式是"20210206"
+	Date      string `json:"date"`      // 直播日期，格式类似"20210206"
 	LiveTimes int    `json:"liveTimes"` // 当日直播次数
 	LiveStat  `json:"liveStat"`
 }
@@ -171,14 +171,14 @@ type LiveData struct {
 	BeginDate  string                  `json:"beginDate"`  // 统计开始的日期
 	EndDate    string                  `json:"endDate"`    // 统计结束的日期
 	Overview   LiveStat                `json:"overview"`   // 全部直播的统计概况
-	LiveDetail map[string][]LiveDetail `json:"liveDetail"` // 单场直播统计数据
+	LiveDetail map[string][]LiveDetail `json:"liveDetail"` // 单场直播统计数据，key为直播日期，格式类似"20210206"
 	DailyData  []DailyData             `json:"dailyData"`  // 单日直播统计数据
 }
 
 // LiveSchedule 就是直播预告
 type LiveSchedule struct {
 	ActivityID    int         `json:"activityID"`    // 活动ID
-	Profile       UserProfile `json:"profile"`       // 主播信息
+	Profile       UserProfile `json:"profile"`       // 主播的用户信息
 	Title         string      `json:"title"`         // 预告标题
 	Cover         string      `json:"cover"`         // 预告封面
 	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
@@ -189,8 +189,8 @@ type LiveSchedule struct {
 
 // KickHistory 就是踢人历史记录
 type KickHistory struct {
-	UserID   int64  `json:"userID"`   // 用户uid
-	Nickname string `json:"nickname"` // 用户名字
+	UserID   int64  `json:"userID"`   // 被踢用户的uid
+	Nickname string `json:"nickname"` // 被踢用户的名字
 	KickTime int64  `json:"kickTime"` // 用户被踢的时间，是以毫秒为单位的Unix时间
 }
 
@@ -338,7 +338,7 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 }
 
 // 获取抢到红包的用户列表
-func (t *token) getLuckList(liveID, redpackID string) (luckyList []LuckyUser, e error) {
+func (t *token) getLuckList(liveID, redpackID, redpackBizUnit string) (luckyList []LuckyUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getLuckList() error: %w", err)
@@ -351,7 +351,7 @@ func (t *token) getLuckList(liveID, redpackID string) (luckyList []LuckyUser, e 
 
 	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("redpackBizUnit", "ztLiveAcfunRedpackGift")
+	form.Set("redpackBizUnit", redpackBizUnit)
 	form.Set("redpackId", redpackID)
 	body, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
 	checkErr(err)
@@ -444,6 +444,7 @@ func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 }
 
 // 获取直播源信息，和getLiveToken()重复了
+/*
 func (t *token) getPlayURL() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -466,6 +467,7 @@ func (t *token) getPlayURL() (e error) {
 
 	return nil
 }
+*/
 
 // 获取全部礼物的数据
 func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
@@ -1322,8 +1324,8 @@ func (ac *AcFunLive) GetSummaryWithLiveID(liveID string) (*Summary, error) {
 }
 
 // GetLuckList 返回抢到红包的用户列表，需要登陆AcFun帐号
-func (ac *AcFunLive) GetLuckList(liveID, redpackID string) ([]LuckyUser, error) {
-	return ac.t.getLuckList(liveID, redpackID)
+func (ac *AcFunLive) GetLuckList(liveID, redpackID, redpackBizUnit string) ([]LuckyUser, error) {
+	return ac.t.getLuckList(liveID, redpackID, redpackBizUnit)
 }
 
 // GetPlayback 返回直播回放的相关信息，目前部分直播没有回放
