@@ -605,6 +605,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 					SoundConfigChangeType: SoundConfigChangeType(chatConfig.SoundConfigChangeType),
 				})
 			}
+		case "CommonStateSignalLiveState":
 		default:
 			log.Printf("未知的State Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				item.SignalType,
