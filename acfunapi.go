@@ -351,7 +351,11 @@ func (t *token) getLuckList(liveID, redpackID, redpackBizUnit string) (luckyList
 
 	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
-	form.Set("redpackBizUnit", redpackBizUnit)
+	if redpackBizUnit == "" {
+		form.Set("redpackBizUnit", "ztLiveAcfunRedpackGift")
+	} else {
+		form.Set("redpackBizUnit", redpackBizUnit)
+	}
 	form.Set("redpackId", redpackID)
 	body, err := t.fetchKuaiShouAPI(redpackLuckListURL, form, false)
 	checkErr(err)
@@ -1323,7 +1327,7 @@ func (ac *AcFunLive) GetSummaryWithLiveID(liveID string) (*Summary, error) {
 	return ac.t.getSummary(liveID)
 }
 
-// GetLuckList 返回抢到红包的用户列表，需要登陆AcFun帐号
+// GetLuckList 返回抢到红包的用户列表，需要登陆AcFun帐号，redpackBizUnit为空时默认为ztLiveAcfunRedpackGift
 func (ac *AcFunLive) GetLuckList(liveID, redpackID, redpackBizUnit string) ([]LuckyUser, error) {
 	return ac.t.getLuckList(liveID, redpackID, redpackBizUnit)
 }

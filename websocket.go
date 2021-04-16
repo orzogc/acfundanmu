@@ -106,6 +106,10 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		var err error
 		for {
 			msg := msgPool.Get().(*[]byte)
+			if msg == nil {
+				b := make([]byte, maxBytesLength)
+				msg = &b
+			}
 			_, *msg, err = conn.ReadMessage((*msg)[:0])
 			if err != nil {
 				if !errors.Is(err, fastws.EOF) {
@@ -118,7 +122,9 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 						ac.callEvent(stopDanmu, err)
 					}
 				}
-				msgPool.Put(msg)
+				if msg != nil {
+					msgPool.Put(msg)
+				}
 				break
 			}
 			msgCh <- msg
@@ -130,6 +136,9 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		defer wg.Done()
 		defer close(payloadCh)
 		for msg := range msgCh {
+			if msg == nil {
+				continue
+			}
 			stream, err := ac.t.decode(*msg)
 			if err != nil {
 				log.Printf("解码接收到的数据出现错误：%v", err)

@@ -13,7 +13,7 @@ import (
 )
 
 // 弹幕队列长度
-const queueLen = 1000
+const queueLen = 1024
 
 // ManagerType 就是房管类型
 type ManagerType int32

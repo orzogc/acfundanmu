@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const maxBytesLength = 2000
+const maxBytesLength = 2048
 
 var lengthPool = sync.Pool{
 	New: func() interface{} {
