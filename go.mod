@@ -18,6 +18,7 @@ require (
 	github.com/segmentio/encoding v0.2.17
 	github.com/valyala/fasthttp v1.23.0
 	github.com/valyala/fastjson v1.6.3
+	go.uber.org/atomic v1.7.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c // indirect
 	google.golang.org/protobuf v1.26.0

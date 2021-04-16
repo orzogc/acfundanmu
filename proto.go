@@ -11,7 +11,6 @@ import (
 	"io"
 	"log"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/orzogc/acfundanmu/acproto"
@@ -39,7 +38,7 @@ var bytesPool = sync.Pool{
 func (t *token) genCommand(command string, msg []byte) []byte {
 	cmd := &acproto.ZtLiveCsCmd{
 		CmdType: command,
-		Ticket:  t.tickets[atomic.LoadUint32(&t.ticketIndex)],
+		Ticket:  t.tickets[t.ticketIndex.Load()],
 		LiveId:  t.liveID,
 	}
 	if msg != nil {
@@ -56,7 +55,7 @@ func (t *token) genCommand(command string, msg []byte) []byte {
 func (t *token) genPayload(cmd string, msg []byte) []byte {
 	payload := &acproto.UpstreamPayload{
 		Command:    cmd,
-		SeqId:      atomic.LoadInt64(&t.seqID),
+		SeqId:      t.seqID.Load(),
 		RetryCount: retryCount,
 		SubBiz:     subBiz,
 	}
@@ -78,7 +77,7 @@ func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 		InstanceId:        t.instanceID,
 		DecodedPayloadLen: uint32(length),
 		EncryptionMode:    acproto.PacketHeader_kEncryptionSessionKey,
-		SeqId:             atomic.LoadInt64(&t.seqID),
+		SeqId:             t.seqID.Load(),
 		Kpn:               kpn,
 	}
 	return header
@@ -116,7 +115,7 @@ func (t *token) register() []byte {
 		TokenType: acproto.TokenInfo_kServiceToken,
 		Token:     []byte(t.ServiceToken),
 	}
-	_ = atomic.AddInt64(&t.seqID, 1)
+	_ = t.seqID.Inc()
 
 	return t.encode(header, body)
 }
@@ -161,7 +160,7 @@ func (t *token) enterRoom() []byte {
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
 
 	header := t.genHeader(len(body))
-	_ = atomic.AddInt64(&t.seqID, 1)
+	_ = t.seqID.Inc()
 
 	return t.encode(header, body)
 }
@@ -179,7 +178,7 @@ func (t *token) keepAlive() []byte {
 
 	header := t.genHeader(len(body))
 
-	_ = atomic.AddInt64(&t.seqID, 1)
+	_ = t.seqID.Inc()
 
 	return t.encode(header, body)
 }
@@ -189,7 +188,7 @@ func (t *token) pushMessage() []byte {
 	body := t.genPayload("Push.ZtLiveInteractive.Message", nil)
 
 	header := t.genHeader((len(body)))
-	header.SeqId = atomic.LoadInt64(&t.headerSeqID)
+	header.SeqId = t.headerSeqID.Load()
 
 	return t.encode(header, body)
 }
@@ -209,7 +208,7 @@ func (t *token) heartbeat() []byte {
 
 	header := t.genHeader(len(body))
 	t.heartbeatSeqID++
-	_ = atomic.AddInt64(&t.seqID, 1)
+	_ = t.seqID.Inc()
 
 	return t.encode(header, body)
 }
@@ -221,7 +220,7 @@ func (t *token) userExit() []byte {
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
 
 	header := t.genHeader(len(body))
-	_ = atomic.AddInt64(&t.seqID, 1)
+	_ = t.seqID.Inc()
 
 	return t.encode(header, body)
 }
@@ -335,7 +334,7 @@ func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error
 	err = proto.Unmarshal(headerBytes, header)
 	checkErr(err)
 
-	atomic.StoreInt64(&t.headerSeqID, header.SeqId)
+	t.headerSeqID.Store(header.SeqId)
 
 	if header.EncryptionMode != acproto.PacketHeader_kEncryptionNone {
 		key := t.sessionKey

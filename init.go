@@ -7,6 +7,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
+	"go.uber.org/atomic"
 )
 
 // 登陆acfun账号
@@ -172,10 +173,10 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	t.tickets = tickets
 	t.instanceID = 0
 	t.sessionKey = nil
-	t.seqID = 1
-	t.headerSeqID = 1
+	t.seqID = atomic.NewInt64(1)
+	t.headerSeqID = atomic.NewInt64(1)
 	t.heartbeatSeqID = 0
-	t.ticketIndex = 0
+	t.ticketIndex = atomic.NewUint32(0)
 
 	err = t.getGiftList()
 	checkErr(err)

@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"sort"
-	"sync/atomic"
 
 	"github.com/dgrr/fastws"
 	"github.com/orzogc/acfundanmu/acproto"
@@ -104,8 +103,8 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 			ticketInvalid := &acproto.ZtLiveScTicketInvalid{}
 			err = proto.Unmarshal(payload, ticketInvalid)
 			checkErr(err)
-			index := atomic.LoadUint32(&ac.t.ticketIndex)
-			_ = atomic.CompareAndSwapUint32(&ac.t.ticketIndex, index, (index+1)%uint32(len(ac.t.tickets)))
+			index := ac.t.ticketIndex.Load()
+			_ = ac.t.ticketIndex.CAS(index, (index+1)%uint32(len(ac.t.tickets)))
 			_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.enterRoom())
 			checkErr(err)
 		default:

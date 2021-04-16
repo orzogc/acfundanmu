@@ -2,6 +2,7 @@ package acfundanmu
 
 import (
 	"github.com/valyala/fastjson"
+	"go.uber.org/atomic"
 )
 
 const (
@@ -87,11 +88,11 @@ type token struct {
 	enterRoomAttach string
 	tickets         []string
 	instanceID      int64
-	sessionKey      []byte // 除第一次外发送ws信息时所用密钥
-	seqID           int64  // 要用原子锁操作
-	headerSeqID     int64  // 要用原子锁操作
+	sessionKey      []byte        // 除第一次外发送ws信息时所用密钥
+	seqID           *atomic.Int64 // 要用原子锁操作
+	headerSeqID     *atomic.Int64 // 要用原子锁操作
 	heartbeatSeqID  int64
-	ticketIndex     uint32 // 要用原子锁操作
+	ticketIndex     *atomic.Uint32 // 要用原子锁操作
 	gifts           map[int64]GiftDetail
 	liverUID        int64 // 主播uid
 	livePage        string
