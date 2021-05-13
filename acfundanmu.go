@@ -113,6 +113,7 @@ type GiftDetail struct {
 	CanCombo               bool   `json:"canCombo"`               // 是否能连击
 	CanDraw                bool   `json:"canDraw"`                // 是否能涂鸦
 	MagicFaceID            int    `json:"magicFaceID"`
+	VupArID                int    `json:"vupArID"`
 	Description            string `json:"description"`  // 礼物的描述
 	RedpackPrice           int    `json:"redpackPrice"` // 礼物红包价格总额，单位为AC币
 }

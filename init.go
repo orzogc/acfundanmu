@@ -309,6 +309,8 @@ func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
 				g.CanDraw = v.GetBool()
 			case "magicFaceId":
 				g.MagicFaceID = v.GetInt()
+			case "vupArId":
+				g.VupArID = v.GetInt()
 			case "description":
 				g.Description = string(v.GetStringBytes())
 			case "redpackPrice":
