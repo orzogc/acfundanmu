@@ -134,6 +134,7 @@ type UserMedalInfo struct {
 
 // MedalRankList 就是主播守护徽章等级列表
 type MedalRankList struct {
+	HasFansClub          bool            `json:"hasFansClub"`          // 主播是否有守护团
 	RankList             []UserMedalInfo `json:"rankList"`             // 主播守护徽章等级列表
 	ClubName             string          `json:"clubName"`             // 守护徽章名字
 	MedalCount           int             `json:"medalCount"`           // 拥有主播守护徽章的用户的数量
@@ -1130,6 +1131,8 @@ func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList,
 		switch string(k) {
 		case "result":
 		case "host-name":
+		case "hasFansClub":
+			medalRankList.HasFansClub = v.GetBool()
 		case "friendshipDegreeRank":
 			list := v.GetArray()
 			medalRankList.RankList = make([]UserMedalInfo, len(list))

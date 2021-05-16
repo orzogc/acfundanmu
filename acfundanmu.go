@@ -489,7 +489,7 @@ func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 		}
 		if err != nil {
 			if retry == 2 {
-				log.Printf("初始化失败：%v", err)
+				//log.Printf("初始化失败：%v", err)
 				return nil, fmt.Errorf("NewAcFunLive() error: 初始化失败，主播可能不在直播：%w", err)
 			}
 		} else {
