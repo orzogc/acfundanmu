@@ -8,7 +8,6 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
-	"io"
 	"log"
 	"sync"
 	"time"
@@ -260,7 +259,7 @@ func encrypt(key []byte, body []byte) []byte {
 	checkErr(err)
 	cipherText := make([]byte, len(body))
 	iv := make([]byte, aes.BlockSize)
-	_, err = io.ReadFull(rand.Reader, iv)
+	_, err = rand.Read(iv)
 	checkErr(err)
 	mode := cipher.NewCBCEncrypter(block, iv)
 	mode.CryptBlocks(cipherText, body)

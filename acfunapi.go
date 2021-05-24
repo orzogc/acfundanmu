@@ -23,12 +23,12 @@ type BillboardUser WatchingUser
 
 // Summary 就是直播的总结信息
 type Summary struct {
-	Duration     int64 `json:"duration"`     // 直播时长，单位为毫秒
-	LikeCount    int   `json:"likeCount"`    // 点赞总数
-	WatchCount   int   `json:"watchCount"`   // 观看过直播的人数总数
-	GiftCount    int   `json:"giftCount"`    // 直播收到的付费礼物数量
-	DiamondCount int   `json:"diamondCount"` // 直播收到的付费礼物对应的钻石数量，100钻石=1AC币
-	BananaCount  int   `json:"bananaCount"`  // 直播收到的香蕉数量
+	Duration     int64  `json:"duration"`     // 直播时长，单位为毫秒
+	LikeCount    string `json:"likeCount"`    // 点赞总数
+	WatchCount   string `json:"watchCount"`   // 观看过直播的人数总数
+	GiftCount    int    `json:"giftCount"`    // 直播收到的付费礼物数量
+	DiamondCount int    `json:"diamondCount"` // 直播收到的付费礼物对应的钻石数量，100钻石=1AC币
+	BananaCount  int    `json:"bananaCount"`  // 直播收到的香蕉数量
 }
 
 // Medal 就是登陆帐号的守护徽章信息
@@ -59,14 +59,14 @@ type MedalDegree struct {
 type MedalDetail struct {
 	Medal       Medal       `json:"medal"`       // 守护徽章信息
 	MedalDegree MedalDegree `json:"medalDegree"` // 守护徽章亲密度信息
-	UserRank    int         `json:"userRank"`    // 登陆用户的主播守护徽章亲密度的排名
+	UserRank    string      `json:"userRank"`    // 登陆用户的主播守护徽章亲密度的排名
 	ClubName    string      `json:"clubName"`    // 守护徽章名字
 }
 
 // MedalList 就是登陆用户拥有的守护徽章列表
 type MedalList struct {
 	MedalList   []Medal     `json:"medalList"`   // 用户拥有的守护徽章列表
-	MedalDetail MedalDetail `json:"medalDetail"` // 用户的指定主播的守护徽章详细信息
+	MedalDetail MedalDetail `json:"medalDetail"` // 指定主播的守护徽章详细信息
 }
 
 // LuckyUser 就是抢到红包的用户，没有Medal和ManagerType
@@ -140,7 +140,7 @@ type MedalRankList struct {
 	MedalCount           int             `json:"medalCount"`           // 拥有主播守护徽章的用户的数量
 	HasMedal             bool            `json:"hasMedal"`             // 登陆用户是否有主播的守护徽章
 	UserFriendshipDegree int             `json:"userFriendshipDegree"` // 登陆用户的主播守护徽章的亲密度
-	UserRank             int             `json:"userRank"`             // 登陆用户的主播守护徽章的排名
+	UserRank             string          `json:"userRank"`             // 登陆用户的主播守护徽章的排名
 }
 
 // LiveStat 就是直播统计数据
@@ -320,11 +320,9 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 		case "liveDurationMs":
 			summary.Duration = v.GetInt64()
 		case "likeCount":
-			summary.LikeCount, err = strconv.Atoi(string(v.GetStringBytes()))
-			checkErr(err)
+			summary.LikeCount = string(v.GetStringBytes())
 		case "watchCount":
-			summary.WatchCount, err = strconv.Atoi(string(v.GetStringBytes()))
-			checkErr(err)
+			summary.WatchCount = string(v.GetStringBytes())
 		case "payWalletTypeToReceiveCount":
 			summary.GiftCount = v.GetInt("1")
 		case "payWalletTypeToReceiveCurrency":
@@ -750,8 +748,7 @@ func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 		case "medalDegreeLimit":
 			medal.MedalDegree = *getMedalDegreeJSON(v)
 		case "rankIndex":
-			medal.UserRank, err = strconv.Atoi(string(v.GetStringBytes()))
-			checkErr(err)
+			medal.UserRank = string(v.GetStringBytes())
 		default:
 			log.Printf("守护徽章详细信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
@@ -808,8 +805,7 @@ func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 		case "medalDegreeLimit":
 			medalList.MedalDetail.MedalDegree = *getMedalDegreeJSON(v)
 		case "rankIndex":
-			medalList.MedalDetail.UserRank, err = strconv.Atoi(string(v.GetStringBytes()))
-			checkErr(err)
+			medalList.MedalDetail.UserRank = string(v.GetStringBytes())
 		case "clubName":
 			medalList.MedalDetail.ClubName = string(v.GetStringBytes())
 		default:
@@ -1162,8 +1158,7 @@ func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList,
 		case "curUserFriendshipDegree":
 			medalRankList.UserFriendshipDegree = v.GetInt()
 		case "curUserRankIndex":
-			medalRankList.UserRank, err = strconv.Atoi(string(v.GetStringBytes()))
-			checkErr(err)
+			medalRankList.UserRank = string(v.GetStringBytes())
 		default:
 			log.Printf("指定主播的守护榜里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
