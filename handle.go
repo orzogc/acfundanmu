@@ -649,7 +649,7 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 			err = proto.Unmarshal(item.Payload, liveManagerState)
 			checkErr(err)
 			if event {
-				ac.callEvent(managerStateEvent, liveManagerState.State)
+				ac.callEvent(managerStateEvent, ManagerState(liveManagerState.State))
 			} else {
 				ac.info.Lock()
 				ac.info.LiveManagerState = ManagerState(liveManagerState.State)
