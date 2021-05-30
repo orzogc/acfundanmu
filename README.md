@@ -134,6 +134,7 @@ if err != nil {
 }
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
+liveID := ac.GetLiveID()
 go func() {
     for {
         select {
@@ -141,7 +142,7 @@ go func() {
             return
         default:
             // 循环获取watchingList并处理
-            watchingList, err := ac.GetWatchingList()
+            watchingList, err := ac.GetWatchingList(liveID)
             if err != nil {
                 log.Panicln(err)
             }

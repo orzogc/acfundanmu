@@ -541,7 +541,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 }
 
 // 获取主播踢人的历史记录
-func (t *token) getKickHistory(count, page int) (list []KickHistory, lastPage bool, e error) {
+func (t *token) getKickHistory(liveID string, count, page int) (list []KickHistory, lastPage bool, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getKickHistory() error: %w", err)
@@ -552,7 +552,7 @@ func (t *token) getKickHistory(count, page int) (list []KickHistory, lastPage bo
 		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
 	}
 
-	form := t.defaultForm(t.liveID)
+	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("limit", strconv.Itoa(count))
 	form.Set("pcursor", strconv.Itoa(page))
@@ -1300,13 +1300,8 @@ func (pb *Playback) Distinguish() (aliURL, txURL string) {
 	return aliURL, txURL
 }
 
-// GetWatchingList 返回直播间排名前50的在线观众信息列表，需要设置主播uid
-func (ac *AcFunLive) GetWatchingList() ([]WatchingUser, error) {
-	return ac.t.getWatchingList(ac.t.liveID)
-}
-
-// GetWatchingListWithLiveID 返回直播间排名前50的在线观众信息列表
-func (ac *AcFunLive) GetWatchingListWithLiveID(liveID string) ([]WatchingUser, error) {
+// GetWatchingList 返回直播间排名前50的在线观众信息列表
+func (ac *AcFunLive) GetWatchingList(liveID string) ([]WatchingUser, error) {
 	return ac.t.getWatchingList(liveID)
 }
 
@@ -1315,13 +1310,8 @@ func (ac *AcFunLive) GetBillboard(uid int64) ([]BillboardUser, error) {
 	return ac.t.getBillboard(uid)
 }
 
-// GetSummary 返回直播总结信息，需要设置主播uid
-func (ac *AcFunLive) GetSummary() (*Summary, error) {
-	return ac.t.getSummary(ac.t.liveID)
-}
-
-// GetSummaryWithLiveID 返回直播总结信息
-func (ac *AcFunLive) GetSummaryWithLiveID(liveID string) (*Summary, error) {
+// GetSummary 返回直播总结信息
+func (ac *AcFunLive) GetSummary(liveID string) (*Summary, error) {
 	return ac.t.getSummary(liveID)
 }
 
@@ -1355,13 +1345,13 @@ func (ac *AcFunLive) GetWalletBalance() (accoins int, bananas int, e error) {
 }
 
 // GetKickHistory 返回主播正在直播的那一场踢人的历史记录，count为每页的数量，page为第几页（从0开始数起），lastPage说明是否最后一页，需要登陆主播的AcFun帐号
-func (ac *AcFunLive) GetKickHistory(count, page int) (list []KickHistory, lastPage bool, e error) {
-	return ac.t.getKickHistory(count, page)
+func (ac *AcFunLive) GetKickHistory(liveID string, count, page int) (list []KickHistory, lastPage bool, e error) {
+	return ac.t.getKickHistory(liveID, count, page)
 }
 
 // GetAllKickHistory 返回主播正在直播的那一场踢人的全部历史记录，需要登陆主播的AcFun帐号
-func (ac *AcFunLive) GetAllKickHistory() ([]KickHistory, error) {
-	list, _, err := ac.t.getKickHistory(1000000, 0)
+func (ac *AcFunLive) GetAllKickHistory(liveID string) ([]KickHistory, error) {
+	list, _, err := ac.t.getKickHistory(liveID, 1000000, 0)
 	return list, err
 }
 

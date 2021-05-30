@@ -8,7 +8,7 @@ import (
 )
 
 // 房管踢人
-func (t *token) managerKick(kickedUID int64) (e error) {
+func (t *token) managerKick(liveID string, kickedUID int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("managerKick() error: %w", err)
@@ -19,7 +19,7 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 		panic(fmt.Errorf("房管踢人需要登陆房管的AcFun帐号"))
 	}
 
-	form := t.defaultForm(t.liveID)
+	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("kickedUserId", strconv.FormatInt(kickedUID, 10))
 	body, err := t.fetchKuaiShouAPI(managerKickURL, form, false)
@@ -37,7 +37,7 @@ func (t *token) managerKick(kickedUID int64) (e error) {
 }
 
 // 主播踢人
-func (t *token) authorKick(kickedUID int64) (e error) {
+func (t *token) authorKick(liveID string, kickedUID int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("authorKick() error: %w", err)
@@ -48,7 +48,7 @@ func (t *token) authorKick(kickedUID int64) (e error) {
 		panic(fmt.Errorf("主播踢人需要登陆主播的AcFun帐号"))
 	}
 
-	form := t.defaultForm(t.liveID)
+	form := t.defaultForm(liveID)
 	defer fasthttp.ReleaseArgs(form)
 	form.Set("kickedUserId", strconv.FormatInt(kickedUID, 10))
 	body, err := t.fetchKuaiShouAPI(authorKickURL, form, false)
@@ -188,13 +188,13 @@ func (t *token) cancelWearMedal(liverUID int64) (e error) {
 }
 
 // ManagerKick 房管踢人，需要登陆AcFun帐号，需要设置主播uid
-func (ac *AcFunLive) ManagerKick(kickedUID int64) error {
-	return ac.t.managerKick(kickedUID)
+func (ac *AcFunLive) ManagerKick(liveID string, kickedUID int64) error {
+	return ac.t.managerKick(liveID, kickedUID)
 }
 
 // AuthorKick 主播踢人，需要登陆AcFun帐号，需要设置主播uid
-func (ac *AcFunLive) AuthorKick(kickedUID int64) error {
-	return ac.t.authorKick(kickedUID)
+func (ac *AcFunLive) AuthorKick(liveID string, kickedUID int64) error {
+	return ac.t.authorKick(liveID, kickedUID)
 }
 
 // AddManager 主播添加房管，需要登陆AcFun帐号
