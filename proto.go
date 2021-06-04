@@ -71,7 +71,7 @@ func (t *token) genPayload(cmd string, msg []byte) []byte {
 // 生成PacketHeader
 func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 	header = &acproto.PacketHeader{
-		AppId:             appID,
+		AppId:             t.appID,
 		Uid:               t.UserID,
 		InstanceId:        t.instanceID,
 		DecodedPayloadLen: uint32(length),
@@ -86,11 +86,11 @@ func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 func (t *token) register() []byte {
 	request := &acproto.RegisterRequest{
 		AppInfo: &acproto.AppInfo{
-			AppName:    appName,
-			SdkVersion: sdkVersion,
+			SdkVersion:  clientLiveSdkVersion,
+			LinkVersion: linkVersion,
 		},
 		DeviceInfo: &acproto.DeviceInfo{
-			PlatformType: acproto.DeviceInfo_H5,
+			PlatformType: acproto.DeviceInfo_H5_WINDOWS,
 			DeviceModel:  "h5",
 		},
 		PresenceStatus:  acproto.RegisterRequest_kPresenceOnline,
@@ -333,6 +333,9 @@ func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error
 	err = proto.Unmarshal(headerBytes, header)
 	checkErr(err)
 
+	if t.appID == 0 && header.AppId != 0 {
+		t.appID = header.AppId
+	}
 	t.headerSeqID.Store(header.SeqId)
 
 	if header.EncryptionMode != acproto.PacketHeader_kEncryptionNone {

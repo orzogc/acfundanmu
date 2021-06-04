@@ -20,14 +20,14 @@ const (
 	visitor   = "acfun.api.visitor"
 	midground = "acfun.midground.api"
 
-	wsHost               = "wss://link.xiatou.com/"
-	appID                = 13
+	wsHost               = "wss://klink-newproduct-ws3.kwaizt.com/"
 	appName              = "link-sdk"
 	sdkVersion           = "1.2.1"
 	kpn                  = "ACFUN_APP"
 	kpf                  = "PC_WEB"
 	subBiz               = "mainApp"
 	clientLiveSdkVersion = "kwai-acfun-live-link"
+	linkVersion          = "2.13.8"
 
 	retryCount uint32 = 1
 
@@ -87,6 +87,7 @@ type token struct {
 	liveID          string
 	enterRoomAttach string
 	tickets         []string
+	appID           int32
 	instanceID      int64
 	sessionKey      []byte        // 除第一次外发送ws信息时所用密钥
 	seqID           *atomic.Int64 // 要用原子锁操作

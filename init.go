@@ -171,6 +171,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	t.liveID = liveID
 	t.enterRoomAttach = enterRoomAttach
 	t.tickets = tickets
+	t.appID = 0
 	t.instanceID = 0
 	t.sessionKey = nil
 	t.seqID = atomic.NewInt64(1)
