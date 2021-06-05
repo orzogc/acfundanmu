@@ -31,7 +31,7 @@ type Summary struct {
 	BananaCount  int    `json:"bananaCount"`  // 直播收到的香蕉数量
 }
 
-// Medal 就是登陆帐号的守护徽章信息
+// Medal 就是指定用户的守护徽章信息
 type Medal struct {
 	MedalInfo          `json:"medalInfo"`
 	UperName           string `json:"uperName"`           // UP主的名字
@@ -40,6 +40,7 @@ type Medal struct {
 	FriendshipDegree   int    `json:"friendshipDegree"`   // 目前守护徽章的亲密度
 	JoinClubTime       int64  `json:"joinClubTime"`       // 加入守护团的时间，是以毫秒为单位的Unix时间
 	CurrentDegreeLimit int    `json:"currentDegreeLimit"` // 守护徽章目前等级的亲密度的上限
+	MedalCount         int    `json:"medalCount"`         // 指定用户拥有的守护徽章数量
 }
 
 // MedalDegree 就是守护徽章的亲密度信息
@@ -786,6 +787,7 @@ func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 		panic(fmt.Errorf("获取登陆帐号拥有的守护徽章列表失败，响应为 %s", string(body)))
 	}
 
+	num := len(v.GetArray("medalList"))
 	medalList = new(MedalList)
 	o := v.GetObject()
 	o.Visit(func(k []byte, v *fastjson.Value) {
@@ -796,12 +798,16 @@ func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 		case "liveGiftConfig": // 忽略
 		case "medalList":
 			list := v.GetArray()
-			medalList.MedalList = make([]Medal, 0, len(list))
+			medalList.MedalList = make([]Medal, 0, num)
 			for _, l := range list {
-				medalList.MedalList = append(medalList.MedalList, *getMedalJSON(l, t.UserID))
+				medal := getMedalJSON(l, t.UserID)
+				medal.MedalCount = num
+				medalList.MedalList = append(medalList.MedalList, *medal)
 			}
 		case "medal":
-			medalList.MedalDetail.Medal = *getMedalJSON(v, t.UserID)
+			medal := getMedalJSON(v, t.UserID)
+			medal.MedalCount = num
+			medalList.MedalDetail.Medal = *medal
 		case "medalDegreeLimit":
 			medalList.MedalDetail.MedalDegree = *getMedalDegreeJSON(v)
 		case "rankIndex":
@@ -973,6 +979,7 @@ func getUserMedal(uid int64) (medal *Medal, e error) {
 	}
 
 	medal = new(Medal)
+	medal.MedalCount = v.GetInt("medalCount")
 	o := v.GetObject("wearMedalInfo")
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {

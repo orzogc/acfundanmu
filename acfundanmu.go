@@ -456,13 +456,13 @@ func Login(account, password string) (cookies Cookies, err error) {
 		cookies, err = login(account, password)
 		if err != nil {
 			if retry == 2 {
-				log.Printf("登陆AcFun帐号失败：%v", err)
+				//log.Printf("登陆AcFun帐号失败：%v", err)
 				return nil, fmt.Errorf("Login() error: 登陆AcFun帐号失败：%w", err)
 			}
 		} else {
 			break
 		}
-		time.Sleep(10 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 
 	return cookies, nil
@@ -495,7 +495,7 @@ func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 		} else {
 			break
 		}
-		time.Sleep(10 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 
 	return ac, nil
