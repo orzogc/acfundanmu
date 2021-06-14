@@ -595,13 +595,13 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				})
 			}
 		case "CommonStateSignalAuthorChatChangeSoundConfig":
-			chatConfig := &acproto.CommonStateSignalAuthorChatChangeSoundConfig{}
-			err = proto.Unmarshal(item.Payload, chatConfig)
+			soundConfig := &acproto.CommonStateSignalAuthorChatChangeSoundConfig{}
+			err = proto.Unmarshal(item.Payload, soundConfig)
 			checkErr(err)
 			if event {
 				ac.callEvent(authorChatChangeSoundConfigEvent, &AuthorChatChangeSoundConfig{
-					ChatID:                chatConfig.AuthorChatId,
-					SoundConfigChangeType: SoundConfigChangeType(chatConfig.SoundConfigChangeType),
+					ChatID:                soundConfig.AuthorChatId,
+					SoundConfigChangeType: SoundConfigChangeType(soundConfig.SoundConfigChangeType),
 				})
 			}
 		case "CommonStateSignalLiveState":

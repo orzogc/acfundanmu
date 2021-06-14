@@ -8,13 +8,13 @@ require (
 	github.com/andybalholm/brotli v1.0.3 // indirect
 	github.com/dgrr/fastws v1.0.4
 	github.com/google/uuid v1.2.0
-	github.com/klauspost/compress v1.13.0 // indirect
+	github.com/klauspost/compress v1.13.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.6 // indirect
 	github.com/qiniu/go-sdk/v7 v7.9.6
 	github.com/segmentio/encoding v0.2.19
 	github.com/valyala/fasthttp v1.26.0
 	github.com/valyala/fastjson v1.6.3
-	go.uber.org/atomic v1.7.0
+	go.uber.org/atomic v1.8.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	google.golang.org/protobuf v1.26.0
 )

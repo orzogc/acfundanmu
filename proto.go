@@ -102,12 +102,10 @@ func (t *token) register() []byte {
 			Uid: t.UserID,
 		},
 	}
-
 	requestBytes, err := proto.Marshal(request)
 	checkErr(err)
 
 	body := t.genPayload("Basic.Register", requestBytes)
-
 	header := t.genHeader(len(body))
 	header.EncryptionMode = acproto.PacketHeader_kEncryptionServiceToken
 	header.TokenInfo = &acproto.TokenInfo{
@@ -122,7 +120,6 @@ func (t *token) register() []byte {
 // Unregister数据
 func (t *token) unregister() []byte {
 	body := t.genPayload("Basic.Unregister", nil)
-
 	header := t.genHeader(len(body))
 
 	return t.encode(header, body)
@@ -155,9 +152,7 @@ func (t *token) enterRoom() []byte {
 	checkErr(err)
 
 	cmd := t.genCommand("ZtLiveCsEnterRoom", requestBytes)
-
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
-
 	header := t.genHeader(len(body))
 	_ = t.seqID.Inc()
 
@@ -174,9 +169,7 @@ func (t *token) keepAlive() []byte {
 	checkErr(err)
 
 	body := t.genPayload("Basic.KeepAlive", keepAliveBytes)
-
 	header := t.genHeader(len(body))
-
 	_ = t.seqID.Inc()
 
 	return t.encode(header, body)
@@ -185,7 +178,6 @@ func (t *token) keepAlive() []byte {
 // Push Message数据
 func (t *token) pushMessage() []byte {
 	body := t.genPayload("Push.ZtLiveInteractive.Message", nil)
-
 	header := t.genHeader((len(body)))
 	header.SeqId = t.headerSeqID.Load()
 
@@ -202,9 +194,7 @@ func (t *token) heartbeat() []byte {
 	checkErr(err)
 
 	cmd := t.genCommand("ZtLiveCsHeartbeat", heartbeatBytes)
-
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
-
 	header := t.genHeader(len(body))
 	t.heartbeatSeqID++
 	_ = t.seqID.Inc()
@@ -215,9 +205,7 @@ func (t *token) heartbeat() []byte {
 // UserExit数据
 func (t *token) userExit() []byte {
 	cmd := t.genCommand("ZtLiveCsUserExit", nil)
-
 	body := t.genPayload("Global.ZtLiveInteractive.CsCmd", cmd)
-
 	header := t.genHeader(len(body))
 	_ = t.seqID.Inc()
 

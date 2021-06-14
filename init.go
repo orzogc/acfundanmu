@@ -179,8 +179,9 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	t.heartbeatSeqID = 0
 	t.ticketIndex = atomic.NewUint32(0)
 
-	err = t.getGiftList()
+	giftList, err := t.getGiftList(t.liveID)
 	checkErr(err)
+	t.gifts = giftList
 
 	stream = StreamInfo{
 		LiveID:        liveID,
@@ -250,14 +251,16 @@ func (t *token) getDeviceID() (e error) {
 }
 
 // 获取礼物列表
-func (t *token) getGiftList() (e error) {
+func (t *token) getGiftList(liveID string) (giftList map[int64]GiftDetail, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("updateGiftList() error: %w", err)
+			e = fmt.Errorf("getGiftList() error: %w", err)
 		}
 	}()
 
-	body, err := t.fetchKuaiShouAPI(giftURL, nil, false)
+	form := t.defaultForm(liveID)
+	defer fasthttp.ReleaseArgs(form)
+	body, err := t.fetchKuaiShouAPI(giftURL, form, false)
 	checkErr(err)
 
 	p := generalParserPool.Get()
@@ -268,9 +271,7 @@ func (t *token) getGiftList() (e error) {
 		panic(fmt.Errorf("获取直播间的礼物列表失败，响应为 %s", string(body)))
 	}
 
-	t.gifts = updateGiftList(v)
-
-	return nil
+	return updateGiftList(v), nil
 }
 
 // 返回礼物数据

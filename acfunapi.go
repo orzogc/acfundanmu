@@ -495,9 +495,7 @@ func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 		panic(fmt.Errorf("获取全部礼物的数据失败，响应为 %s", string(body)))
 	}
 
-	gifts = updateGiftList(v)
-
-	return gifts, nil
+	return updateGiftList(v), nil
 }
 
 // 获取钱包里AC币和拥有的香蕉的数量
@@ -1332,13 +1330,16 @@ func (ac *AcFunLive) GetPlayback(liveID string) (*Playback, error) {
 	return ac.t.getPlayback(liveID)
 }
 
-// GetGiftList 返回指定主播直播间的礼物数据，需要设置主播uid
-func (ac *AcFunLive) GetGiftList() map[int64]GiftDetail {
-	gifts := make(map[int64]GiftDetail)
-	for k, v := range ac.t.gifts {
-		gifts[k] = v
+// GetGiftList 返回指定主播直播间的礼物数据
+func (ac *AcFunLive) GetGiftList(liveID string) (map[int64]GiftDetail, error) {
+	if liveID == ac.t.liveID {
+		gifts := make(map[int64]GiftDetail, len(ac.t.gifts))
+		for k, v := range ac.t.gifts {
+			gifts[k] = v
+		}
+		return gifts, nil
 	}
-	return gifts
+	return ac.t.getGiftList(liveID)
 }
 
 // GetAllGiftList 返回全部礼物的数据
