@@ -13,7 +13,7 @@ import (
 )
 
 // 弹幕队列长度
-const queueLen = 1024
+const queueLen = 100
 
 // ManagerType 就是房管类型
 type ManagerType int32
@@ -116,6 +116,7 @@ type GiftDetail struct {
 	VupArID                int    `json:"vupArID"`
 	Description            string `json:"description"`  // 礼物的描述
 	RedpackPrice           int    `json:"redpackPrice"` // 礼物红包价格总额，单位为AC币
+	CornerMarkerText       string `json:"cornerMarkerText"`
 }
 
 // DrawPoint 单个涂鸦礼物的位置

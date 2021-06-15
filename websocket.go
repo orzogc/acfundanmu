@@ -95,8 +95,8 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.enterRoom())
 	checkErr(err)
 
-	msgCh := make(chan *[]byte, 100)
-	payloadCh := make(chan *acproto.DownstreamPayload, 100)
+	msgCh := make(chan *[]byte, queueLen)
+	payloadCh := make(chan *acproto.DownstreamPayload, queueLen)
 	hasError := false
 	var wg sync.WaitGroup
 	wg.Add(1)

@@ -317,6 +317,8 @@ func updateGiftList(v *fastjson.Value) map[int64]GiftDetail {
 				g.Description = string(v.GetStringBytes())
 			case "redpackPrice":
 				g.RedpackPrice = v.GetInt()
+			case "cornerMarkerText":
+				g.CornerMarkerText = string(v.GetStringBytes())
 			default:
 				log.Printf("礼物列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 			}
