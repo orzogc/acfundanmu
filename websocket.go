@@ -67,14 +67,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 
 	conn, err := fastws.Dial(wsHost)
 	checkErr(err)
-
-	// 关闭websocket
-	wsCtx, wsCancel := context.WithCancel(ctx)
-	defer wsCancel()
-	go func() {
-		<-wsCtx.Done()
-		_ = conn.Close()
-	}()
+	defer conn.Close()
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.register())
 	checkErr(err)
@@ -91,10 +84,12 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.keepAlive())
 	checkErr(err)
-
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.enterRoom())
 	checkErr(err)
 
+	// 关闭websocket
+	wsCtx, wsCancel := context.WithCancel(ctx)
+	defer wsCancel()
 	msgCh := make(chan *[]byte, queueLen)
 	payloadCh := make(chan *acproto.DownstreamPayload, queueLen)
 	hasError := false
@@ -105,29 +100,34 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		defer close(msgCh)
 		var err error
 		for {
-			msg := msgPool.Get().(*[]byte)
-			if msg == nil {
-				b := make([]byte, maxBytesLength)
-				msg = &b
-			}
-			_, *msg, err = conn.ReadMessage((*msg)[:0])
-			if err != nil {
-				if !errors.Is(err, fastws.EOF) {
-					log.Printf("websocket接收数据出现错误：%v", err)
-					log.Printf("停止获取uid为%d的主播的直播弹幕", ac.t.liverUID)
-					hasError = true
-					errCh <- err
-					close(errCh)
-					if event {
-						ac.callEvent(stopDanmu, err)
+			select {
+			case <-wsCtx.Done():
+				return
+			default:
+				msg := msgPool.Get().(*[]byte)
+				if msg == nil {
+					b := make([]byte, maxBytesLength)
+					msg = &b
+				}
+				_, *msg, err = conn.ReadMessage((*msg)[:0])
+				if err != nil {
+					if !errors.Is(err, fastws.EOF) {
+						log.Printf("websocket接收数据出现错误：%v", err)
+						log.Printf("停止获取uid为%d的主播的直播弹幕", ac.t.liverUID)
+						hasError = true
+						errCh <- err
+						close(errCh)
+						if event {
+							ac.callEvent(stopDanmu, err)
+						}
 					}
+					if msg != nil {
+						msgPool.Put(msg)
+					}
+					break
 				}
-				if msg != nil {
-					msgPool.Put(msg)
-				}
-				break
+				msgCh <- msg
 			}
-			msgCh <- msg
 		}
 	}()
 
