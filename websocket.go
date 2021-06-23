@@ -65,12 +65,12 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 		defer ac.q.Dispose()
 	}
 
-	conn, err := fastws.Dial(wsHost)
-	checkErr(err)
-
 	// 关闭websocket
 	wsCtx, wsCancel := context.WithCancel(ctx)
 	defer wsCancel()
+
+	conn, err := fastws.Dial(wsHost)
+	checkErr(err)
 	go func() {
 		<-wsCtx.Done()
 		_ = conn.Close()
