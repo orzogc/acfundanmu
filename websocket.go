@@ -91,7 +91,6 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.keepAlive())
 	checkErr(err)
-
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.enterRoom())
 	checkErr(err)
 
