@@ -27,7 +27,7 @@ type Summary struct {
 	LikeCount    string `json:"likeCount"`    // 点赞总数
 	WatchCount   string `json:"watchCount"`   // 观看过直播的人数总数
 	GiftCount    int    `json:"giftCount"`    // 直播收到的付费礼物数量
-	DiamondCount int    `json:"diamondCount"` // 直播收到的付费礼物对应的钻石数量，100钻石=1AC币
+	DiamondCount int    `json:"diamondCount"` // 主播收到的实际钻石数量（扣除平台相关费用），100钻石=1AC币
 	BananaCount  int    `json:"bananaCount"`  // 直播收到的香蕉数量
 }
 
@@ -1180,16 +1180,10 @@ func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, las
 		}
 	}()
 
-	form := fasthttp.AcquireArgs()
-	defer fasthttp.ReleaseArgs(form)
-	form.Set("count", strconv.Itoa(count))
-	form.Set("pcursor", strconv.Itoa(page))
 	client := &httpClient{
-		url:         liveListURL,
-		body:        form.QueryString(),
-		method:      "POST",
-		cookies:     cookies,
-		contentType: formContentType,
+		url:     fmt.Sprintf(liveListURL, count, page),
+		method:  "GET",
+		cookies: cookies,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1198,6 +1192,7 @@ func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, las
 	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
+	v = v.Get("channelListData")
 	if !v.Exists("result") || v.GetInt("result") != 0 {
 		panic(fmt.Errorf("获取正在直播的直播间列表失败，响应为：%s", string(body)))
 	}
