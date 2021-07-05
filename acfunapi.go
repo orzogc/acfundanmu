@@ -61,14 +61,13 @@ type MedalDetail struct {
 	Medal       Medal       `json:"medal"`       // 守护徽章信息
 	MedalDegree MedalDegree `json:"medalDegree"` // 守护徽章亲密度信息
 	UserRank    string      `json:"userRank"`    // 登陆用户的主播守护徽章亲密度的排名
-	ClubName    string      `json:"clubName"`    // 守护徽章名字
 }
 
 // MedalList 就是登陆用户拥有的守护徽章列表
-type MedalList struct {
-	MedalList   []Medal     `json:"medalList"`   // 用户拥有的守护徽章列表
-	MedalDetail MedalDetail `json:"medalDetail"` // 指定主播的守护徽章详细信息
-}
+//type MedalList struct {
+//	MedalList   []Medal     `json:"medalList"`   // 用户拥有的守护徽章列表
+//	MedalDetail MedalDetail `json:"medalDetail"` // 指定主播的守护徽章详细信息
+//}
 
 // LuckyUser 就是抢到红包的用户，没有Medal和ManagerType
 type LuckyUser struct {
@@ -752,13 +751,12 @@ func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 			log.Printf("守护徽章详细信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
 	})
-	medal.ClubName = medal.Medal.ClubName
 
 	return medal, nil
 }
 
 // 获取登陆帐号拥有的守护徽章列表
-func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
+func (t *token) getMedalList() (medalList []Medal, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getMedalList() error: %w", err)
@@ -770,7 +768,7 @@ func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 	}
 
 	client := &httpClient{
-		url:     fmt.Sprintf(medalListURL, uid),
+		url:     medalListURL,
 		method:  "GET",
 		cookies: t.Cookies,
 	}
@@ -785,33 +783,20 @@ func (t *token) getMedalList(uid int64) (medalList *MedalList, e error) {
 		panic(fmt.Errorf("获取登陆帐号拥有的守护徽章列表失败，响应为 %s", string(body)))
 	}
 
-	num := len(v.GetArray("medalList"))
-	medalList = new(MedalList)
 	o := v.GetObject()
 	o.Visit(func(k []byte, v *fastjson.Value) {
 		switch string(k) {
 		case "result":
 		case "host-name":
-		case "status":
-		case "liveGiftConfig": // 忽略
 		case "medalList":
 			list := v.GetArray()
-			medalList.MedalList = make([]Medal, 0, num)
+			num := len(list)
+			medalList = make([]Medal, 0, num)
 			for _, l := range list {
 				medal := getMedalJSON(l, t.UserID)
 				medal.MedalCount = num
-				medalList.MedalList = append(medalList.MedalList, *medal)
+				medalList = append(medalList, *medal)
 			}
-		case "medal":
-			medal := getMedalJSON(v, t.UserID)
-			medal.MedalCount = num
-			medalList.MedalDetail.Medal = *medal
-		case "medalDegreeLimit":
-			medalList.MedalDetail.MedalDegree = *getMedalDegreeJSON(v)
-		case "rankIndex":
-			medalList.MedalDetail.UserRank = string(v.GetStringBytes())
-		case "clubName":
-			medalList.MedalDetail.ClubName = string(v.GetStringBytes())
 		default:
 			log.Printf("登陆帐号拥有的守护徽章列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
@@ -1368,9 +1353,9 @@ func (ac *AcFunLive) GetMedalDetail(uid int64) (*MedalDetail, error) {
 	return ac.t.getMedalDetail(uid)
 }
 
-// GetMedalList 返回登陆用户拥有的守护徽章列表，uid为想要获取守护徽章详细信息的主播的uid，可以为0，可用于获取指定主播的守护徽章名字，需要登陆AcFun帐号
-func (ac *AcFunLive) GetMedalList(uid int64) (*MedalList, error) {
-	return ac.t.getMedalList(uid)
+// GetMedalList 返回登陆用户拥有的守护徽章列表，需要登陆AcFun帐号
+func (ac *AcFunLive) GetMedalList() ([]Medal, error) {
+	return ac.t.getMedalList()
 }
 
 // GetLiveData 返回前days日到目前为止所有直播的统计数据，需要登陆主播的AcFun帐号
