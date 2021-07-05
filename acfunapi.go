@@ -1068,10 +1068,15 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 		}
 	}()
 
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("authorId", strconv.FormatInt(uid, 10))
 	client := &httpClient{
-		url:     fmt.Sprintf(liveInfoURL, uid),
-		method:  "GET",
-		cookies: cookies,
+		url:         liveInfoURL,
+		body:        form.QueryString(),
+		method:      "POST",
+		cookies:     cookies,
+		contentType: formContentType,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1165,10 +1170,16 @@ func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, las
 		}
 	}()
 
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set("count", strconv.Itoa(count))
+	form.Set("pcursor", strconv.Itoa(page))
 	client := &httpClient{
-		url:     fmt.Sprintf(liveListURL, count, page),
-		method:  "GET",
-		cookies: cookies,
+		url:         liveListURL,
+		body:        form.QueryString(),
+		method:      "POST",
+		cookies:     cookies,
+		contentType: formContentType,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1177,7 +1188,6 @@ func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, las
 	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
-	v = v.Get("channelListData")
 	if !v.Exists("result") || v.GetInt("result") != 0 {
 		panic(fmt.Errorf("获取正在直播的直播间列表失败，响应为：%s", string(body)))
 	}
@@ -1383,7 +1393,7 @@ func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(ac.t.Cookies)
 }
 
-// GetScheduleList 返回直播预告列表
+// GetScheduleList 返回直播预告列表，目前有问题不可用
 func (ac *AcFunLive) GetScheduleList() ([]LiveSchedule, error) {
 	return getScheduleList(ac.t.Cookies)
 }
@@ -1413,7 +1423,7 @@ func GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(nil)
 }
 
-// GetScheduleList 返回直播预告列表
+// GetScheduleList 返回直播预告列表，目前有问题不可用
 func GetScheduleList() ([]LiveSchedule, error) {
 	return getScheduleList(nil)
 }
