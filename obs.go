@@ -316,6 +316,7 @@ func (t *token) getQiniuToken() (token *QiniuToken, e error) {
 	return token, nil
 }
 
+// 上传图片
 func (token *QiniuToken) uploadImage(file string) (fileURL string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -595,17 +596,17 @@ func (ac *AcFunLive) GetLiveStatus() (*LiveStatus, error) {
 	return ac.t.getLiveStatus()
 }
 
-// GetQiniuToken 返回七牛云上传token，需要登陆AcFun帐号
+// GetQiniuToken 返回七牛云上传token，需要登陆AcFun帐号，目前有问题不可用
 func (ac *AcFunLive) GetQiniuToken() (*QiniuToken, error) {
 	return ac.t.getQiniuToken()
 }
 
-// UploadImage 上传图片到AcFun服务器，file为图片的路径，返回图片链接fileURL
+// UploadImage 上传图片到AcFun服务器，file为图片的路径，返回图片链接fileURL，目前有问题不可用
 func (token *QiniuToken) UploadImage(file string) (fileURL string, err error) {
 	return token.uploadImage(file)
 }
 
-// UploadImage 上传图片到AcFun服务器，file为图片的路径，返回图片链接fileURL
+// UploadImage 上传图片到AcFun服务器，file为图片的路径，返回图片链接fileURL，目前有问题不可用
 func (ac *AcFunLive) UploadImage(file string) (fileURL string, err error) {
 	token, err := ac.GetQiniuToken()
 	if err != nil {
