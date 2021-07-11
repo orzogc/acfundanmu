@@ -1089,15 +1089,10 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 		}
 	}()
 
-	form := fasthttp.AcquireArgs()
-	defer fasthttp.ReleaseArgs(form)
-	form.Set("authorId", strconv.FormatInt(uid, 10))
 	client := &httpClient{
-		url:         liveInfoURL,
-		body:        form.QueryString(),
-		method:      "POST",
-		cookies:     cookies,
-		contentType: formContentType,
+		url:     fmt.Sprintf(liveInfoURL, uid),
+		method:  "GET",
+		cookies: cookies,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1451,7 +1446,7 @@ func (ac *AcFunLive) GetLiveData(days int) (*LiveData, error) {
 	return ac.t.getLiveData(days)
 }
 
-// GetUserLiveInfo 返回uid指定用户的直播信息
+// GetUserLiveInfo 返回uid指定用户的直播信息，可能会出现超时等各种网络原因的错误
 func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, ac.t.Cookies)
 }
@@ -1486,7 +1481,7 @@ func GetUserMedal(uid int64) (medal *Medal, e error) {
 	return getUserMedal(uid)
 }
 
-// GetUserLiveInfo 返回uid指定用户的直播信息
+// GetUserLiveInfo 返回uid指定用户的直播信息，可能会出现超时等各种网络原因的错误
 func GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, nil)
 }
