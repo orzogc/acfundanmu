@@ -51,6 +51,7 @@ const (
 	medalDetailURL     = "https://live.acfun.cn/rest/pc-direct/fansClub/fans/medal/detail?uperId=%d"
 	medalListURL       = "https://live.acfun.cn/rest/pc-direct/fansClub/fans/medal/list"
 	liveInfoURL        = "https://live.acfun.cn/rest/pc-direct/live/info"
+	userInfoURL        = "https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=%d"
 	liveListURL        = "https://live.acfun.cn/api/channel/list?count=%d&pcursor=%d"
 	scheduleListURL    = "https://api-new.app.acfun.cn/rest/app/live/schedule/list"
 )

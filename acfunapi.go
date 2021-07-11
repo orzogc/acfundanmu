@@ -105,6 +105,7 @@ type UserProfile struct {
 	VerifiedText    string `json:"verifiedText"`    // 用户认证信息
 	IsJoinUpCollege bool   `json:"isJoinUpCollege"` // 用户是否加入阿普学院
 	IsFollowing     bool   `json:"isFollowing"`     // 登陆帐号是否关注了用户
+	IsFollowed      bool   `json:"isFollowed"`      // 用户是否关注了登陆帐号
 }
 
 // UserLiveInfo 就是用户直播信息
@@ -123,6 +124,24 @@ type UserLiveInfo struct {
 	HasFansClub           bool        `json:"hasFansClub"`           // 主播是否有守护团
 	DisableDanmakuShow    bool        `json:"disableDanmakuShow"`    // 是否禁止显示弹幕？
 	PaidShowUserBuyStatus bool        `json:"paidShowUserBuyStatus"` // 登陆帐号是否购买了付费直播？
+}
+
+// UserProfileInfo 就是用户信息
+type UserProfileInfo struct {
+	UserID          int64  `json:"userID"`          // 用户uid
+	Nickname        string `json:"nickname"`        // 用户名字
+	Avatar          string `json:"avatar"`          // 用户头像
+	AvatarFrame     string `json:"avatarFrame"`     // 用户头像挂件
+	FollowingCount  string `json:"followingCount"`  // 用户关注数量
+	FansCount       string `json:"fansCount"`       // 用户粉丝数量
+	ContributeCount string `json:"contributeCount"` // 用户投稿数量
+	Signature       string `json:"signature"`       // 用户签名
+	VerifiedText    string `json:"verifiedText"`    // 用户认证信息
+	IsJoinUpCollege bool   `json:"isJoinUpCollege"` // 用户是否加入阿普学院
+	IsFollowing     bool   `json:"isFollowing"`     // 登陆帐号是否关注了用户
+	IsFollowed      bool   `json:"isFollowed"`      // 用户是否关注了登陆帐号
+	LiveID          string `json:"liveID"`          // 直播ID
+	LikeCount       int    `json:"likeCount"`       // 最近一次直播的点赞总数
 }
 
 // UserMedalInfo 就是用户的守护徽章信息
@@ -1012,6 +1031,8 @@ func getUserProfileJSON(v *fastjson.Value) *UserProfile {
 			profile.IsJoinUpCollege = v.GetBool()
 		case "isFollowing":
 			profile.IsFollowing = v.GetBool()
+		case "isFollowed":
+			profile.IsFollowed = v.GetBool()
 		}
 	})
 
@@ -1090,6 +1111,68 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 	}
 
 	return getUserLiveInfoJSON(v), nil
+}
+
+// 获取指定用户的信息
+func getUserInfo(uid int64, cookies Cookies) (info *UserProfileInfo, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getUserProfile() error: %w", err)
+		}
+	}()
+
+	client := &httpClient{
+		url:     fmt.Sprintf(userInfoURL, uid),
+		method:  "GET",
+		cookies: cookies,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取指定用户的信息失败，响应为 %s", string(body)))
+	}
+
+	info = new(UserProfileInfo)
+	o := v.GetObject("profile")
+	o.Visit(func(k []byte, v *fastjson.Value) {
+		switch string(k) {
+		case "userId":
+			info.UserID = v.GetInt64()
+		case "name":
+			info.Nickname = string(v.GetStringBytes())
+		case "headUrl":
+			info.Avatar = string(v.GetStringBytes())
+		case "avatarFrameMobileImg":
+			info.AvatarFrame = string(v.GetStringBytes())
+		case "following":
+			info.FollowingCount = string(v.GetStringBytes())
+		case "followed":
+			info.FansCount = string(v.GetStringBytes())
+		case "contentCount":
+			info.ContributeCount = string(v.GetStringBytes())
+		case "signature":
+			info.Signature = string(v.GetStringBytes())
+		case "verifiedText":
+			info.VerifiedText = string(v.GetStringBytes())
+		case "isContractUp":
+			info.IsJoinUpCollege = v.GetBool()
+		case "isFollowing":
+			info.IsFollowing = v.GetBool()
+		case "isFollowed":
+			info.IsFollowed = v.GetBool()
+		case "liveId":
+			info.LiveID = string(v.GetStringBytes())
+		case "likeCount":
+			info.LikeCount = v.GetInt()
+		}
+	})
+
+	return info, nil
 }
 
 // 获取指定主播的守护榜
@@ -1373,6 +1456,11 @@ func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, ac.t.Cookies)
 }
 
+// GetUserInfo 返回uid指定用户的信息
+func (ac *AcFunLive) GetUserInfo(uid int64) (*UserProfileInfo, error) {
+	return getUserInfo(uid, ac.t.Cookies)
+}
+
 // GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），可用于获取指定主播的守护徽章名字
 func (ac *AcFunLive) GetMedalRankList(uid int64) (medalRankList *MedalRankList, e error) {
 	return getMedalRankList(uid, ac.t.Cookies)
@@ -1401,6 +1489,11 @@ func GetUserMedal(uid int64) (medal *Medal, e error) {
 // GetUserLiveInfo 返回uid指定用户的直播信息
 func GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, nil)
+}
+
+// GetUserInfo 返回uid指定用户的信息
+func GetUserInfo(uid int64) (*UserProfileInfo, error) {
+	return getUserInfo(uid, nil)
 }
 
 // GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），可用于获取指定主播的守护徽章名字
