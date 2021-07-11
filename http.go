@@ -198,13 +198,17 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 	path := string(uri.Path())
 	urlParams := uri.QueryArgs()
 	var paramsStr []string
-	// 应该要忽略以__开头的key
-	urlParams.VisitAll(func(key, value []byte) {
-		paramsStr = append(paramsStr, string(key)+"="+string(value))
-	})
-	form.VisitAll(func(key, value []byte) {
-		paramsStr = append(paramsStr, string(key)+"="+string(value))
-	})
+	if urlParams != nil {
+		// 应该要忽略以__开头的key
+		urlParams.VisitAll(func(key, value []byte) {
+			paramsStr = append(paramsStr, string(key)+"="+string(value))
+		})
+	}
+	if form != nil {
+		form.VisitAll(func(key, value []byte) {
+			paramsStr = append(paramsStr, string(key)+"="+string(value))
+		})
+	}
 	// 实际上这里应该要比较key
 	natsort.Sort(paramsStr)
 

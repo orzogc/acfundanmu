@@ -9,7 +9,7 @@ require (
 	github.com/dgrr/fastws v1.0.4
 	github.com/google/uuid v1.2.0
 	github.com/klauspost/compress v1.13.1 // indirect
-	github.com/klauspost/cpuid/v2 v2.0.7 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.8 // indirect
 	github.com/qiniu/go-sdk/v7 v7.9.7
 	github.com/segmentio/encoding v0.2.19
 	github.com/valyala/fasthttp v1.28.0

@@ -1170,16 +1170,10 @@ func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, las
 		}
 	}()
 
-	form := fasthttp.AcquireArgs()
-	defer fasthttp.ReleaseArgs(form)
-	form.Set("count", strconv.Itoa(count))
-	form.Set("pcursor", strconv.Itoa(page))
 	client := &httpClient{
-		url:         liveListURL,
-		body:        form.QueryString(),
-		method:      "POST",
-		cookies:     cookies,
-		contentType: formContentType,
+		url:     fmt.Sprintf(liveListURL, count, page),
+		method:  "GET",
+		cookies: cookies,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1188,6 +1182,7 @@ func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, las
 	defer generalParserPool.Put(p)
 	v, err := p.ParseBytes(body)
 	checkErr(err)
+	v = v.Get("channelListData")
 	if !v.Exists("result") || v.GetInt("result") != 0 {
 		panic(fmt.Errorf("获取正在直播的直播间列表失败，响应为：%s", string(body)))
 	}
