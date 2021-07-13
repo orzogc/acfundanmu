@@ -1285,6 +1285,7 @@ func getAllLiveList(cookies Cookies) ([]UserLiveInfo, error) {
 }
 
 // 获取直播预告列表
+/*
 func getScheduleList(cookies Cookies) (scheduleList []LiveSchedule, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -1344,6 +1345,7 @@ func getScheduleList(cookies Cookies) (scheduleList []LiveSchedule, e error) {
 
 	return scheduleList, nil
 }
+*/
 
 // Distinguish 返回阿里云和腾讯云链接，目前阿里云的下载速度比较快
 func (pb *Playback) Distinguish() (aliURL, txURL string) {
@@ -1472,9 +1474,9 @@ func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
 }
 
 // GetScheduleList 返回直播预告列表，目前有问题不可用
-func (ac *AcFunLive) GetScheduleList() ([]LiveSchedule, error) {
-	return getScheduleList(ac.t.Cookies)
-}
+//func (ac *AcFunLive) GetScheduleList() ([]LiveSchedule, error) {
+//	return getScheduleList(ac.t.Cookies)
+//}
 
 // GetUserMedal 返回uid指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
 func GetUserMedal(uid int64) (medal *Medal, e error) {
@@ -1507,6 +1509,6 @@ func GetAllLiveList() ([]UserLiveInfo, error) {
 }
 
 // GetScheduleList 返回直播预告列表，目前有问题不可用
-func GetScheduleList() ([]LiveSchedule, error) {
-	return getScheduleList(nil)
-}
+//func GetScheduleList() ([]LiveSchedule, error) {
+//	return getScheduleList(nil)
+//}
