@@ -49,7 +49,7 @@ const (
 	userMedalURL       = "https://live.acfun.cn/rest/pc-direct/fansClub/user/info?userId=%d"
 	medalRankURL       = "https://live.acfun.cn/rest/pc-direct/fansClub/friendshipDegreeRankInfo?uperId=%d"
 	medalDetailURL     = "https://live.acfun.cn/rest/pc-direct/fansClub/fans/medal/detail?uperId=%d"
-	medalListURL       = "https://live.acfun.cn/rest/pc-direct/fansClub/fans/medal/list"
+	medalListURL       = "https://www.acfun.cn/rest/pc-direct/fansClub/fans/medal/list"
 	liveInfoURL        = "https://live.acfun.cn/api/live/info?authorId=%d"
 	userInfoURL        = "https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=%d"
 	liveListURL        = "https://live.acfun.cn/api/channel/list?count=%d&pcursor=%d"

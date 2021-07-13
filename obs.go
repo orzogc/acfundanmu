@@ -2,8 +2,6 @@ package acfundanmu
 
 import (
 	"bytes"
-	"context"
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,8 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/uuid"
-	"github.com/qiniu/go-sdk/v7/storage"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
@@ -264,80 +260,6 @@ func (t *token) getLiveStatus() (status *LiveStatus, e error) {
 	})
 
 	return status, nil
-}
-
-// 获取七牛云上传token
-func (t *token) getQiniuToken() (token *QiniuToken, e error) {
-	defer func() {
-		if err := recover(); err != nil {
-			e = fmt.Errorf("getQiniuToken() error: %w", err)
-		}
-	}()
-
-	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取七牛云上传token需要登陆AcFun帐号"))
-	}
-
-	client := &httpClient{
-		url:     getQiniuTokenURL,
-		method:  "POST",
-		cookies: t.Cookies,
-	}
-	body, err := client.request()
-	checkErr(err)
-
-	p := generalParserPool.Get()
-	defer generalParserPool.Put(p)
-	v, err := p.ParseBytes(body)
-	checkErr(err)
-	if !v.Exists("result") || v.GetInt("result") != 0 {
-		panic(fmt.Errorf("获取七牛云上传token失败，响应为 %s", string(body)))
-	}
-
-	token = new(QiniuToken)
-	o := v.GetObject("info")
-	o.Visit(func(k []byte, v *fastjson.Value) {
-		switch string(k) {
-		case "url":
-			token.URL = string(v.GetStringBytes())
-		case "upToken":
-			src := v.GetStringBytes()
-			dst := make([]byte, base64.StdEncoding.DecodedLen(len(src)))
-			n, err := base64.StdEncoding.Decode(dst, src)
-			checkErr(err)
-			s := string(dst[:n])
-			i := strings.Index(s, ":")
-			token.UploadToken = s[i+1:]
-		default:
-			log.Printf("七牛云上传token里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
-		}
-	})
-
-	return token, nil
-}
-
-// 上传图片
-func (token *QiniuToken) uploadImage(file string) (fileURL string, e error) {
-	defer func() {
-		if err := recover(); err != nil {
-			e = fmt.Errorf("uploadImage() error: %w", err)
-		}
-	}()
-
-	key := uuid.NewString() + filepath.Ext(file)
-	cfg := &storage.Config{
-		Zone:          &storage.ZoneHuadong,
-		UseHTTPS:      true,
-		UseCdnDomains: true,
-	}
-	formUploader := storage.NewFormUploader(cfg)
-	ret := &storage.PutRet{}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	err := formUploader.PutFile(ctx, ret, token.UploadToken, key, file, nil)
-	checkErr(err)
-
-	return token.URL + `/` + ret.Key, nil
 }
 
 // 获取转码信息
@@ -594,25 +516,6 @@ func (ac *AcFunLive) GetPushConfig() (*PushConfig, error) {
 // GetLiveStatus 返回直播状态，需要登陆主播的AcFun帐号并启动直播后调用
 func (ac *AcFunLive) GetLiveStatus() (*LiveStatus, error) {
 	return ac.t.getLiveStatus()
-}
-
-// GetQiniuToken 返回七牛云上传token，需要登陆AcFun帐号，目前有问题不可用
-func (ac *AcFunLive) GetQiniuToken() (*QiniuToken, error) {
-	return ac.t.getQiniuToken()
-}
-
-// UploadImage 上传图片到AcFun服务器，file为图片的路径，返回图片链接fileURL，目前有问题不可用
-func (token *QiniuToken) UploadImage(file string) (fileURL string, err error) {
-	return token.uploadImage(file)
-}
-
-// UploadImage 上传图片到AcFun服务器，file为图片的路径，返回图片链接fileURL，目前有问题不可用
-func (ac *AcFunLive) UploadImage(file string) (fileURL string, err error) {
-	token, err := ac.GetQiniuToken()
-	if err != nil {
-		return "", err
-	}
-	return token.uploadImage(file)
 }
 
 // GetTranscodeInfo 返回转码信息，推流后调用，返回的info长度不为0说明推流成功，需要登陆主播的AcFun帐号
