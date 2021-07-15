@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/Workiva/go-datastructures/queue"
 	"github.com/segmentio/encoding/json"
@@ -453,17 +452,10 @@ func Login(account, password string) (cookies Cookies, err error) {
 		return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
 	}
 
-	for retry := 0; retry < 3; retry++ {
-		cookies, err = login(account, password)
-		if err != nil {
-			if retry == 2 {
-				//log.Printf("登陆AcFun帐号失败：%v", err)
-				return nil, fmt.Errorf("Login() error: 登陆AcFun帐号失败：%w", err)
-			}
-		} else {
-			break
-		}
-		time.Sleep(2 * time.Second)
+	cookies, err = login(account, password)
+	if err != nil {
+		log.Printf("登陆AcFun帐号失败：%v", err)
+		return nil, fmt.Errorf("Login() error: 登陆AcFun帐号失败：%w", err)
 	}
 
 	return cookies, nil
@@ -482,21 +474,14 @@ func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 		option(ac)
 	}
 
-	for retry := 0; retry < 3; retry++ {
-		if ac.t.UserID == 0 {
-			ac.info.StreamInfo, err = ac.t.getToken()
-		} else {
-			ac.info.StreamInfo, err = ac.t.getLiveToken()
-		}
-		if err != nil {
-			if retry == 2 {
-				//log.Printf("初始化失败：%v", err)
-				return nil, fmt.Errorf("NewAcFunLive() error: 初始化失败，主播可能不在直播：%w", err)
-			}
-		} else {
-			break
-		}
-		time.Sleep(2 * time.Second)
+	if ac.t.UserID == 0 {
+		ac.info.StreamInfo, err = ac.t.getToken()
+	} else {
+		ac.info.StreamInfo, err = ac.t.getLiveToken()
+	}
+	if err != nil {
+		log.Printf("初始化失败：%v", err)
+		return nil, fmt.Errorf("NewAcFunLive() error: 初始化失败，主播可能不在直播：%w", err)
 	}
 
 	return ac, nil
