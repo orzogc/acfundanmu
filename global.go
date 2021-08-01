@@ -20,7 +20,7 @@ const (
 	visitor   = "acfun.api.visitor"
 	midground = "acfun.midground.api"
 
-	wsHost               = "wss://link.xiatou.com/"
+	wsHost               = "wss://klink-newproduct-ws3.kwaizt.com/"
 	appName              = "link-sdk"
 	sdkVersion           = "1.2.1"
 	kpn                  = "ACFUN_APP"

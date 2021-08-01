@@ -120,7 +120,7 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 	case "Push.acfun":
 	default:
 		if stream.ErrorCode > 0 {
-			log.Println("Stream Error:", stream.ErrorCode, stream.ErrorMsg)
+			log.Println("DownstreamPayload error:", stream.ErrorCode, stream.ErrorMsg)
 			if stream.ErrorCode == 10018 {
 				ac.t.wsStop(conn, "Log out")
 			}
@@ -524,6 +524,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 					EndType: ChatEndType(chatEnd.EndType),
 				})
 			}
+		//case "AuthorChatPlayerInfo":
 		case "CommonStateSignalAuthorChatCall":
 			chatCall := &acproto.CommonStateSignalAuthorChatCall{}
 			err = proto.Unmarshal(item.Payload, chatCall)

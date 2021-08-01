@@ -71,6 +71,8 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 
 	conn, err := fastws.Dial(wsHost)
 	checkErr(err)
+	conn.ReadTimeout = timeOut
+	conn.WriteTimeout = timeOut
 	go func() {
 		<-wsCtx.Done()
 		_ = conn.Close()

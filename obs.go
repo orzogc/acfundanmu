@@ -45,12 +45,6 @@ type LiveStatus struct {
 	BizCustomData string `json:"bizCustomData"` // 直播分类，格式是json
 }
 
-// QiniuToken 就是七牛云上传的token
-type QiniuToken struct {
-	URL         string `json:"url"`         // 图片上传后图片地址的域名
-	UploadToken string `json:"uploadToken"` // 七牛云上传token
-}
-
 // TranscodeInfo 就是转码信息
 type TranscodeInfo struct {
 	StreamURL  `json:"streamURL"`

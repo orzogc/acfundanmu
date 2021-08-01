@@ -16,8 +16,10 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+const maxIdleConnDuration = 90 * time.Second
+const timeOut = 10 * time.Second
+
 type httpClient struct {
-	client      *fasthttp.Client
 	url         string
 	body        []byte
 	method      string
@@ -27,9 +29,9 @@ type httpClient struct {
 }
 
 var defaultClient = &fasthttp.Client{
-	MaxIdleConnDuration: 90 * time.Second,
-	ReadTimeout:         10 * time.Second,
-	WriteTimeout:        10 * time.Second,
+	MaxIdleConnDuration: maxIdleConnDuration,
+	ReadTimeout:         timeOut,
+	WriteTimeout:        timeOut,
 }
 
 // 完成http请求，调用后需要 defer fasthttp.ReleaseResponse(resp)
@@ -44,10 +46,6 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 	resp = fasthttp.AcquireResponse()
-
-	if c.client == nil {
-		c.client = defaultClient
-	}
 
 	if c.url != "" {
 		req.SetRequestURI(c.url)
@@ -83,7 +81,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 
 	req.Header.Set("Accept-Encoding", "gzip")
 
-	err := c.client.Do(req, resp)
+	err := defaultClient.Do(req, resp)
 	checkErr(err)
 
 	return resp, nil
