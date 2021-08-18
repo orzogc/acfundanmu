@@ -402,7 +402,7 @@ func SetCookies(cookies Cookies) Option {
 
 // SetTokenInfo 设置TokenInfo
 func SetTokenInfo(tokenInfo *TokenInfo) Option {
-	if tokenInfo == nil {
+	if tokenInfo == nil && tokenInfo.UserID < 0 && len(tokenInfo.SecurityKey) == 0 && len(tokenInfo.ServiceToken) == 0 && len(tokenInfo.DeviceID) == 0 {
 		return func(ac *AcFunLive) {}
 	}
 	return func(ac *AcFunLive) {
@@ -449,7 +449,7 @@ func (c *Cookies) UnmarshalJSON(b []byte) error {
 // Login 登陆AcFun帐号，account为帐号邮箱或手机号，password为帐号密码
 func Login(account, password string) (cookies Cookies, err error) {
 	if account == "" || password == "" {
-		return nil, fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆")
+		return nil, fmt.Errorf("AcFun帐号或密码为空，无法登陆")
 	}
 
 	cookies, err = login(account, password)
@@ -481,7 +481,7 @@ func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 	}
 	if err != nil {
 		log.Printf("初始化失败：%v", err)
-		return nil, fmt.Errorf("NewAcFunLive() error: 初始化失败，主播可能不在直播：%w", err)
+		return nil, fmt.Errorf("NewAcFunLive() error: 初始化失败：%w", err)
 	}
 
 	return ac, nil
@@ -489,6 +489,9 @@ func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 
 // SetLiverUID 设置主播uid，返回一个新的 *AcFunLive，不会复制弹幕获取采用事件响应模式时的事件处理函数
 func (ac *AcFunLive) SetLiverUID(uid int64) (newAC *AcFunLive, err error) {
+	if uid <= 0 {
+		return nil, fmt.Errorf("主播uid不能小于1")
+	}
 	tokenInfo := ac.GetTokenInfo()
 	newAC, err = NewAcFunLive(SetLiverUID(uid), SetTokenInfo(tokenInfo))
 	if err != nil {
@@ -513,8 +516,8 @@ func (ac *AcFunLive) CopyEventHandlers(anotherAC *AcFunLive) {
 // event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
 func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	ch := make(chan error, 1)
-	if ac.t.liverUID == 0 {
-		err := fmt.Errorf("主播uid不能为0")
+	if ac.t.liverUID <= 0 {
+		err := fmt.Errorf("主播uid不能小于1")
 		log.Println(err)
 		ch <- err
 		return ch
@@ -532,8 +535,8 @@ func (ac *AcFunLive) GetDanmu() (danmu []DanmuMessage) {
 		log.Println("需要先调用StartDanmu()，event不能为true")
 		return nil
 	}
-	if ac.t.liverUID == 0 {
-		log.Println("主播uid不能为0")
+	if ac.t.liverUID <= 0 {
+		log.Println("主播uid不能小于1")
 		return nil
 	}
 	if (*queue.Queue)(ac.q).Disposed() {
