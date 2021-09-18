@@ -146,8 +146,8 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 				msgPool.Put(msg)
 				continue
 			}
-			payloadCh <- stream
 			msgPool.Put(msg)
+			payloadCh <- stream
 		}
 	}()
 
@@ -155,10 +155,12 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 	go func() {
 		defer wg.Done()
 		for stream := range payloadCh {
-			err := ac.handleCommand(wsCtx, conn, stream, event)
-			if err != nil {
-				log.Printf("处理接收到的数据出现错误：%v", err)
-			}
+			go func(stream *acproto.DownstreamPayload) {
+				err := ac.handleCommand(wsCtx, conn, stream, event)
+				if err != nil {
+					log.Printf("处理接收到的数据出现错误：%v", err)
+				}
+			}(stream)
 		}
 	}()
 

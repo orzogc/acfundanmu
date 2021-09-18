@@ -220,12 +220,29 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				gift := &acproto.CommonActionSignalGift{}
 				err = proto.Unmarshal(pl, gift)
 				checkErr(err)
-				// 礼物列表应该不会在直播中途改变，但以防万一
+				ac.t.giftsMutex.RLock()
 				g, ok := ac.t.gifts[gift.GiftId]
+				ac.t.giftsMutex.RUnlock()
+				// 存在未知礼物时
 				if !ok {
-					g = GiftDetail{
-						GiftID:   gift.GiftId,
-						GiftName: "未知礼物",
+					list, err := ac.t.getGiftList(ac.t.liveID)
+					if err != nil {
+						log.Printf("获取礼物列表出现错误：%v", err)
+						g = GiftDetail{
+							GiftID:   gift.GiftId,
+							GiftName: "未知礼物",
+						}
+					} else {
+						ac.t.giftsMutex.Lock()
+						ac.t.gifts = list
+						g, ok = ac.t.gifts[gift.GiftId]
+						if !ok {
+							g = GiftDetail{
+								GiftID:   gift.GiftId,
+								GiftName: "未知礼物",
+							}
+						}
+						ac.t.giftsMutex.Unlock()
 					}
 				}
 				d := &Gift{

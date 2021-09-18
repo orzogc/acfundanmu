@@ -1397,13 +1397,6 @@ func (ac *AcFunLive) GetPlayback(liveID string) (*Playback, error) {
 
 // GetGiftList 返回指定主播直播间的礼物数据
 func (ac *AcFunLive) GetGiftList(liveID string) (map[int64]GiftDetail, error) {
-	if liveID == ac.t.liveID {
-		gifts := make(map[int64]GiftDetail, len(ac.t.gifts))
-		for k, v := range ac.t.gifts {
-			gifts[k] = v
-		}
-		return gifts, nil
-	}
 	return ac.t.getGiftList(liveID)
 }
 

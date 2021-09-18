@@ -1,6 +1,8 @@
 package acfundanmu
 
 import (
+	"sync"
+
 	"github.com/valyala/fastjson"
 	"go.uber.org/atomic"
 )
@@ -13,8 +15,6 @@ const (
 	liveURL        = "https://live.acfun.cn/live/%d"
 	loginURL       = "https://id.app.acfun.cn/rest/app/visitor/login"
 	getTokenURL    = "https://id.app.acfun.cn/rest/web/token/get"
-	playURL        = "https://api.kuaishouzt.com/rest/zt/live/web/startPlay?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
-	giftURL        = "https://api.kuaishouzt.com/rest/zt/live/web/gift/list?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 
 	sid       = "sid"
 	visitor   = "acfun.api.visitor"
@@ -36,6 +36,8 @@ const (
 )
 
 const (
+	playURL            = "https://api.kuaishouzt.com/rest/zt/live/web/startPlay?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
+	giftURL            = "https://api.kuaishouzt.com/rest/zt/live/web/gift/list?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	watchingListURL    = "https://api.kuaishouzt.com/rest/zt/live/web/watchingList?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	endSummaryURL      = "https://api.kuaishouzt.com/rest/zt/live/web/endSummary?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	redpackLuckListURL = "https://api.kuaishouzt.com/rest/zt/live/web/redpack/getLuckList?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
@@ -95,6 +97,7 @@ type token struct {
 	headerSeqID     *atomic.Int64 // 要用原子锁操作
 	heartbeatSeqID  int64
 	ticketIndex     *atomic.Uint32 // 要用原子锁操作
+	giftsMutex      sync.RWMutex
 	gifts           map[int64]GiftDetail
 	liverUID        int64 // 主播uid
 	livePage        string
