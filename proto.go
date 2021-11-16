@@ -267,7 +267,7 @@ func padding(cipherText []byte, blockSize int) []byte {
 func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("decode() error: %w", err)
+			e = fmt.Errorf("decode() error: %v", err)
 		}
 	}()
 

@@ -5,8 +5,8 @@ option go_package = "github.com/orzogc/acfundanmu/acproto";
 package AcFunDanmu;
 
 enum ZtLivePkProto {
-    d = 0;
-    e = 1;
-    f = 2;
-    g = 3;
+    ZtLivePkProtoA = 0;
+    ZtLivePkProtoB = 1;
+    ZtLivePkProtoC = 2;
+    ZtLivePkProtoD = 3;
 }

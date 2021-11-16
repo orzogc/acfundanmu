@@ -21,7 +21,7 @@ import (
 func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, stream *acproto.DownstreamPayload, event bool) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("handleCommand() error: %w", err)
+			e = fmt.Errorf("handleCommand() error: %v", err)
 		}
 	}()
 
@@ -270,10 +270,12 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 					d.DrawGiftInfo.DrawPoint = make([]DrawPoint, len(gift.DrawGiftInfo.DrawPoint))
 					for i, drawPoint := range gift.DrawGiftInfo.DrawPoint {
 						d.DrawGiftInfo.DrawPoint[i] = DrawPoint{
-							MarginLeft: drawPoint.MarginLeft,
-							MarginTop:  drawPoint.MarginTop,
-							ScaleRatio: drawPoint.ScaleRatio,
-							Handup:     drawPoint.Handup,
+							MarginLeft:  drawPoint.MarginLeft,
+							MarginTop:   drawPoint.MarginTop,
+							ScaleRatio:  drawPoint.ScaleRatio,
+							Handup:      drawPoint.Handup,
+							PointWidth:  drawPoint.PointWidth,
+							PointHeight: drawPoint.PointHeight,
 						}
 					}
 				}
@@ -335,6 +337,23 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 					},
 				}
 				danmu = append(danmu, d)
+			case "CommonActionSignalUserShareLive":
+				share := &acproto.CommonActionSignalUserShareLive{}
+				err = proto.Unmarshal(pl, share)
+				checkErr(err)
+				d := &ShareLive{
+					DanmuCommon: DanmuCommon{
+						SendTime: share.SendTimeMs,
+						UserInfo: UserInfo{
+							UserID:   share.UserInfo.UserId,
+							Nickname: share.UserInfo.Nickname,
+						},
+					},
+					SharePlatform:     SharePlatformType(share.SharePlatformId),
+					SharePlatformIcon: share.SharePlatformIcon,
+				}
+				ac.t.getMoreInfo(&d.UserInfo, share.UserInfo)
+				danmu = append(danmu, d)
 			default:
 				log.Printf("未知的Action Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
 					item.SignalType,
@@ -368,6 +387,8 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				ac.callEvent(richTextDanmu, d)
 			case *JoinClub:
 				ac.callEvent(joinClubDanmu, d)
+			case *ShareLive:
+				ac.callEvent(shareLiveDanmu, d)
 			default:
 				log.Println("出现未处理的DanmuMessage")
 			}

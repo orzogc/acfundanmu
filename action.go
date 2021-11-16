@@ -11,7 +11,7 @@ import (
 func (t *token) managerKick(liveID string, kickedUID int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("managerKick() error: %w", err)
+			e = fmt.Errorf("managerKick() error: %v", err)
 		}
 	}()
 
@@ -40,7 +40,7 @@ func (t *token) managerKick(liveID string, kickedUID int64) (e error) {
 func (t *token) authorKick(liveID string, kickedUID int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("authorKick() error: %w", err)
+			e = fmt.Errorf("authorKick() error: %v", err)
 		}
 	}()
 
@@ -69,7 +69,7 @@ func (t *token) authorKick(liveID string, kickedUID int64) (e error) {
 func (t *token) addManager(managerUID int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("addManager() error: %w", err)
+			e = fmt.Errorf("addManager() error: %v", err)
 		}
 	}()
 
@@ -99,7 +99,7 @@ func (t *token) addManager(managerUID int64) (e error) {
 func (t *token) deleteManager(managerUID int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("deleteManager() error: %w", err)
+			e = fmt.Errorf("deleteManager() error: %v", err)
 		}
 	}()
 
@@ -129,7 +129,7 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 func (t *token) wearMedal(uid int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("wearMedal() error: %w", err)
+			e = fmt.Errorf("wearMedal() error: %v", err)
 		}
 	}()
 
@@ -160,7 +160,7 @@ func (t *token) wearMedal(uid int64) (e error) {
 func (t *token) cancelWearMedal(liverUID int64) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("cancelWearMedal() error: %w", err)
+			e = fmt.Errorf("cancelWearMedal() error: %v", err)
 		}
 	}()
 

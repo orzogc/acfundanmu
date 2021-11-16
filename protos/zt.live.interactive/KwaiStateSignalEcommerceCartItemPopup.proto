@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/orzogc/acfundanmu/acproto";
+
+package AcFunDanmu;
+
+message KwaiStateSignalEcommerceCartItemPopup {
+    unknown a = 1;
+    string b = 2;
+    string c = 3;
+    string d = 4;
+    string e = 5;
+
+    enum unknown {
+        f = 0;
+        g = 1;
+    }
+}

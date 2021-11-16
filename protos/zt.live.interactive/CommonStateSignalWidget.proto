@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "github.com/orzogc/acfundanmu/acproto";
+
+package AcFunDanmu;
+
+import "WidgetItem.proto";
+
+message CommonStateSignalWidget {
+    repeated WidgetItem a = 1;
+}

@@ -9,6 +9,7 @@ var _ DanmuMessage = (*ThrowBanana)(nil)
 var _ DanmuMessage = (*Gift)(nil)
 var _ DanmuMessage = (*RichText)(nil)
 var _ DanmuMessage = (*JoinClub)(nil)
+var _ DanmuMessage = (*ShareLive)(nil)
 
 // GetSendTime 获取弹幕发送时间
 func (d *Comment) GetSendTime() int64 {
@@ -100,6 +101,17 @@ func (d *JoinClub) GetSendTime() int64 {
 // GetUserInfo 获取弹幕的用户信息，实际上返回的是加入守护团的用户的信息
 func (d *JoinClub) GetUserInfo() *UserInfo {
 	info := d.FansInfo
+	return &info
+}
+
+// GetSendTime 获取弹幕发送时间
+func (d *ShareLive) GetSendTime() int64 {
+	return d.SendTime
+}
+
+// GetUserInfo 获取弹幕的用户信息
+func (d *ShareLive) GetUserInfo() *UserInfo {
+	info := d.UserInfo
 	return &info
 }
 

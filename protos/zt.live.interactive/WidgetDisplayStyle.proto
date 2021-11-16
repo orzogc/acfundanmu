@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = "github.com/orzogc/acfundanmu/acproto";
+
+package AcFunDanmu;
+
+message WidgetDisplayStyle {
+    bool a = 1;
+    bool b = 2;
+}

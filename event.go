@@ -18,6 +18,7 @@ const (
 	giftDanmu
 	richTextDanmu
 	joinClubDanmu
+	shareLiveDanmu
 	bananaCountEvent
 	displayEvent
 	topUsersEvent
@@ -136,6 +137,13 @@ func (ac *AcFunLive) OnRichText(handler func(*AcFunLive, *RichText)) {
 func (ac *AcFunLive) OnJoinClub(handler func(*AcFunLive, *JoinClub)) {
 	ac.handlerMap.add(joinClubDanmu, func(ac *AcFunLive, i interface{}) {
 		handler(ac, i.(*JoinClub))
+	})
+}
+
+// OnShareLive 处理分享直播间到其他平台的弹幕，handler需要支持并行处理，可以多次调用
+func (ac *AcFunLive) OnShareLive(handler func(*AcFunLive, *ShareLive)) {
+	ac.handlerMap.add(shareLiveDanmu, func(ac *AcFunLive, i interface{}) {
+		handler(ac, i.(*ShareLive))
 	})
 }
 

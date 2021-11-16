@@ -7,7 +7,7 @@ package AcFunDanmu;
 import "ZtLiveUserInfo.proto";
 
 message CommonStateSignalTopUsers {
-	repeated TopUser user = 1; //topUser
+	repeated TopUser user = 1; // topUser
 
 	message TopUser {
 		ZtLiveUserInfo userInfo = 1;

@@ -38,7 +38,7 @@ var defaultClient = &fasthttp.Client{
 func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("doRequest() error: %w", err)
+			e = fmt.Errorf("doRequest() error: %v", err)
 			fasthttp.ReleaseResponse(resp)
 		}
 	}()
@@ -91,7 +91,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 func (c *httpClient) request() (body []byte, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("request() error: %w", err)
+			e = fmt.Errorf("request() error: %v", err)
 		}
 	}()
 
@@ -106,7 +106,7 @@ func (c *httpClient) request() (body []byte, e error) {
 func (c *httpClient) getCookies() (body []byte, cookies Cookies, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getCookies() error: %w", err)
+			e = fmt.Errorf("getCookies() error: %v", err)
 		}
 	}()
 
@@ -128,7 +128,7 @@ func (c *httpClient) getCookies() (body []byte, cookies Cookies, e error) {
 func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (body []byte, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("fetchKuaiShouAPI() error: %w", err)
+			e = fmt.Errorf("fetchKuaiShouAPI() error: %v", err)
 		}
 	}()
 
@@ -185,7 +185,7 @@ func getBody(resp *fasthttp.Response) []byte {
 func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("genClientSign() error: %w", err)
+			e = fmt.Errorf("genClientSign() error: %v", err)
 		}
 	}()
 

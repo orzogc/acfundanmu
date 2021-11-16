@@ -218,7 +218,7 @@ type KickHistory struct {
 func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getWatchingList() error: %w", err)
+			e = fmt.Errorf("getWatchingList() error: %v", err)
 		}
 	}()
 
@@ -268,7 +268,7 @@ func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e e
 func (t *token) getBillboard(uid int64) (billboard []BillboardUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getBillboard() error: %w", err)
+			e = fmt.Errorf("getBillboard() error: %v", err)
 		}
 	}()
 
@@ -315,7 +315,7 @@ func (t *token) getBillboard(uid int64) (billboard []BillboardUser, e error) {
 func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getSummary() error: %w", err)
+			e = fmt.Errorf("getSummary() error: %v", err)
 		}
 	}()
 
@@ -359,7 +359,7 @@ func (t *token) getSummary(liveID string) (summary *Summary, e error) {
 func (t *token) getLuckList(liveID, redpackID, redpackBizUnit string) (luckyList []LuckyUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getLuckList() error: %w", err)
+			e = fmt.Errorf("getLuckList() error: %v", err)
 		}
 	}()
 
@@ -421,7 +421,7 @@ func (t *token) getLuckList(liveID, redpackID, redpackBizUnit string) (luckyList
 func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getPlayback() error: %w", err)
+			e = fmt.Errorf("getPlayback() error: %v", err)
 		}
 	}()
 
@@ -495,7 +495,7 @@ func (t *token) getPlayURL() (e error) {
 func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getAllGift() error: %w", err)
+			e = fmt.Errorf("getAllGift() error: %v", err)
 		}
 	}()
 
@@ -520,7 +520,7 @@ func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getWalletBalance() error: %w", err)
+			e = fmt.Errorf("getWalletBalance() error: %v", err)
 		}
 	}()
 
@@ -561,7 +561,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 func (t *token) getKickHistory(liveID string, count, page int) (list []KickHistory, lastPage bool, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getKickHistory() error: %w", err)
+			e = fmt.Errorf("getKickHistory() error: %v", err)
 		}
 	}()
 
@@ -614,7 +614,7 @@ func (t *token) getKickHistory(liveID string, count, page int) (list []KickHisto
 func (t *token) getManagerList() (managerList []Manager, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getManagerList() error: %w", err)
+			e = fmt.Errorf("getManagerList() error: %v", err)
 		}
 	}()
 
@@ -730,7 +730,7 @@ func getMedalDegreeJSON(v *fastjson.Value) *MedalDegree {
 func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getMedalDetail() error: %w", err)
+			e = fmt.Errorf("getMedalDetail() error: %v", err)
 		}
 	}()
 
@@ -778,7 +778,7 @@ func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 func (t *token) getMedalList() (medalList []Medal, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getMedalList() error: %w", err)
+			e = fmt.Errorf("getMedalList() error: %v", err)
 		}
 	}()
 
@@ -828,7 +828,7 @@ func (t *token) getMedalList() (medalList []Medal, e error) {
 func (t *token) getLiveData(days int) (data *LiveData, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getLiveData() error: %w", err)
+			e = fmt.Errorf("getLiveData() error: %v", err)
 		}
 	}()
 
@@ -961,7 +961,7 @@ func (t *token) getLiveData(days int) (data *LiveData, e error) {
 func getUserMedal(uid int64) (medal *Medal, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getUserMedal() error: %w", err)
+			e = fmt.Errorf("getUserMedal() error: %v", err)
 		}
 	}()
 
@@ -1085,7 +1085,7 @@ func getUserLiveInfoJSON(v *fastjson.Value) *UserLiveInfo {
 func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getUserLiveInfo() error: %w", err)
+			e = fmt.Errorf("getUserLiveInfo() error: %v", err)
 		}
 	}()
 
@@ -1112,7 +1112,7 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 func getUserInfo(uid int64, cookies Cookies) (info *UserProfileInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getUserProfile() error: %w", err)
+			e = fmt.Errorf("getUserProfile() error: %v", err)
 		}
 	}()
 
@@ -1174,7 +1174,7 @@ func getUserInfo(uid int64, cookies Cookies) (info *UserProfileInfo, e error) {
 func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getMedalRankList() error: %w", err)
+			e = fmt.Errorf("getMedalRankList() error: %v", err)
 		}
 	}()
 
@@ -1244,7 +1244,7 @@ func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList,
 func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, lastPage bool, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getLiveList() error: %w", err)
+			e = fmt.Errorf("getLiveList() error: %v", err)
 		}
 	}()
 

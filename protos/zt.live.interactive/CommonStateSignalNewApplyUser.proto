@@ -1,11 +1,9 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 option go_package = "github.com/orzogc/acfundanmu/acproto";
 
 package AcFunDanmu;
 
-enum ZtLiveChatProto {
-	a = 0;
-	b = 1;
-	c = 2;
+message CommonStateSignalNewApplyUser {
+    int64 a = 1;
 }

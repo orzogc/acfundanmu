@@ -38,6 +38,26 @@ const (
 	IsManager
 )
 
+// SharePlatformType 就是分享的平台类型
+type SharePlatformType int32
+
+const (
+	// PlatformUnknown 未知平台
+	PlatformUnknown SharePlatformType = iota
+	// PlatformQQ 分享给QQ好友或群
+	PlatformQQ
+	// PlatformQzone 分享到QQ空间
+	PlatformQzone
+	// PlatformWeibo 分享到新浪微博？
+	PlatformWeibo
+	// PlatformWeChat 分享给微信好友或群
+	PlatformWeChat
+	// PlatformWeChatMoments 分享到微信朋友圈
+	PlatformWeChatMoments
+	// PlatformAcFunMoment 分享到AcFun动态
+	PlatformAcFunMoment
+)
+
 // RedpackDisplayStatus 红包状态
 type RedpackDisplayStatus int32
 
@@ -120,10 +140,12 @@ type GiftDetail struct {
 
 // DrawPoint 单个涂鸦礼物的位置
 type DrawPoint struct {
-	MarginLeft int64   `json:"marginLeft"` // 到手机屏幕左边的距离
-	MarginTop  int64   `json:"marginTop"`  // 到手机屏幕顶部的距离
-	ScaleRatio float64 `json:"scaleRatio"` // 放大倍数？
-	Handup     bool    `json:"handup"`
+	MarginLeft  int64   `json:"marginLeft"` // 到手机屏幕左边的距离
+	MarginTop   int64   `json:"marginTop"`  // 到手机屏幕顶部的距离
+	ScaleRatio  float64 `json:"scaleRatio"` // 放大倍数？
+	Handup      bool    `json:"handup"`
+	PointWidth  int64   `json:"pointWidth"`  // 点的宽度？
+	PointHeight int64   `json:"pointHeight"` // 点的高度？
 }
 
 // DrawGiftInfo 涂鸦礼物信息
@@ -231,6 +253,13 @@ type JoinClub struct {
 	JoinTime int64    `json:"joinTime"` // 用户加入守护团的时间，是以毫秒为单位的Unix时间
 	FansInfo UserInfo `json:"fansInfo"` // 用户的信息
 	UperInfo UserInfo `json:"uperInfo"` // 主播的信息
+}
+
+// ShareLive 用户分享直播间
+type ShareLive struct {
+	DanmuCommon       `json:"danmuInfo"`
+	SharePlatform     SharePlatformType `json:"sharePlatform"`     // 将直播间分享到的平台
+	SharePlatformIcon string            `json:"sharePlatformIcon"` // 将直播间分享到的平台的图标
 }
 
 // TopUser 就是礼物榜在线前三，目前没有Medal和ManagerType

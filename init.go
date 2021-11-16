@@ -15,7 +15,7 @@ func login(account, password string) (cookies Cookies, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			cookies = nil
-			e = fmt.Errorf("login() error: %w", err)
+			e = fmt.Errorf("login() error: %v", err)
 		}
 	}()
 
@@ -54,7 +54,7 @@ func login(account, password string) (cookies Cookies, e error) {
 func (t *token) getAcFunToken() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getAcFunToken() error: %w", err)
+			e = fmt.Errorf("getAcFunToken() error: %v", err)
 		}
 	}()
 
@@ -120,7 +120,7 @@ func (t *token) getAcFunToken() (e error) {
 func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getLiveToken() error: %w", err)
+			e = fmt.Errorf("getLiveToken() error: %v", err)
 		}
 	}()
 
@@ -211,7 +211,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 func (t *token) getToken() (stream StreamInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getToken() error: %w", err)
+			e = fmt.Errorf("getToken() error: %v", err)
 		}
 	}()
 
@@ -227,7 +227,7 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 func (t *token) getDeviceID() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getDeviceID() error: %w", err)
+			e = fmt.Errorf("getDeviceID() error: %v", err)
 		}
 	}()
 
@@ -254,7 +254,7 @@ func (t *token) getDeviceID() (e error) {
 func (t *token) getGiftList(liveID string) (giftList map[int64]GiftDetail, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getGiftList() error: %w", err)
+			e = fmt.Errorf("getGiftList() error: %v", err)
 		}
 	}()
 

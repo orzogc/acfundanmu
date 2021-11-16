@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "github.com/orzogc/acfundanmu/acproto";
+
+package AcFunDanmu;
+
+message CommonStateSignalAuthorPause {
+    int64 a = 1;
+    string b = 2;
+    string c = 3;
+}

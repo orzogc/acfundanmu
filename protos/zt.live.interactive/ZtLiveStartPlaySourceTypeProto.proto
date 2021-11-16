@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = "github.com/orzogc/acfundanmu/acproto";
+
+package AcFunDanmu;
+
+enum ZtLiveStartPlaySourceTypeProto {
+    ZtLiveStartPlaySourceTypeProtoA = 0;
+    ZtLiveStartPlaySourceTypeProtoB = 1;
+}

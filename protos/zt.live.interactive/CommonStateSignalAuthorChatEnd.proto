@@ -7,7 +7,7 @@ package AcFunDanmu;
 message CommonStateSignalAuthorChatEnd {
 	string authorChatId = 1;
 	EndType endType = 2;
-	string endLiveId = 3;
+	string endLiveId = 3; // endSourceLiveId
 
 	enum EndType {
 		UNKNOWN = 0;

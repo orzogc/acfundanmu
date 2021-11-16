@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option go_package = "github.com/orzogc/acfundanmu/acproto";
+
+package AcFunDanmu;
+
+import "ImageCdnNode.proto";
+
+message WidgetPictureInfo {
+    ImageCdnNode a = 1;
+    int32 b = 2;
+    int32 c = 3;
+}

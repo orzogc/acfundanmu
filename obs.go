@@ -63,7 +63,7 @@ type StopPushInfo struct {
 func (t *token) checkLiveAuth() (canLive bool, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("checkLiveAuth() error: %w", err)
+			e = fmt.Errorf("checkLiveAuth() error: %v", err)
 		}
 	}()
 
@@ -120,7 +120,7 @@ func getLiveType(v *fastjson.Value) *LiveType {
 func (t *token) getLiveTypeList() (list []LiveType, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getLiveTypeList() error: %w", err)
+			e = fmt.Errorf("getLiveTypeList() error: %v", err)
 		}
 	}()
 
@@ -152,7 +152,7 @@ func (t *token) getLiveTypeList() (list []LiveType, e error) {
 func (t *token) getPushConfig() (config *PushConfig, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getPushConfig() error: %w", err)
+			e = fmt.Errorf("getPushConfig() error: %v", err)
 		}
 	}()
 
@@ -207,7 +207,7 @@ func (t *token) getPushConfig() (config *PushConfig, e error) {
 func (t *token) getLiveStatus() (status *LiveStatus, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getLiveStatus() error: %w", err)
+			e = fmt.Errorf("getLiveStatus() error: %v", err)
 		}
 	}()
 
@@ -260,7 +260,7 @@ func (t *token) getLiveStatus() (status *LiveStatus, e error) {
 func (t *token) getTranscodeInfo(streamName string) (info []TranscodeInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("getTranscodeInfo() error: %w", err)
+			e = fmt.Errorf("getTranscodeInfo() error: %v", err)
 		}
 	}()
 
@@ -315,7 +315,7 @@ func (t *token) getTranscodeInfo(streamName string) (info []TranscodeInfo, e err
 func loadFile(file string) (data []byte, contentType string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("loadFile() error: %w", err)
+			e = fmt.Errorf("loadFile() error: %v", err)
 		}
 	}()
 
@@ -366,7 +366,7 @@ func pushQuery(title string, liveType *LiveType) (query string) {
 func (t *token) startLive(title, coverFile, streamName string, portrait, panoramic bool, liveType *LiveType) (liveID string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("startLive() error: %w", err)
+			e = fmt.Errorf("startLive() error: %v", err)
 		}
 	}()
 
@@ -411,7 +411,7 @@ func (t *token) startLive(title, coverFile, streamName string, portrait, panoram
 func (t *token) stopLive(liveID string) (info *StopPushInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("stopLive() error: %w", err)
+			e = fmt.Errorf("stopLive() error: %v", err)
 		}
 	}()
 
@@ -453,7 +453,7 @@ func (t *token) stopLive(liveID string) (info *StopPushInfo, e error) {
 func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("changeTitleAndCover() error: %w", err)
+			e = fmt.Errorf("changeTitleAndCover() error: %v", err)
 		}
 	}()
 
