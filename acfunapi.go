@@ -216,7 +216,7 @@ type KickHistory struct {
 
 // LiveCutInfo 就是直播剪辑信息
 type LiveCutInfo struct {
-	Status bool   `json:"status"` // 直播是否能被剪辑
+	Status bool   `json:"status"` // 是否允许剪辑直播录像（主播允许且其在直播时才能剪辑）
 	URL    string `json:"url"`    // 剪辑直播的地址
 }
 
