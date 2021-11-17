@@ -492,6 +492,87 @@ func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 	return nil
 }
 
+// 获取主播是否允许观众剪辑直播录像
+func (t *token) getLiveCutStatus() (canCut bool, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getLiveCutStatus() error: %v", err)
+		}
+	}()
+
+	if len(t.Cookies) == 0 {
+		panic(fmt.Errorf("获取主播是否允许观众剪辑直播录像需要登陆主播的AcFun帐号"))
+	}
+
+	client := &httpClient{
+		url:     liveCutStatusURL,
+		method:  "POST",
+		cookies: t.Cookies,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取主播是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
+	}
+
+	status := v.GetInt("liveCutStatus")
+	if status == 1 {
+		return true, nil
+	}
+	if status == 2 {
+		return false, nil
+	}
+	panic(fmt.Errorf("获取主播是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
+}
+
+// 更改是否允许观众剪辑直播录像
+func (t *token) changeLiveCutStatus(canCut bool) (e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("changeLiveCutStatus() error: %v", err)
+		}
+	}()
+
+	if len(t.Cookies) == 0 {
+		panic(fmt.Errorf("更改是否允许观众剪辑直播录像需要登陆主播的AcFun帐号"))
+	}
+
+	status := 1
+	if !canCut {
+		status = 2
+	}
+
+	client := &httpClient{
+		url:         updateLiveCutURL,
+		body:        []byte(fmt.Sprintf(liveCutStatus, status)),
+		method:      "POST",
+		cookies:     t.Cookies,
+		contentType: jsonContentType,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("更改是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
+	}
+
+	returnStatus := v.GetInt("liveCutStatus")
+	if status != returnStatus {
+		panic(fmt.Errorf("更改是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
+	}
+
+	return nil
+}
+
 // CheckLiveAuth 检测登陆帐号是否有直播权限，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) CheckLiveAuth() (bool, error) {
 	return ac.t.checkLiveAuth()
@@ -532,4 +613,14 @@ func (ac *AcFunLive) StopLive(liveID string) (*StopPushInfo, error) {
 // title为空时会没有标题，coverFile为空时只更改标题，需要登陆主播的AcFun帐号。
 func (ac *AcFunLive) ChangeTitleAndCover(title, coverFile, liveID string) error {
 	return ac.t.changeTitleAndCover(title, coverFile, liveID)
+}
+
+// GetLiveCutStatus 获取主播是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号
+func (ac *AcFunLive) GetLiveCutStatus() (bool, error) {
+	return ac.t.getLiveCutStatus()
+}
+
+// ChangeLiveCutStatus 更改是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号
+func (ac *AcFunLive) ChangeLiveCutStatus(canCut bool) error {
+	return ac.t.changeLiveCutStatus(canCut)
 }

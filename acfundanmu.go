@@ -7,8 +7,10 @@ import (
 	"sync"
 
 	"github.com/Workiva/go-datastructures/queue"
+	"github.com/orzogc/acfundanmu/acproto"
 	"github.com/segmentio/encoding/json"
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fastjson"
 )
 
 // 弹幕队列长度
@@ -162,6 +164,49 @@ type UserInfo struct {
 	Avatar      string      `json:"avatar"`      // 用户头像
 	Medal       MedalInfo   `json:"medal"`       // 用户正在佩戴的守护徽章
 	ManagerType ManagerType `json:"managerType"` // 用户是否房管
+}
+
+// NewUserInfo 创建UserInfo
+func NewUserInfo(userInfo *acproto.ZtLiveUserInfo) *UserInfo {
+	user := &UserInfo{
+		UserID:   userInfo.UserId,
+		Nickname: userInfo.Nickname,
+	}
+
+	if len(userInfo.Avatar) != 0 {
+		user.Avatar = userInfo.Avatar[0].Url
+	}
+
+	if userInfo.Badge != "" {
+		p := medalParserPool.Get()
+		defer medalParserPool.Put(p)
+		v, err := p.Parse(userInfo.Badge)
+		if err == nil {
+			o := v.GetObject("medalInfo")
+			o.Visit(func(k []byte, v *fastjson.Value) {
+				switch string(k) {
+				case "uperId":
+					user.Medal.UperID = v.GetInt64()
+				case "userId":
+					user.Medal.UserID = v.GetInt64()
+				case "clubName":
+					user.Medal.ClubName = string(v.GetStringBytes())
+				case "level":
+					user.Medal.Level = v.GetInt()
+				default:
+					log.Printf("守护徽章里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+				}
+			})
+		} else {
+			log.Printf("分析守护徽章的json数据出现错误：%v", err)
+		}
+	}
+
+	if userInfo.UserIdentity != nil {
+		user.ManagerType = ManagerType(userInfo.UserIdentity.ManagerType)
+	}
+
+	return user
 }
 
 // MedalInfo 就是守护徽章信息

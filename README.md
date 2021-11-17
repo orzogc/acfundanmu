@@ -47,6 +47,8 @@ for {
             case *acfundanmu.JoinClub:
                 log.Printf("%s（%d）加入主播%s（%d）的守护团", d.FansInfo.Nickname, d.FansInfo.UserID, d.UperInfo.Nickname, d.UperInfo.UserID)
             }
+            case *acfundanmu.ShareLive:
+                log.Printf("%s（%d）分享直播间到 %d %s", d.Nickname, d.UserID, d.SharePlatform, d.SharePlatformIcon)
         }
     } else {
         if err = <-ch; err != nil {
@@ -92,6 +94,9 @@ ac.OnGift(func(ac *acfundanmu.AcFunLive, d *acfundanmu.Gift) {
 })
 ac.OnJoinClub(func(ac *acfundanmu.AcFunLive, d *acfundanmu.JoinClub) {
     log.Printf("%s（%d）加入主播%s（%d）的守护团", d.FansInfo.Nickname, d.FansInfo.UserID, d.UperInfo.Nickname, d.UperInfo.UserID)
+})
+ac.OnShareLive(func(ac *acfundanmu.AcFunLive, d *acfundanmu.ShareLive) {
+    log.Printf("%s（%d）分享直播间到 %d %s", d.Nickname, d.UserID, d.SharePlatform, d.SharePlatformIcon)
 })
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()

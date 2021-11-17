@@ -12,7 +12,6 @@ import (
 
 	"github.com/dgrr/fastws"
 	"github.com/orzogc/acfundanmu/acproto"
-	"github.com/valyala/fastjson"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -153,14 +152,10 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				d := &Comment{
 					DanmuCommon: DanmuCommon{
 						SendTime: comment.SendTimeMs,
-						UserInfo: UserInfo{
-							UserID:   comment.UserInfo.UserId,
-							Nickname: comment.UserInfo.Nickname,
-						},
+						UserInfo: *NewUserInfo(comment.UserInfo),
 					},
 					Content: comment.Content,
 				}
-				ac.t.getMoreInfo(&d.UserInfo, comment.UserInfo)
 				danmu = append(danmu, d)
 			case "CommonActionSignalLike":
 				like := &acproto.CommonActionSignalLike{}
@@ -168,12 +163,8 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				checkErr(err)
 				d := &Like{
 					SendTime: like.SendTimeMs,
-					UserInfo: UserInfo{
-						UserID:   like.UserInfo.UserId,
-						Nickname: like.UserInfo.Nickname,
-					},
+					UserInfo: *NewUserInfo(like.UserInfo),
 				}
-				ac.t.getMoreInfo(&d.UserInfo, like.UserInfo)
 				danmu = append(danmu, d)
 			case "CommonActionSignalUserEnterRoom":
 				enter := &acproto.CommonActionSignalUserEnterRoom{}
@@ -181,12 +172,8 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				checkErr(err)
 				d := &EnterRoom{
 					SendTime: enter.SendTimeMs,
-					UserInfo: UserInfo{
-						UserID:   enter.UserInfo.UserId,
-						Nickname: enter.UserInfo.Nickname,
-					},
+					UserInfo: *NewUserInfo(enter.UserInfo),
 				}
-				ac.t.getMoreInfo(&d.UserInfo, enter.UserInfo)
 				danmu = append(danmu, d)
 			case "CommonActionSignalUserFollowAuthor":
 				follow := &acproto.CommonActionSignalUserFollowAuthor{}
@@ -194,12 +181,8 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				checkErr(err)
 				d := &FollowAuthor{
 					SendTime: follow.SendTimeMs,
-					UserInfo: UserInfo{
-						UserID:   follow.UserInfo.UserId,
-						Nickname: follow.UserInfo.Nickname,
-					},
+					UserInfo: *NewUserInfo(follow.UserInfo),
 				}
-				ac.t.getMoreInfo(&d.UserInfo, follow.UserInfo)
 				danmu = append(danmu, d)
 			case "AcfunActionSignalThrowBanana":
 				banana := &acproto.AcfunActionSignalThrowBanana{}
@@ -248,10 +231,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				d := &Gift{
 					DanmuCommon: DanmuCommon{
 						SendTime: gift.SendTimeMs,
-						UserInfo: UserInfo{
-							UserID:   gift.User.UserId,
-							Nickname: gift.User.Nickname,
-						},
+						UserInfo: *NewUserInfo(gift.User),
 					},
 					GiftDetail:          g,
 					Count:               gift.Count,
@@ -261,7 +241,6 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 					SlotDisplayDuration: gift.SlotDisplayDurationMs,
 					ExpireDuration:      gift.ExpireDurationMs,
 				}
-				ac.t.getMoreInfo(&d.UserInfo, gift.User)
 				if gift.DrawGiftInfo != nil {
 					d.DrawGiftInfo = DrawGiftInfo{
 						ScreenWidth:  gift.DrawGiftInfo.ScreenWidth,
@@ -292,13 +271,9 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 					switch segment := segment.Segment.(type) {
 					case *acproto.CommonActionSignalRichText_RichTextSegment_UserInfo:
 						userInfo := &RichTextUserInfo{
-							UserInfo: UserInfo{
-								UserID:   segment.UserInfo.User.UserId,
-								Nickname: segment.UserInfo.User.Nickname,
-							},
-							Color: segment.UserInfo.Color,
+							UserInfo: *NewUserInfo(segment.UserInfo.User),
+							Color:    segment.UserInfo.Color,
 						}
-						ac.t.getMoreInfo(&userInfo.UserInfo, segment.UserInfo.User)
 						d.Segments[i] = userInfo
 					case *acproto.CommonActionSignalRichText_RichTextSegment_Plain:
 						plain := &RichTextPlain{
@@ -344,15 +319,11 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				d := &ShareLive{
 					DanmuCommon: DanmuCommon{
 						SendTime: share.SendTimeMs,
-						UserInfo: UserInfo{
-							UserID:   share.UserInfo.UserId,
-							Nickname: share.UserInfo.Nickname,
-						},
+						UserInfo: *NewUserInfo(share.UserInfo),
 					},
 					SharePlatform:     SharePlatformType(share.SharePlatformId),
 					SharePlatformIcon: share.SharePlatformIcon,
 				}
-				ac.t.getMoreInfo(&d.UserInfo, share.UserInfo)
 				danmu = append(danmu, d)
 			default:
 				log.Printf("未知的Action Signal item.SignalType：%s\npayload string:\n%s\npayload base64:\n%s\n",
@@ -441,15 +412,11 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			users := make([]TopUser, len(topUsers.User))
 			for i, user := range topUsers.User {
 				u := TopUser{
-					UserInfo: UserInfo{
-						UserID:   user.UserInfo.UserId,
-						Nickname: user.UserInfo.Nickname,
-					},
+					UserInfo:          *NewUserInfo(user.UserInfo),
 					AnonymousUser:     user.AnonymousUser,
 					DisplaySendAmount: user.DisplaySendAmount,
 					CustomData:        user.CustomWatchingListData,
 				}
-				ac.t.getMoreInfo(&u.UserInfo, user.UserInfo)
 				users[i] = u
 			}
 			if event {
@@ -468,14 +435,10 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 				d := Comment{
 					DanmuCommon: DanmuCommon{
 						SendTime: comment.SendTimeMs,
-						UserInfo: UserInfo{
-							UserID:   comment.UserInfo.UserId,
-							Nickname: comment.UserInfo.Nickname,
-						},
+						UserInfo: *NewUserInfo(comment.UserInfo),
 					},
 					Content: comment.Content,
 				}
-				ac.t.getMoreInfo(&d.UserInfo, comment.UserInfo)
 				danmu[i] = d
 			}
 			if event {
@@ -492,10 +455,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			redpacks := make([]Redpack, len(redpackList.Redpacks))
 			for i, redpack := range redpackList.Redpacks {
 				r := Redpack{
-					UserInfo: UserInfo{
-						UserID:   redpack.Sender.UserId,
-						Nickname: redpack.Sender.Nickname,
-					},
+					UserInfo:           *NewUserInfo(redpack.Sender),
 					DisplayStatus:      RedpackDisplayStatus(redpack.DisplayStatus),
 					GrabBeginTime:      redpack.GrabBeginTimeMs,
 					GetTokenLatestTime: redpack.GetTokenLatestTimeMs,
@@ -504,7 +464,6 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 					RedpackAmount:      redpack.RedpackAmount,
 					SettleBeginTime:    redpack.SettleBeginTime,
 				}
-				ac.t.getMoreInfo(&r.UserInfo, redpack.Sender)
 				redpacks[i] = r
 			}
 			if event {
@@ -540,15 +499,10 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			chatReady := &acproto.CommonStateSignalChatReady{}
 			err = proto.Unmarshal(item.Payload, chatReady)
 			checkErr(err)
-			guest := UserInfo{
-				UserID:   chatReady.GuestUserInfo.UserId,
-				Nickname: chatReady.GuestUserInfo.Nickname,
-			}
-			ac.t.getMoreInfo(&guest, chatReady.GuestUserInfo)
 			if event {
 				ac.callEvent(chatReadyEvent, &ChatReady{
 					ChatID:    chatReady.ChatId,
-					Guest:     guest,
+					Guest:     *NewUserInfo(chatReady.GuestUserInfo),
 					MediaType: ChatMediaType(chatReady.MediaType),
 				})
 			}
@@ -567,15 +521,10 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			chatCall := &acproto.CommonStateSignalAuthorChatCall{}
 			err = proto.Unmarshal(item.Payload, chatCall)
 			checkErr(err)
-			inviter := UserInfo{
-				UserID:   chatCall.InviterUserInfo.Player.UserId,
-				Nickname: chatCall.InviterUserInfo.Player.Nickname,
-			}
-			ac.t.getMoreInfo(&inviter, chatCall.InviterUserInfo.Player)
 			if event {
 				ac.callEvent(authorChatCallEvent, &AuthorChatCall{
 					Inviter: AuthorChatPlayerInfo{
-						UserInfo:               inviter,
+						UserInfo:               *NewUserInfo(chatCall.InviterUserInfo.Player),
 						LiveID:                 chatCall.InviterUserInfo.LiveId,
 						EnableJumpPeerLiveRoom: chatCall.InviterUserInfo.EnableJumpPeerLiveRoom,
 					},
@@ -597,25 +546,15 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 			chatReady := &acproto.CommonStateSignalAuthorChatReady{}
 			err = proto.Unmarshal(item.Payload, chatReady)
 			checkErr(err)
-			inviter := UserInfo{
-				UserID:   chatReady.InviterUserInfo.Player.UserId,
-				Nickname: chatReady.InviterUserInfo.Player.Nickname,
-			}
-			ac.t.getMoreInfo(&inviter, chatReady.InviterUserInfo.Player)
-			invitee := UserInfo{
-				UserID:   chatReady.InviteeUserInfo.Player.UserId,
-				Nickname: chatReady.InviteeUserInfo.Player.Nickname,
-			}
-			ac.t.getMoreInfo(&invitee, chatReady.InviteeUserInfo.Player)
 			if event {
 				ac.callEvent(authorChatReadyEvent, &AuthorChatReady{
 					Inviter: AuthorChatPlayerInfo{
-						UserInfo:               inviter,
+						UserInfo:               *NewUserInfo(chatReady.InviterUserInfo.Player),
 						LiveID:                 chatReady.InviterUserInfo.LiveId,
 						EnableJumpPeerLiveRoom: chatReady.InviterUserInfo.EnableJumpPeerLiveRoom,
 					},
 					Invitee: AuthorChatPlayerInfo{
-						UserInfo:               invitee,
+						UserInfo:               *NewUserInfo(chatReady.InviteeUserInfo.Player),
 						LiveID:                 chatReady.InviteeUserInfo.LiveId,
 						EnableJumpPeerLiveRoom: chatReady.InviteeUserInfo.EnableJumpPeerLiveRoom,
 					},
@@ -700,38 +639,5 @@ func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 				string(item.Payload),
 				base64.StdEncoding.EncodeToString(item.Payload))
 		}
-	}
-}
-
-// 获取用户的头像、守护徽章和房管类型
-func (t *token) getMoreInfo(user *UserInfo, userInfo *acproto.ZtLiveUserInfo) {
-	if len(userInfo.Avatar) != 0 {
-		user.Avatar = userInfo.Avatar[0].Url
-	}
-
-	if userInfo.Badge != "" {
-		p := medalParserPool.Get()
-		defer medalParserPool.Put(p)
-		v, err := p.Parse(userInfo.Badge)
-		checkErr(err)
-		o := v.GetObject("medalInfo")
-		o.Visit(func(k []byte, v *fastjson.Value) {
-			switch string(k) {
-			case "uperId":
-				user.Medal.UperID = v.GetInt64()
-			case "userId":
-				user.Medal.UserID = v.GetInt64()
-			case "clubName":
-				user.Medal.ClubName = string(v.GetStringBytes())
-			case "level":
-				user.Medal.Level = v.GetInt()
-			default:
-				log.Printf("守护徽章里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
-			}
-		})
-	}
-
-	if userInfo.UserIdentity != nil {
-		user.ManagerType = ManagerType(userInfo.UserIdentity.ManagerType)
 	}
 }
