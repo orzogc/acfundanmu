@@ -492,7 +492,7 @@ func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 	return nil
 }
 
-// 获取主播是否允许观众剪辑直播录像
+// 查询是否允许观众剪辑直播录像
 func (t *token) getLiveCutStatus() (canCut bool, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -501,7 +501,7 @@ func (t *token) getLiveCutStatus() (canCut bool, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取主播是否允许观众剪辑直播录像需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("查询是否允许观众剪辑直播录像需要登陆主播的AcFun帐号"))
 	}
 
 	client := &httpClient{
@@ -517,7 +517,7 @@ func (t *token) getLiveCutStatus() (canCut bool, e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
-		panic(fmt.Errorf("获取主播是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("查询是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
 	}
 
 	status := v.GetInt("liveCutStatus")
@@ -527,7 +527,7 @@ func (t *token) getLiveCutStatus() (canCut bool, e error) {
 	if status == 2 {
 		return false, nil
 	}
-	panic(fmt.Errorf("获取主播是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
+	panic(fmt.Errorf("查询是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
 }
 
 // 设置是否允许观众剪辑直播录像
@@ -615,7 +615,7 @@ func (ac *AcFunLive) ChangeTitleAndCover(title, coverFile, liveID string) error 
 	return ac.t.changeTitleAndCover(title, coverFile, liveID)
 }
 
-// GetLiveCutStatus 获取主播是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号
+// GetLiveCutStatus 查询是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号
 func (ac *AcFunLive) GetLiveCutStatus() (bool, error) {
 	return ac.t.getLiveCutStatus()
 }

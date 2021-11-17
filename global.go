@@ -57,6 +57,7 @@ const (
 	liveInfoURL        = "https://live.acfun.cn/api/live/info?authorId=%d"
 	userInfoURL        = "https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=%d"
 	liveListURL        = "https://live.acfun.cn/api/channel/list?count=%d&pcursor=%d"
+	liveCutInfoURL     = "https://live.acfun.cn/rest/pc-direct/live/getLiveCutInfo?authorId=%d&liveId=%s"
 	//scheduleListURL    = "https://api-new.app.acfun.cn/rest/app/live/schedule/list"
 )
 

@@ -214,6 +214,12 @@ type KickHistory struct {
 	KickTime int64  `json:"kickTime"` // 用户被踢的时间，是以毫秒为单位的Unix时间
 }
 
+// LiveCutInfo 就是直播剪辑信息
+type LiveCutInfo struct {
+	Status bool   `json:"status"` // 直播是否能被剪辑
+	URL    string `json:"url"`    // 剪辑直播的地址
+}
+
 // 获取直播间排名前50的在线观众信息列表
 func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e error) {
 	defer func() {
@@ -1284,6 +1290,46 @@ func getAllLiveList(cookies Cookies) ([]UserLiveInfo, error) {
 	return list, err
 }
 
+// 获取直播剪辑信息
+func getLiveCutInfo(uid int64, liveID string) (info *LiveCutInfo, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getLiveCutInfo() error: %v", err)
+		}
+	}()
+
+	client := &httpClient{
+		url:    fmt.Sprintf(liveCutInfoURL, uid, liveID),
+		method: "GET",
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取直播剪辑信息失败，响应为：%s", string(body)))
+	}
+
+	var status bool
+	statusNum := v.GetInt("liveCutStatus")
+	if statusNum == 1 {
+		status = true
+	} else if statusNum == 2 {
+		status = false
+	} else {
+		panic(fmt.Errorf("获取直播剪辑信息失败，响应为：%s", string(body)))
+	}
+	info = &LiveCutInfo{
+		Status: status,
+		URL:    string(v.GetStringBytes("liveCutUrl")),
+	}
+
+	return info, nil
+}
+
 // 获取直播预告列表
 /*
 func getScheduleList(cookies Cookies) (scheduleList []LiveSchedule, e error) {
@@ -1466,6 +1512,11 @@ func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(ac.t.Cookies)
 }
 
+// GetLiveCutInfo 获取主播的直播剪辑信息
+func (ac *AcFunLive) GetLiveCutInfo() (*LiveCutInfo, error) {
+	return getLiveCutInfo(ac.t.liverUID, ac.t.liveID)
+}
+
 // GetScheduleList 返回直播预告列表，目前有问题不可用
 //func (ac *AcFunLive) GetScheduleList() ([]LiveSchedule, error) {
 //	return getScheduleList(ac.t.Cookies)
@@ -1499,6 +1550,11 @@ func GetLiveList(count, page int) (liveList []UserLiveInfo, lastPage bool, err e
 // GetAllLiveList 返回全部正在直播的直播间列表
 func GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(nil)
+}
+
+// GetLiveCutInfo 获取uid指定主播的直播剪辑信息，需要直播的liveID
+func GetLiveCutInfo(uid int64, liveID string) (*LiveCutInfo, error) {
+	return getLiveCutInfo(uid, liveID)
 }
 
 // GetScheduleList 返回直播预告列表，目前有问题不可用
