@@ -530,16 +530,16 @@ func (t *token) getLiveCutStatus() (canCut bool, e error) {
 	panic(fmt.Errorf("获取主播是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
 }
 
-// 更改是否允许观众剪辑直播录像
-func (t *token) changeLiveCutStatus(canCut bool) (e error) {
+// 设置是否允许观众剪辑直播录像
+func (t *token) setLiveCutStatus(canCut bool) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
-			e = fmt.Errorf("changeLiveCutStatus() error: %v", err)
+			e = fmt.Errorf("setLiveCutStatus() error: %v", err)
 		}
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("更改是否允许观众剪辑直播录像需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("设置是否允许观众剪辑直播录像需要登陆主播的AcFun帐号"))
 	}
 
 	status := 1
@@ -562,12 +562,12 @@ func (t *token) changeLiveCutStatus(canCut bool) (e error) {
 	v, err := p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
-		panic(fmt.Errorf("更改是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("设置是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
 	}
 
 	returnStatus := v.GetInt("liveCutStatus")
 	if status != returnStatus {
-		panic(fmt.Errorf("更改是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
+		panic(fmt.Errorf("设置是否允许观众剪辑直播录像失败，响应为 %s", string(body)))
 	}
 
 	return nil
@@ -620,7 +620,7 @@ func (ac *AcFunLive) GetLiveCutStatus() (bool, error) {
 	return ac.t.getLiveCutStatus()
 }
 
-// ChangeLiveCutStatus 更改是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号
-func (ac *AcFunLive) ChangeLiveCutStatus(canCut bool) error {
-	return ac.t.changeLiveCutStatus(canCut)
+// SetLiveCutStatus 设置是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号
+func (ac *AcFunLive) SetLiveCutStatus(canCut bool) error {
+	return ac.t.setLiveCutStatus(canCut)
 }
