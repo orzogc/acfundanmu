@@ -553,6 +553,7 @@ func (t *token) setLiveCutStatus(canCut bool) (e error) {
 		method:      "POST",
 		cookies:     t.Cookies,
 		contentType: jsonContentType,
+		referer:     liveHost,
 	}
 	body, err := client.request()
 	checkErr(err)

@@ -9,10 +9,10 @@ require (
 	github.com/dgrr/fastws v1.0.4
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/segmentio/asm v1.1.1 // indirect
-	github.com/segmentio/encoding v0.3.1
+	github.com/segmentio/encoding v0.3.2
 	github.com/valyala/fasthttp v1.31.0
 	github.com/valyala/fastjson v1.6.3
 	go.uber.org/atomic v1.9.0
-	golang.org/x/sys v0.0.0-20211116061358-0a5406a5449c // indirect
+	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1 // indirect
 	google.golang.org/protobuf v1.27.1
 )
