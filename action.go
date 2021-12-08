@@ -141,6 +141,7 @@ func (t *token) wearMedal(uid int64) (e error) {
 		url:     fmt.Sprintf(wearMedalURL, uid),
 		method:  "GET",
 		cookies: t.Cookies,
+		referer: t.livePage,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -172,6 +173,7 @@ func (t *token) cancelWearMedal(liverUID int64) (e error) {
 		url:     fmt.Sprintf(cancelWearMedalURL, liverUID),
 		method:  "GET",
 		cookies: t.Cookies,
+		referer: t.livePage,
 	}
 	body, err := client.request()
 	checkErr(err)

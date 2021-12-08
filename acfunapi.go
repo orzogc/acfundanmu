@@ -216,8 +216,8 @@ type KickHistory struct {
 
 // LiveCutInfo 就是直播剪辑信息
 type LiveCutInfo struct {
-	Status      bool   `json:"status"`      // 是否允许剪辑直播录像（主播允许且其在直播时才能剪辑）
-	URL         string `json:"url"`         // 剪辑直播的地址
+	Status      bool   `json:"status"`      // 是否允许剪辑直播录像（主播允许且其在直播时观众才能剪辑，不允许的话主播自己也能剪辑）
+	URL         string `json:"url"`         // 剪辑直播的地址，直接访问可能出现登陆问题，需要访问跳转地址
 	RedirectURL string `json:"redirectURL"` // 跳转直播剪辑的地址
 }
 
@@ -1070,6 +1070,7 @@ func getUserMedal(uid int64) (medal *Medal, e error) {
 			medal.UperName = string(v.GetStringBytes())
 		case "uperHeadUrl":
 			medal.UperAvatar = string(v.GetStringBytes())
+		case "uperHeadImgInfo":
 		default:
 			log.Printf("指定用户正在佩戴的守护徽章信息里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 		}
