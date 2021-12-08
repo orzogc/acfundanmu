@@ -10,6 +10,7 @@ import (
 const (
 	visitorSt      = "acfun.api.visitor_st"
 	midgroundSt    = "acfun.midground.api_st"
+	midgroundAt    = "acfun.midground.api.at"
 	acfunSignInURL = "https://id.app.acfun.cn/rest/web/login/signin"
 	liveHost       = "https://live.acfun.cn"
 	liveURL        = "https://live.acfun.cn/live/%d"
@@ -58,6 +59,7 @@ const (
 	userInfoURL        = "https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=%d"
 	liveListURL        = "https://live.acfun.cn/api/channel/list?count=%d&pcursor=%d"
 	liveCutInfoURL     = "https://live.acfun.cn/rest/pc-direct/live/getLiveCutInfo?authorId=%d&liveId=%s"
+	liveCutRedirectURL = "https://onvideoapi.kuaishou.com/rest/infra/sts?authToken=%s&sid=acfun.midground.api&followUrl=%s"
 	//scheduleListURL    = "https://api-new.app.acfun.cn/rest/app/live/schedule/list"
 )
 

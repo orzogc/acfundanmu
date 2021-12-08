@@ -216,8 +216,9 @@ type KickHistory struct {
 
 // LiveCutInfo 就是直播剪辑信息
 type LiveCutInfo struct {
-	Status bool   `json:"status"` // 是否允许剪辑直播录像（主播允许且其在直播时才能剪辑）
-	URL    string `json:"url"`    // 剪辑直播的地址
+	Status      bool   `json:"status"`      // 是否允许剪辑直播录像（主播允许且其在直播时才能剪辑）
+	URL         string `json:"url"`         // 剪辑直播的地址
+	RedirectURL string `json:"redirectURL"` // 跳转直播剪辑的地址
 }
 
 // 获取直播间排名前50的在线观众信息列表
@@ -963,6 +964,74 @@ func (t *token) getLiveData(days int) (data *LiveData, e error) {
 	return data, nil
 }
 
+// 获取直播剪辑信息
+func (t *token) getLiveCutInfo(uid int64, liveID string) (info *LiveCutInfo, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("getLiveCutInfo() error: %v", err)
+		}
+	}()
+
+	if len(t.Cookies) == 0 {
+		panic(fmt.Errorf("获取直播剪辑信息需要登陆AcFun帐号"))
+	}
+
+	form := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(form)
+	form.Set(sid, midground)
+	client := &httpClient{
+		url:         getTokenURL,
+		body:        form.QueryString(),
+		method:      "POST",
+		cookies:     t.Cookies,
+		contentType: formContentType,
+		referer:     t.livePage,
+	}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取AcFun token失败，响应为 %s", string(body)))
+	}
+
+	token := string(v.GetStringBytes(midgroundAt))
+
+	client = &httpClient{
+		url:    fmt.Sprintf(liveCutInfoURL, uid, liveID),
+		method: "GET",
+	}
+	body, err = client.request()
+	checkErr(err)
+
+	v, err = p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取直播剪辑信息失败，响应为：%s", string(body)))
+	}
+
+	var status bool
+	statusNum := v.GetInt("liveCutStatus")
+	if statusNum == 1 {
+		status = true
+	} else if statusNum == 2 {
+		status = false
+	} else {
+		panic(fmt.Errorf("获取直播剪辑信息失败，响应为：%s", string(body)))
+	}
+	url := string(v.GetStringBytes("liveCutUrl"))
+	info = &LiveCutInfo{
+		Status:      status,
+		URL:         url,
+		RedirectURL: fmt.Sprintf(liveCutRedirectURL, token, url),
+	}
+
+	return info, nil
+}
+
 // 获取指定用户正在佩戴的守护徽章信息
 func getUserMedal(uid int64) (medal *Medal, e error) {
 	defer func() {
@@ -1290,46 +1359,6 @@ func getAllLiveList(cookies Cookies) ([]UserLiveInfo, error) {
 	return list, err
 }
 
-// 获取直播剪辑信息
-func getLiveCutInfo(uid int64, liveID string) (info *LiveCutInfo, e error) {
-	defer func() {
-		if err := recover(); err != nil {
-			e = fmt.Errorf("getLiveCutInfo() error: %v", err)
-		}
-	}()
-
-	client := &httpClient{
-		url:    fmt.Sprintf(liveCutInfoURL, uid, liveID),
-		method: "GET",
-	}
-	body, err := client.request()
-	checkErr(err)
-
-	p := generalParserPool.Get()
-	defer generalParserPool.Put(p)
-	v, err := p.ParseBytes(body)
-	checkErr(err)
-	if !v.Exists("result") || v.GetInt("result") != 0 {
-		panic(fmt.Errorf("获取直播剪辑信息失败，响应为：%s", string(body)))
-	}
-
-	var status bool
-	statusNum := v.GetInt("liveCutStatus")
-	if statusNum == 1 {
-		status = true
-	} else if statusNum == 2 {
-		status = false
-	} else {
-		panic(fmt.Errorf("获取直播剪辑信息失败，响应为：%s", string(body)))
-	}
-	info = &LiveCutInfo{
-		Status: status,
-		URL:    string(v.GetStringBytes("liveCutUrl")),
-	}
-
-	return info, nil
-}
-
 // 获取直播预告列表
 /*
 func getScheduleList(cookies Cookies) (scheduleList []LiveSchedule, e error) {
@@ -1487,6 +1516,11 @@ func (ac *AcFunLive) GetLiveData(days int) (*LiveData, error) {
 	return ac.t.getLiveData(days)
 }
 
+// GetLiveCutInfo 获取uid指定主播的直播剪辑信息，需要直播的liveID，需要登陆AcFun帐号
+func (ac *AcFunLive) GetLiveCutInfo(uid int64, liveID string) (*LiveCutInfo, error) {
+	return ac.t.getLiveCutInfo(uid, liveID)
+}
+
 // GetUserLiveInfo 返回uid指定用户的直播信息，可能会出现超时等各种网络原因的错误
 func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, ac.t.Cookies)
@@ -1510,11 +1544,6 @@ func (ac *AcFunLive) GetLiveList(count, page int) (liveList []UserLiveInfo, last
 // GetAllLiveList 返回全部正在直播的直播间列表
 func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(ac.t.Cookies)
-}
-
-// GetLiveCutInfo 获取主播的直播剪辑信息
-func (ac *AcFunLive) GetLiveCutInfo() (*LiveCutInfo, error) {
-	return getLiveCutInfo(ac.t.liverUID, ac.t.liveID)
 }
 
 // GetScheduleList 返回直播预告列表，目前有问题不可用
@@ -1550,11 +1579,6 @@ func GetLiveList(count, page int) (liveList []UserLiveInfo, lastPage bool, err e
 // GetAllLiveList 返回全部正在直播的直播间列表
 func GetAllLiveList() ([]UserLiveInfo, error) {
 	return getAllLiveList(nil)
-}
-
-// GetLiveCutInfo 获取uid指定主播的直播剪辑信息，需要直播的liveID
-func GetLiveCutInfo(uid int64, liveID string) (*LiveCutInfo, error) {
-	return getLiveCutInfo(uid, liveID)
 }
 
 // GetScheduleList 返回直播预告列表，目前有问题不可用

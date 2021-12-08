@@ -621,7 +621,7 @@ func (ac *AcFunLive) GetLiveCutStatus() (bool, error) {
 	return ac.t.getLiveCutStatus()
 }
 
-// SetLiveCutStatus 设置是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号
+// SetLiveCutStatus 设置是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号，主播直播时无法设置
 func (ac *AcFunLive) SetLiveCutStatus(canCut bool) error {
 	return ac.t.setLiveCutStatus(canCut)
 }
