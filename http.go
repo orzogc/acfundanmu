@@ -19,6 +19,7 @@ import (
 const maxIdleConnDuration = 90 * time.Second
 const timeout = 10 * time.Second
 const wsReadTimeout = 15 * time.Second
+const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
 
 type httpClient struct {
 	url         string
@@ -27,6 +28,7 @@ type httpClient struct {
 	cookies     Cookies
 	contentType string
 	referer     string
+	userAgent   string
 }
 
 var defaultClient = &fasthttp.Client{
@@ -78,6 +80,12 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 
 	if c.referer != "" {
 		req.Header.SetReferer(c.referer)
+	}
+
+	if c.userAgent != "" {
+		req.Header.SetUserAgent(c.userAgent)
+	} else {
+		req.Header.SetUserAgent(userAgent)
 	}
 
 	req.Header.Set("Accept-Encoding", "gzip")
