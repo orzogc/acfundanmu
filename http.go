@@ -17,7 +17,8 @@ import (
 )
 
 const maxIdleConnDuration = 90 * time.Second
-const timeOut = 10 * time.Second
+const timeout = 10 * time.Second
+const wsReadTimeout = 15 * time.Second
 
 type httpClient struct {
 	url         string
@@ -30,8 +31,8 @@ type httpClient struct {
 
 var defaultClient = &fasthttp.Client{
 	MaxIdleConnDuration: maxIdleConnDuration,
-	ReadTimeout:         timeOut,
-	WriteTimeout:        timeOut,
+	ReadTimeout:         timeout,
+	WriteTimeout:        timeout,
 }
 
 // 完成http请求，调用后需要 defer fasthttp.ReleaseResponse(resp)

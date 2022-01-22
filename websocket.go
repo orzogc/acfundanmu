@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dgrr/fastws"
 	"github.com/orzogc/acfundanmu/acproto"
+	"github.com/orzogc/fastws"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -71,11 +71,27 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 
 	conn, err := fastws.Dial(wsHost)
 	checkErr(err)
-	conn.ReadTimeout = timeOut
-	conn.WriteTimeout = timeOut
+	conn.ReadTimeout = wsReadTimeout
+	conn.WriteTimeout = timeout
+	tickerCh := make(chan struct{}, 10)
 	go func() {
-		<-wsCtx.Done()
-		_ = conn.Close()
+		ticker := time.NewTicker(timeout)
+		defer ticker.Stop()
+
+	Outer:
+		for {
+			select {
+			case <-tickerCh:
+				ticker.Reset(timeout)
+			case <-ticker.C:
+				log.Println("WebSocket接收弹幕数据超时")
+				_ = conn.Close()
+				break Outer
+			case <-wsCtx.Done():
+				_ = conn.Close()
+				break Outer
+			}
+		}
 	}()
 
 	_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.register())
@@ -114,7 +130,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 			_, *msg, err = conn.ReadMessage((*msg)[:0])
 			if err != nil {
 				if !errors.Is(err, fastws.EOF) {
-					log.Printf("websocket接收数据出现错误：%v", err)
+					log.Printf("WebSocket接收弹幕数据出现错误：%v", err)
 					log.Printf("停止获取uid为%d的主播的直播弹幕", ac.t.liverUID)
 					hasError = true
 					errCh <- err
@@ -128,6 +144,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 				}
 				break
 			}
+			tickerCh <- struct{}{}
 			msgCh <- msg
 		}
 	}()
@@ -142,7 +159,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 			}
 			stream, err := ac.t.decode(*msg)
 			if err != nil {
-				log.Printf("解码接收到的数据出现错误：%v", err)
+				log.Printf("解码接收到的弹幕数据出现错误：%v", err)
 				msgPool.Put(msg)
 				continue
 			}
@@ -158,7 +175,7 @@ func (ac *AcFunLive) wsStart(ctx context.Context, event bool, errCh chan<- error
 			go func(stream *acproto.DownstreamPayload) {
 				err := ac.handleCommand(wsCtx, conn, stream, event)
 				if err != nil {
-					log.Printf("处理接收到的数据出现错误：%v", err)
+					log.Printf("处理接收到的弹幕数据出现错误：%v", err)
 				}
 			}(stream)
 		}
