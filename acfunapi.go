@@ -216,7 +216,7 @@ type KickHistory struct {
 
 // LiveCutInfo 就是直播剪辑信息
 type LiveCutInfo struct {
-	Status      bool   `json:"status"`      // 是否允许剪辑直播录像（主播允许观众剪辑且其在直播时观众才能剪辑，主播直播时总是能剪辑自己的直播）
+	Status      bool   `json:"status"`      // 是否允许剪辑直播录像（主播允许观众剪辑观众才能剪辑，主播直播时总是能剪辑自己的直播）
 	URL         string `json:"url"`         // 剪辑直播的地址，直接访问可能出现登陆问题，需要访问跳转地址
 	RedirectURL string `json:"redirectURL"` // 跳转直播剪辑的地址，访问一次后链接里的token就会失效
 }
@@ -1518,7 +1518,7 @@ func (ac *AcFunLive) GetLiveData(days int) (*LiveData, error) {
 	return ac.t.getLiveData(days)
 }
 
-// GetLiveCutInfo 获取uid指定主播的直播剪辑信息，需要直播的liveID，需要登陆AcFun帐号
+// GetLiveCutInfo 获取uid指定主播的直播剪辑信息，只在主播直播时才能请求，需要直播的liveID，需要登陆AcFun帐号
 func (ac *AcFunLive) GetLiveCutInfo(uid int64, liveID string) (*LiveCutInfo, error) {
 	return ac.t.getLiveCutInfo(uid, liveID)
 }
