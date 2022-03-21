@@ -7,9 +7,8 @@ require (
 	github.com/Workiva/go-datastructures v1.0.53
 	github.com/orzogc/fastws v1.0.5-0.20220122125748-aa014b776886
 	github.com/segmentio/encoding v0.3.3
-	github.com/valyala/fasthttp v1.32.0
+	github.com/valyala/fasthttp v1.34.0
 	github.com/valyala/fastjson v1.6.3
 	go.uber.org/atomic v1.9.0
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	google.golang.org/protobuf v1.27.1
 )
