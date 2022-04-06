@@ -20,14 +20,14 @@ import (
 const maxBytesLength = 2048
 
 var lengthPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		b := make([]byte, 4)
 		return &b
 	},
 }
 
 var bytesPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		b := make([]byte, maxBytesLength)
 		return &b
 	},
