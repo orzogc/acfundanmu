@@ -1508,7 +1508,7 @@ func (ac *AcFunLive) GetMedalDetail(uid int64) (*MedalDetail, error) {
 	return ac.t.getMedalDetail(uid)
 }
 
-// GetMedalList 返回登陆用户拥有的守护徽章列表，需要登陆AcFun帐号
+// GetMedalList 返回登陆用户拥有的守护徽章列表，最多返回亲密度最高的300个，需要登陆AcFun帐号
 func (ac *AcFunLive) GetMedalList() ([]Medal, error) {
 	return ac.t.getMedalList()
 }
