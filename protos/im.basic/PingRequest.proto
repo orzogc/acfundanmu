@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "github.com/orzogc/acfundanmu/acproto";
+
+package AcFunDanmu.Im.Basic;
+
+message PingRequest {
+	PingType pingType = 1;
+	uint32 pingRound = 2;
+
+	enum PingType {
+		kInvalid = 0;
+		kPriorRegister = 1;
+		kPostRegister = 2;
+	}
+}

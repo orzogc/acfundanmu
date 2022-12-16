@@ -447,10 +447,11 @@ type liveInfo struct {
 
 // AcFunLive 就是直播间弹幕系统相关信息，支持并行
 type AcFunLive struct {
-	q          *queue.Queue // DanmuMessage的队列
-	info       *liveInfo    // 直播间的相关信息状态
-	t          *token       // 令牌相关信息
-	handlerMap *handlerMap  // 事件handler的map
+	q           *queue.Queue // DanmuMessage的队列
+	info        *liveInfo    // 直播间的相关信息状态
+	t           *token       // 令牌相关信息
+	handlerMap  *handlerMap  // 事件handler的map
+	danmuClient DanmuClient  // 弹幕客户端
 }
 
 // Option 就是AcFunLive的选项
@@ -487,6 +488,13 @@ func SetTokenInfo(tokenInfo *TokenInfo) Option {
 			DeviceID:     tokenInfo.DeviceID,
 			Cookies:      append([]*fasthttp.Cookie{}, tokenInfo.Cookies...),
 		}
+	}
+}
+
+// SetDanmuClient 设置弹幕客户端
+func SetDanmuClient(client DanmuClient) Option {
+	return func(ac *AcFunLive) {
+		ac.danmuClient = client
 	}
 }
 
@@ -548,6 +556,12 @@ func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 		option(ac)
 	}
 
+	// 默认弹幕客户端使用WebSocket连接
+	if ac.danmuClient == nil {
+		ac.danmuClient = &WebSocketDanmuClient{}
+		//ac.danmuClient = &TCPDanmuClient{}
+	}
+
 	if ac.t.UserID == 0 {
 		ac.info.StreamInfo, err = ac.t.getToken()
 	} else {
@@ -599,7 +613,7 @@ func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	if !event {
 		ac.q = queue.New(queueLen)
 	}
-	go ac.wsStart(ctx, event, ch)
+	go ac.clientStart(ctx, event, ch)
 	return ch
 }
 

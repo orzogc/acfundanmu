@@ -19,7 +19,8 @@ import (
 const maxIdleConnDuration = 90 * time.Second
 const timeout = 10 * time.Second
 const wsReadTimeout = 15 * time.Second
-const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
+const tickerTimeout = timeout + time.Second
+const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
 
 type httpClient struct {
 	url         string

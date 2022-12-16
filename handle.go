@@ -6,18 +6,17 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"sort"
 
 	"github.com/orzogc/acfundanmu/acproto"
-	"github.com/orzogc/fastws"
 
 	"google.golang.org/protobuf/proto"
 )
 
 // 处理接受到的数据里的命令
-func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, stream *acproto.DownstreamPayload, event bool) (e error) {
+func (ac *AcFunLive) handleCommand(ctx context.Context, stream *acproto.DownstreamPayload, event bool) (e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("handleCommand() error: %v", err)
@@ -39,9 +38,9 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 			err = proto.Unmarshal(cmd.Payload, enterRoom)
 			checkErr(err)
 			if enterRoom.HeartbeatIntervalMs > 0 {
-				go ac.t.wsHeartbeat(ctx, conn, enterRoom.HeartbeatIntervalMs)
+				go ac.clientHeartbeat(ctx, enterRoom.HeartbeatIntervalMs)
 			} else {
-				go ac.t.wsHeartbeat(ctx, conn, 10000)
+				go ac.clientHeartbeat(ctx, 10000)
 			}
 		case "ZtLiveCsHeartbeatAck":
 			//heartbeat := &acproto.ZtLiveCsHeartbeatAck{}
@@ -57,6 +56,24 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 				string(cmd.Payload),
 				base64.StdEncoding.EncodeToString(cmd.Payload))
 		}
+	case "Basic.Handshake":
+		handshake := &acproto.HansshakeResponse{}
+		err := proto.Unmarshal(stream.PayloadData, handshake)
+		checkErr(err)
+
+		_, err = ac.danmuClient.Write(ac.t.register())
+		checkErr(err)
+	case "Basic.Register":
+		register := &acproto.RegisterResponse{}
+		err := proto.Unmarshal(stream.PayloadData, register)
+		checkErr(err)
+		ac.t.instanceID = register.InstanceId
+		ac.t.sessionKey = register.SessKey
+
+		_, err = ac.danmuClient.Write(ac.t.keepAlive())
+		checkErr(err)
+		_, err = ac.danmuClient.Write(ac.t.enterRoom())
+		checkErr(err)
 	case "Basic.KeepAlive":
 		//keepalive := &acproto.KeepAliveResponse{}
 		//err := proto.Unmarshal(stream.PayloadData, keepalive)
@@ -69,9 +86,9 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 		unregister := &acproto.UnregisterResponse{}
 		err := proto.Unmarshal(stream.PayloadData, unregister)
 		checkErr(err)
-		_ = conn.CloseString("Unregister")
+		_ = ac.danmuClient.Close("Unregister")
 	case "Push.ZtLiveInteractive.Message":
-		_, err := conn.WriteMessage(fastws.ModeBinary, ac.t.pushMessage())
+		_, err := ac.danmuClient.Write(ac.t.pushMessage())
 		checkErr(err)
 		message := &acproto.ZtLiveScMessage{}
 		err = proto.Unmarshal(stream.PayloadData, message)
@@ -81,7 +98,7 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 			r, err := gzip.NewReader(bytes.NewReader(message.Payload))
 			checkErr(err)
 			defer r.Close()
-			payload, err = ioutil.ReadAll(r)
+			payload, err = io.ReadAll(r)
 			checkErr(err)
 		}
 		switch message.MessageType {
@@ -96,15 +113,15 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 			err = proto.Unmarshal(payload, statusChanged)
 			checkErr(err)
 			if statusChanged.Type == acproto.ZtLiveScStatusChanged_LIVE_CLOSED || statusChanged.Type == acproto.ZtLiveScStatusChanged_LIVE_BANNED {
-				ac.t.wsStop(conn, "Live closed")
+				ac.clientStop("Live closed")
 			}
 		case "ZtLiveScTicketInvalid":
 			ticketInvalid := &acproto.ZtLiveScTicketInvalid{}
 			err = proto.Unmarshal(payload, ticketInvalid)
 			checkErr(err)
 			index := ac.t.ticketIndex.Load()
-			_ = ac.t.ticketIndex.CAS(index, (index+1)%uint32(len(ac.t.tickets)))
-			_, err = conn.WriteMessage(fastws.ModeBinary, ac.t.enterRoom())
+			_ = ac.t.ticketIndex.CompareAndSwap(index, (index+1)%uint32(len(ac.t.tickets)))
+			_, err = ac.danmuClient.Write(ac.t.enterRoom())
 			checkErr(err)
 		default:
 			log.Printf("未知的message.MessageType：%s\npayload string:\n%s\npayload base64:\n%s\n",
@@ -121,7 +138,7 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, conn *fastws.Conn, strea
 		if stream.ErrorCode > 0 {
 			log.Println("DownstreamPayload error:", stream.ErrorCode, stream.ErrorMsg)
 			if stream.ErrorCode == 10018 {
-				ac.t.wsStop(conn, "Log out")
+				ac.clientStop("Log out")
 			}
 			log.Println(string(stream.ErrorData))
 		} else {
@@ -231,13 +248,13 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 				d := &Gift{
 					DanmuCommon: DanmuCommon{
 						SendTime: gift.SendTimeMs,
-						UserInfo: *NewUserInfo(gift.User),
+						UserInfo: *NewUserInfo(gift.UserInfo),
 					},
 					GiftDetail:          g,
-					Count:               gift.Count,
-					Combo:               gift.Combo,
-					Value:               gift.Value,
-					ComboID:             gift.ComboId,
+					Count:               gift.BatchSize,
+					Combo:               gift.ComboCount,
+					Value:               gift.Rank,
+					ComboID:             gift.ComboKey,
 					SlotDisplayDuration: gift.SlotDisplayDurationMs,
 					ExpireDuration:      gift.ExpireDurationMs,
 				}

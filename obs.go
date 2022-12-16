@@ -3,10 +3,10 @@ package acfundanmu
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -329,7 +329,7 @@ func loadFile(file string) (data []byte, contentType string, e error) {
 		fileData, err = client.request()
 		checkErr(err)
 	} else {
-		fileData, err = ioutil.ReadFile(file)
+		fileData, err = os.ReadFile(file)
 		checkErr(err)
 	}
 

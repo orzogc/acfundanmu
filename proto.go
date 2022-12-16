@@ -17,7 +17,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const maxBytesLength = 2048
+const maxBytesLength = 4096
 
 var lengthPool = sync.Pool{
 	New: func() any {
@@ -80,6 +80,25 @@ func (t *token) genHeader(length int) (header *acproto.PacketHeader) {
 		Kpn:               kpn,
 	}
 	return header
+}
+
+func (t *token) handshake() []byte {
+	request := &acproto.HandshakeRequest{
+		Unknown1: 1,
+		Unknown2: 1,
+	}
+	requestBytes, err := proto.Marshal(request)
+	checkErr(err)
+
+	body := t.genPayload("Basic.Handshake", requestBytes)
+	header := t.genHeader(len(body))
+	header.EncryptionMode = acproto.PacketHeader_kEncryptionServiceToken
+	header.TokenInfo = &acproto.TokenInfo{
+		TokenType: acproto.TokenInfo_kServiceToken,
+		Token:     []byte(t.ServiceToken),
+	}
+
+	return t.encode(header, body)
 }
 
 // Register数据

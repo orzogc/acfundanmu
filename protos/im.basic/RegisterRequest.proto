@@ -1,16 +1,14 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 option go_package = "github.com/orzogc/acfundanmu/acproto";
 
-package AcFunDanmu;
+package AcFunDanmu.Im.Basic;
 
 import "AppInfo.proto";
 import "DeviceInfo.proto";
 import "EnvInfo.proto";
-import "ZtCommonInfo.proto";
-import "AccessPointsConfig.proto";
 import "PushServiceToken.proto";
-import "SdkOption.proto";
+import "ZtCommonInfo.proto";
 
 message RegisterRequest {
 	AppInfo appInfo = 1;
@@ -30,24 +28,9 @@ message RegisterRequest {
 		kPresenceOffline = 0;
 		kPresenceOnline = 1;
 	}
-
 	enum ActiveStatus {
 		kInvalid = 0;
 		kAppInForeground = 1;
 		kAppInBackground = 2;
 	}
-}
-
-message RegisterResponse {
-	AccessPointsConfig accessPointsConfig = 1;
-	bytes sessKey = 2;
-	int64 instanceId = 3;
-	SdkOption sdkOption = 4;
-	AccessPointsConfig accessPointsConfigIpv6 = 5;
-	AccessPointsConfig accessPointsConfigQUic = 6;
-	AccessPointsConfig accessPointsConfigQuicIpv6 = 7;
-	bool cleanAccessPoint = 8;
-	float flowCostSampleRate = 9;
-	float commandSampleRate = 10;
-	AccessPointsConfig accessPointsConfigWs = 11;
 }

@@ -1,10 +1,10 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 option go_package = "github.com/orzogc/acfundanmu/acproto";
 
-package AcFunDanmu;
+package AcFunDanmu.Im.Basic;
 
 message User {
-    int32 appId = 1;
-    int64 uid = 2;
+	int32 appId = 1;
+	int64 uid = 2;
 }

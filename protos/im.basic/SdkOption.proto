@@ -1,8 +1,8 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 option go_package = "github.com/orzogc/acfundanmu/acproto";
 
-package AcFunDanmu;
+package AcFunDanmu.Im.Basic;
 
 message SdkOption {
 	int32 reportIntervalSeconds = 1;

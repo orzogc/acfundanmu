@@ -22,6 +22,7 @@ const (
 	midground = "acfun.midground.api"
 
 	wsHost               = "wss://klink-newproduct-ws3.kwaizt.com/"
+	tcpHost              = "slink.gifshow.com:14000"
 	appName              = "link-sdk"
 	sdkVersion           = "1.2.1"
 	kpn                  = "ACFUN_APP"
@@ -56,7 +57,7 @@ const (
 	medalDetailURL     = "https://live.acfun.cn/rest/pc-direct/fansClub/fans/medal/detail?uperId=%d"
 	medalListURL       = "https://www.acfun.cn/rest/pc-direct/fansClub/fans/medal/list"
 	liveInfoURL        = "https://live.acfun.cn/api/live/info?authorId=%d"
-	userInfoURL        = "https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=%d"
+	userInfoURL        = "https://www.acfun.cn/rest/pc-direct/user/userInfo?userId=%d"
 	liveListURL        = "https://live.acfun.cn/api/channel/list?count=%d&pcursor=%d"
 	liveCutInfoURL     = "https://live.acfun.cn/rest/pc-direct/live/getLiveCutInfo?authorId=%d&liveId=%s"
 	liveCutRedirectURL = "https://onvideoapi.kuaishou.com/rest/infra/sts?authToken=%s&sid=acfun.midground.api&followUrl=%s"

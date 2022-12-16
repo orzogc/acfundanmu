@@ -2,9 +2,9 @@ syntax = "proto3";
 
 option go_package = "github.com/orzogc/acfundanmu/acproto";
 
-package AcFunDanmu;
+package AcFunDanmu.Im.Basic;
 
 message I18nCopyWriting {
-    string formatKey = 1;
-    repeated string formatParam = 2;
+	string formatKey = 1;
+	repeated string formatParam = 2;
 }

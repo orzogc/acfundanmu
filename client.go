@@ -1,0 +1,417 @@
+package acfundanmu
+
+import (
+	"context"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"net"
+	"sync"
+	"time"
+
+	"github.com/orzogc/acfundanmu/acproto"
+	"github.com/orzogc/fastws"
+)
+
+var msgPool = sync.Pool{
+	New: func() any {
+		b := make([]byte, maxBytesLength)
+		return &b
+	},
+}
+
+// 从msgPool获取byte slice
+func getBytes() *[]byte {
+	msg := msgPool.Get().(*[]byte)
+	if msg == nil {
+		b := make([]byte, maxBytesLength)
+		msg = &b
+	}
+
+	return msg
+}
+
+// 放入byte slice到msgPool
+func pubBytes(msg *[]byte) {
+	if msg != nil {
+		msgPool.Put(msg)
+	}
+}
+
+// 弹幕客户端类型
+type DanmuClientType uint8
+
+const (
+	// 弹幕客户端使用WebSocket连接
+	WebSocketDanmuClientType DanmuClientType = iota
+	// 弹幕客户端使用TCP连接
+	TCPDanmuClientType
+)
+
+// 弹幕客户端
+type DanmuClient interface {
+	// 返回弹幕客户端类型
+	Type() DanmuClientType
+
+	// 连接弹幕服务器，address是地址
+	Dial(address string) error
+
+	// 读接口
+	io.Reader
+
+	// 写接口
+	io.Writer
+
+	// 关闭弹幕客户端
+	Close(message string) error
+}
+
+// 使用WebSocket连接的弹幕客户端
+type WebSocketDanmuClient struct {
+	conn *fastws.Conn
+}
+
+// 返回弹幕客户端类型WebSocketDanmuClientType
+func (client *WebSocketDanmuClient) Type() DanmuClientType {
+	return WebSocketDanmuClientType
+}
+
+// 连接弹幕服务器，address是地址
+func (client *WebSocketDanmuClient) Dial(address string) error {
+	conn, err := fastws.Dial(address)
+	if err != nil {
+		return err
+	}
+	conn.ReadTimeout = wsReadTimeout
+	conn.WriteTimeout = timeout
+	client.conn = conn
+
+	return nil
+}
+
+// 读数据
+func (client *WebSocketDanmuClient) Read(p []byte) (n int, err error) {
+	_, p, err = client.conn.ReadMessage(p[:0])
+
+	return len(p), err
+}
+
+// 写数据
+func (client *WebSocketDanmuClient) Write(p []byte) (n int, err error) {
+	return client.conn.WriteMessage(fastws.ModeBinary, p)
+}
+
+// 关闭连接
+func (client *WebSocketDanmuClient) Close(message string) error {
+	return client.conn.CloseString(message)
+}
+
+// 使用TCP连接的弹幕客户端
+type TCPDanmuClient struct {
+	conn net.Conn
+}
+
+// 返回弹幕客户端类型TCPDanmuClientType
+func (client *TCPDanmuClient) Type() DanmuClientType {
+	return TCPDanmuClientType
+}
+
+// 连接弹幕服务器，address是地址
+func (client *TCPDanmuClient) Dial(address string) error {
+	conn, err := net.DialTimeout("tcp", address, timeout)
+	if err != nil {
+		return err
+	}
+	client.conn = conn
+
+	return nil
+}
+
+// 读数据
+func (client *TCPDanmuClient) Read(p []byte) (n int, err error) {
+	return client.conn.Read(p)
+}
+
+// 写数据
+func (client *TCPDanmuClient) Write(p []byte) (n int, err error) {
+	return client.conn.Write(p)
+}
+
+// 关闭连接
+func (client *TCPDanmuClient) Close(message string) error {
+	return client.conn.Close()
+}
+
+// 弹幕消息
+type message struct {
+	bytes *[]byte
+	len   int
+}
+
+// 获取弹幕数据
+func (m *message) data() []byte {
+	return (*m.bytes)[:m.len]
+}
+
+// 定时发送heartbeat和keepalive数据
+func (ac *AcFunLive) clientHeartbeat(ctx context.Context, interval int64) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("Recovering from panic in wsHeartbeat(), the error is: %v", err)
+			// 重新启动wsHeartbeat()
+			time.Sleep(2 * time.Second)
+			ac.clientHeartbeat(ctx, interval)
+		}
+	}()
+
+	ticker := time.NewTicker(time.Duration(interval) * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			_, err := ac.danmuClient.Write(ac.t.heartbeat())
+			checkErr(err)
+			if ac.t.heartbeatSeqID%5 == 4 {
+				_, err = ac.danmuClient.Write(ac.t.keepAlive())
+				checkErr(err)
+			}
+		}
+	}
+}
+
+// 启动弹幕client
+func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- error) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("Recovering from panic in wsStart(), the error is:  %v", err)
+			log.Println("停止获取弹幕")
+			errCh <- err.(error)
+			close(errCh)
+			if event {
+				ac.callEvent(stopDanmu, err.(error))
+			}
+		}
+	}()
+
+	if !event {
+		defer ac.q.Dispose()
+	}
+
+	// 关闭websocket
+	wsCtx, wsCancel := context.WithCancel(ctx)
+	defer wsCancel()
+
+	// WebSocket连接可以直接发送注册消息，TCP连接需要先握手
+	if ac.danmuClient.Type() == WebSocketDanmuClientType {
+		err := ac.danmuClient.Dial(wsHost)
+		checkErr(err)
+		_, err = ac.danmuClient.Write(ac.t.register())
+		checkErr(err)
+	} else if ac.danmuClient.Type() == TCPDanmuClientType {
+		err := ac.danmuClient.Dial(tcpHost)
+		checkErr(err)
+		_, err = ac.danmuClient.Write(ac.t.handshake())
+		checkErr(err)
+	}
+
+	tickerCh := make(chan struct{}, 10)
+	go func() {
+		ticker := time.NewTicker(tickerTimeout)
+		defer ticker.Stop()
+
+	Outer:
+		for {
+			select {
+			case <-tickerCh:
+				ticker.Reset(tickerTimeout)
+			case <-ticker.C:
+				log.Println("WebSocket接收弹幕数据超时")
+				_ = ac.danmuClient.Close("")
+				break Outer
+			case <-wsCtx.Done():
+				_ = ac.danmuClient.Close("")
+				break Outer
+			}
+		}
+	}()
+
+	msgCh := make(chan message, queueLen)
+	payloadCh := make(chan *acproto.DownstreamPayload, queueLen)
+	hasError := false
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer close(msgCh)
+		var n int
+		var err error
+		for {
+			msg := getBytes()
+			n, err = ac.danmuClient.Read(*msg)
+			if err != nil {
+				if !(errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed)) {
+					log.Printf("WebSocket接收弹幕数据出现错误：%v", err)
+					log.Printf("停止获取uid为%d的主播的直播弹幕", ac.t.liverUID)
+					hasError = true
+					errCh <- err
+					close(errCh)
+					if event {
+						ac.callEvent(stopDanmu, err)
+					}
+				}
+				pubBytes(msg)
+				break
+			}
+			tickerCh <- struct{}{}
+			msgCh <- message{bytes: msg, len: n}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer close(payloadCh)
+		remain := []byte{}
+		for msg := range msgCh {
+			if msg.bytes == nil {
+				continue
+			}
+
+			if ac.danmuClient.Type() == WebSocketDanmuClientType {
+				// WebSocket连接的数据自动分帧
+				stream, err := ac.t.decode(msg.data())
+				if err != nil {
+					log.Printf("解码接收到的弹幕数据出现错误：%v", err)
+					pubBytes(msg.bytes)
+					continue
+				}
+				pubBytes(msg.bytes)
+				payloadCh <- stream
+			} else if ac.danmuClient.Type() == TCPDanmuClientType {
+				// TCP连接的数据需要自行分帧
+				if remain != nil {
+					remain = append(remain, msg.data()...)
+				} else {
+					remain = append([]byte{}, msg.data()...)
+				}
+
+				if len(remain) > 12 {
+					var frames [][]byte
+					var err error
+					frames, remain, err = getFrames(remain)
+					if err != nil {
+						log.Printf("解码接收到的弹幕数据出现错误：%v", err)
+						pubBytes(msg.bytes)
+						continue
+					}
+
+					for _, frame := range frames {
+						stream, err := ac.t.decode(frame)
+						if err != nil {
+							log.Printf("解码接收到的弹幕数据出现错误：%v", err)
+							continue
+						}
+						payloadCh <- stream
+					}
+				}
+
+				pubBytes(msg.bytes)
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for stream := range payloadCh {
+			go func(stream *acproto.DownstreamPayload) {
+				err := ac.handleCommand(wsCtx, stream, event)
+				if err != nil {
+					log.Printf("处理接收到的弹幕数据出现错误：%v", err)
+				}
+			}(stream)
+		}
+	}()
+
+	wg.Wait()
+	if !hasError {
+		errCh <- nil
+		close(errCh)
+		if event {
+			ac.callEvent(stopDanmu, nil)
+		}
+	}
+}
+
+// 停止弹幕client
+func (ac *AcFunLive) clientStop(message string) {
+	_, err := ac.danmuClient.Write(ac.t.userExit())
+	checkErr(err)
+	_, err = ac.danmuClient.Write(ac.t.unregister())
+	checkErr(err)
+	_ = ac.danmuClient.Close(message)
+}
+
+// 检查魔法数字
+func checkMagicNumber(data []byte) bool {
+	return data[0] == 0xAB && data[1] == 0xCD && data[2] == 0x00 && data[3] == 0x01
+}
+
+// 获取弹幕数据长度
+func getDataLength(data []byte) int {
+	headerLength := binary.BigEndian.Uint32(data[4:8])
+	payloadLength := binary.BigEndian.Uint32(data[8:12])
+	return int(headerLength) + int(payloadLength) + 12
+}
+
+// 获取弹幕数据
+func getFrame(data []byte) ([]byte, []byte) {
+	if checkMagicNumber(data) {
+		length := getDataLength(data)
+		if len(data) < length {
+			return nil, data
+		} else if len(data) > length {
+			return data[:length], data[length:]
+		} else {
+			return data, nil
+		}
+	} else {
+		return nil, nil
+	}
+}
+
+// 获取弹幕数据
+func getFrames(data []byte) ([][]byte, []byte, error) {
+	if len(data) > 12 {
+		frames := [][]byte{}
+		var frame []byte
+		remain := data
+
+		for {
+			frame, remain = getFrame(remain)
+			if frame != nil && remain != nil {
+				frames = append(frames, frame)
+				if len(remain) <= 12 {
+					return frames, remain, nil
+				}
+			} else if frame != nil && remain == nil {
+				frames = append(frames, frame)
+				return frames, nil, nil
+			} else if frame == nil && remain != nil {
+				if len(frames) > 0 {
+					return frames, remain, nil
+				} else {
+					return nil, remain, nil
+				}
+			} else {
+				return nil, nil, fmt.Errorf("错误的弹幕数据格式")
+			}
+		}
+	} else {
+		return nil, data, nil
+	}
+}

@@ -1,22 +1,23 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 option go_package = "github.com/orzogc/acfundanmu/acproto";
 
-package AcFunDanmu;
+package AcFunDanmu.Im.Basic;
 
 message PushServiceToken {
 	PushType pushType = 1;
 	bytes token = 2;
 	bool isPassThrough = 3;
+
 	enum PushType {
 		kPushTypeInvalid = 0;
 		kPushTypeAPNS = 1;
 		kPushTypeXmPush = 2;
 		kPushTypeJgPush = 3;
-		kPushTypeGtPUsh = 4;
+		kPushTypeGtPush = 4;
 		kPushTypeOpPush = 5;
-		kPushTYpeVvPush = 6;
+		kPushTypeVvPush = 6;
 		kPushTypeHwPush = 7;
-		kPushTYpeFcm = 8;
+		kPushTypeFcm = 8;
 	}
 }

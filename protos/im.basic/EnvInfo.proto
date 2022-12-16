@@ -1,15 +1,16 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 option go_package = "github.com/orzogc/acfundanmu/acproto";
 
-package AcFunDanmu;
+package AcFunDanmu.Im.Basic;
 
 message EnvInfo {
-    enum NetworkType {
-        kInvalid = 0;
-        kWIFI = 1;
-        kCellular = 2;
-    }
-    NetworkType networkType = 1;
-    bytes appName = 2;
+	NetworkType networkType = 1;
+	bytes apnName = 2;
+
+	enum NetworkType {
+		kInvalid = 0;
+		kWIFI = 1;
+		kCellular = 2;
+	}
 }

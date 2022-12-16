@@ -1,10 +1,10 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 option go_package = "github.com/orzogc/acfundanmu/acproto";
 
-package AcFunDanmu;
+package AcFunDanmu.Im.Basic;
 
 message FrontendInfo {
-    string ip = 1;
-    int32 port = 2;
+	string ip = 1;
+	int32 port = 2;
 }
