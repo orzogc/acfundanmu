@@ -600,8 +600,9 @@ func (ac *AcFunLive) CopyEventHandlers(anotherAC *AcFunLive) {
 	}
 }
 
-// StartDanmu 启动websocket获取弹幕，ctx用来结束websocket，event为true时采用事件响应模式。
+// StartDanmu 获取弹幕，ctx用来结束弹幕的获取，event为true时采用事件响应模式。
 // event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
+// 一个AcFunLive只能同时调用StartDanmu()一次。
 func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	ch := make(chan error, 1)
 	if ac.t.liverUID <= 0 {
@@ -617,7 +618,8 @@ func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	return ch
 }
 
-// GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu(ctx, false)
+// GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu(ctx, false)。
+// 一个AcFunLive只能同时调用GetDanmu()一次。
 func (ac *AcFunLive) GetDanmu() (danmu []DanmuMessage) {
 	if ac.q == nil {
 		log.Println("需要先调用StartDanmu()，event不能为true")

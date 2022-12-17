@@ -87,6 +87,7 @@ func convert(name string) string {
 
 // WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕，需要先调用StartDanmu(ctx, false)。
 // newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕。
+// 一个AcFunLive只能同时调用WriteASS()一次。
 func (ac *AcFunLive) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
 	defer func() {
 		if err := recover(); err != nil {

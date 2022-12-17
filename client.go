@@ -40,7 +40,7 @@ func pubBytes(msg *[]byte) {
 	}
 }
 
-// 弹幕客户端类型
+// DanmuClientType 弹幕客户端类型
 type DanmuClientType uint8
 
 const (
@@ -50,12 +50,12 @@ const (
 	TCPDanmuClientType
 )
 
-// 弹幕客户端
+// DanmuClient 弹幕客户端
 type DanmuClient interface {
-	// 返回弹幕客户端类型
+	// Type 返回弹幕客户端类型
 	Type() DanmuClientType
 
-	// 连接弹幕服务器，address是地址
+	// Dial 连接弹幕服务器，address是地址，在调用Close()后可重复调用
 	Dial(address string) error
 
 	// 读接口
@@ -64,24 +64,25 @@ type DanmuClient interface {
 	// 写接口
 	io.Writer
 
-	// 关闭弹幕客户端
+	// Close 关闭连接
 	Close(message string) error
 }
 
-// 使用WebSocket连接的弹幕客户端
+// WebSocketDanmuClient 使用WebSocket连接的弹幕客户端
 type WebSocketDanmuClient struct {
 	conn *fastws.Conn
 }
 
-// 返回弹幕客户端类型WebSocketDanmuClientType
+// Type 返回弹幕客户端类型WebSocketDanmuClientType
 func (client *WebSocketDanmuClient) Type() DanmuClientType {
 	return WebSocketDanmuClientType
 }
 
-// 连接弹幕服务器，address是地址
+// Dial 连接弹幕服务器，address是地址
 func (client *WebSocketDanmuClient) Dial(address string) error {
 	conn, err := fastws.Dial(address)
 	if err != nil {
+		client.conn = nil
 		return err
 	}
 	conn.ReadTimeout = wsReadTimeout
@@ -91,37 +92,50 @@ func (client *WebSocketDanmuClient) Dial(address string) error {
 	return nil
 }
 
-// 读数据
+// Read 读数据
 func (client *WebSocketDanmuClient) Read(p []byte) (n int, err error) {
-	_, p, err = client.conn.ReadMessage(p[:0])
+	if client.conn != nil {
+		_, p, err = client.conn.ReadMessage(p[:0])
 
-	return len(p), err
+		return len(p), err
+	} else {
+		return 0, fmt.Errorf("请先调用 Dail() 连接服务器")
+	}
 }
 
-// 写数据
+// Write 写数据
 func (client *WebSocketDanmuClient) Write(p []byte) (n int, err error) {
-	return client.conn.WriteMessage(fastws.ModeBinary, p)
+	if client.conn != nil {
+		return client.conn.WriteMessage(fastws.ModeBinary, p)
+	} else {
+		return 0, fmt.Errorf("请先调用 Dail() 连接服务器")
+	}
 }
 
-// 关闭连接
+// Close 关闭连接
 func (client *WebSocketDanmuClient) Close(message string) error {
-	return client.conn.CloseString(message)
+	if client.conn != nil {
+		return client.conn.CloseString(message)
+	} else {
+		return nil
+	}
 }
 
-// 使用TCP连接的弹幕客户端
+// TCPDanmuClient 使用TCP连接的弹幕客户端
 type TCPDanmuClient struct {
 	conn net.Conn
 }
 
-// 返回弹幕客户端类型TCPDanmuClientType
+// Type 返回弹幕客户端类型TCPDanmuClientType
 func (client *TCPDanmuClient) Type() DanmuClientType {
 	return TCPDanmuClientType
 }
 
-// 连接弹幕服务器，address是地址
+// Dial 连接弹幕服务器，address是地址
 func (client *TCPDanmuClient) Dial(address string) error {
 	conn, err := net.DialTimeout("tcp", address, timeout)
 	if err != nil {
+		client.conn = nil
 		return err
 	}
 	client.conn = conn
@@ -129,19 +143,31 @@ func (client *TCPDanmuClient) Dial(address string) error {
 	return nil
 }
 
-// 读数据
+// Read 读数据
 func (client *TCPDanmuClient) Read(p []byte) (n int, err error) {
-	return client.conn.Read(p)
+	if client.conn != nil {
+		return client.conn.Read(p)
+	} else {
+		return 0, fmt.Errorf("请先调用 Dail() 连接服务器")
+	}
 }
 
-// 写数据
+// Write 写数据
 func (client *TCPDanmuClient) Write(p []byte) (n int, err error) {
-	return client.conn.Write(p)
+	if client.conn != nil {
+		return client.conn.Write(p)
+	} else {
+		return 0, fmt.Errorf("请先调用 Dail() 连接服务器")
+	}
 }
 
-// 关闭连接
+// Close 关闭连接
 func (client *TCPDanmuClient) Close(message string) error {
-	return client.conn.Close()
+	if client.conn != nil {
+		return client.conn.Close()
+	} else {
+		return nil
+	}
 }
 
 // 弹幕消息
