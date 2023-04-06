@@ -112,12 +112,12 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 
 	if c.deviceID != "" {
 		// 设置did的cookie，否则可能会被反爬
-		req.Header.SetCookieBytesK([]byte("_did"), c.deviceID)
+		req.Header.SetCookie("_did", c.deviceID)
 	}
 
 	reqID := fmt.Sprintf("%s_self_%x", genRandomNum(), md5.Sum([]byte(referer)))
-	req.Header.SetCookieBytesK([]byte("cur_req_id"), reqID)
-	req.Header.SetCookieBytesK([]byte("cur_group_id"), reqID+"_0")
+	req.Header.SetCookie("cur_req_id", reqID)
+	req.Header.SetCookie("cur_group_id", reqID+"_0")
 
 	req.Header.Set("Accept-Encoding", "gzip")
 

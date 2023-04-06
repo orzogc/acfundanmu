@@ -685,6 +685,11 @@ func (ac *AcFunLive) GetLiveID() string {
 	return ac.t.liveID
 }
 
+// GetDeviceID 返回设备ID
+func (ac *AcFunLive) GetDeviceID() string {
+	return ac.t.DeviceID
+}
+
 // GetTokenInfo 返回TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
 func GetTokenInfo(cookies Cookies) (*TokenInfo, error) {
 	ac, err := NewAcFunLive(SetCookies(cookies))
