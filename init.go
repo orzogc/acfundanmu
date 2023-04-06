@@ -239,13 +239,11 @@ func (t *token) getDeviceID() (e error) {
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 
-	didCookie := fasthttp.AcquireCookie()
-	defer fasthttp.ReleaseCookie(didCookie)
-	didCookie.SetKey("_did")
-	if !resp.Header.Cookie(didCookie) {
+	did := deviceID.Load()
+	if did == "" {
 		panic("无法获取didCookie")
 	}
-	t.DeviceID = string(didCookie.Value())
+	t.DeviceID = did
 
 	return nil
 }

@@ -3,6 +3,7 @@ package acfundanmu
 import (
 	"bytes"
 	"crypto/hmac"
+	"crypto/md5"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
@@ -14,13 +15,33 @@ import (
 
 	"facette.io/natsort"
 	"github.com/valyala/fasthttp"
+	"go.uber.org/atomic"
 )
 
 const maxIdleConnDuration = 90 * time.Second
 const timeout = 10 * time.Second
 const wsReadTimeout = 15 * time.Second
 const tickerTimeout = timeout + time.Second
-const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+
+var deviceID = atomic.NewString("")
+var numRune = []rune("0123456789ABCDEF")
+
+var defaultClient = &fasthttp.Client{
+	MaxIdleConnDuration: maxIdleConnDuration,
+	ReadTimeout:         timeout,
+	WriteTimeout:        timeout,
+}
+
+func genRandomNum() string {
+	num := rand.Intn(1e9)
+	chars := make([]rune, 7)
+	for i := range chars {
+		chars[i] = numRune[rand.Intn(len(numRune))]
+	}
+
+	return fmt.Sprintf("%d%s", num, string(chars))
+}
 
 type httpClient struct {
 	url         string
@@ -30,12 +51,6 @@ type httpClient struct {
 	contentType string
 	referer     string
 	userAgent   string
-}
-
-var defaultClient = &fasthttp.Client{
-	MaxIdleConnDuration: maxIdleConnDuration,
-	ReadTimeout:         timeout,
-	WriteTimeout:        timeout,
 }
 
 // 完成http请求，调用后需要 defer fasthttp.ReleaseResponse(resp)
@@ -59,7 +74,6 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 
 	if len(c.body) != 0 {
 		req.SetBody(c.body)
-		//req.Header.SetContentLength(len(c.body))
 	}
 
 	if c.method != "" {
@@ -79,9 +93,14 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 		req.Header.SetContentType(c.contentType)
 	}
 
+	var referer string
 	if c.referer != "" {
-		req.Header.SetReferer(c.referer)
+		referer = c.referer
+	} else {
+		// 默认referer
+		referer = liveHost
 	}
+	req.Header.SetReferer(referer)
 
 	if c.userAgent != "" {
 		req.Header.SetUserAgent(c.userAgent)
@@ -89,10 +108,31 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 		req.Header.SetUserAgent(userAgent)
 	}
 
+	did := deviceID.Load()
+	if did != "" {
+		// 需要设置did的cookie，否则会被反爬
+		req.Header.SetCookieBytesK([]byte("_did"), did)
+	}
+
+	reqID := fmt.Sprintf("%s_self_%x", genRandomNum(), md5.Sum([]byte(referer)))
+	req.Header.SetCookieBytesK([]byte("cur_req_id"), reqID)
+	req.Header.SetCookieBytesK([]byte("cur_group_id"), reqID+"_0")
+
 	req.Header.Set("Accept-Encoding", "gzip")
 
 	err := defaultClient.Do(req, resp)
 	checkErr(err)
+
+	didCookie := fasthttp.AcquireCookie()
+	defer fasthttp.ReleaseCookie(didCookie)
+	didCookie.SetKey("_did")
+	if resp.Header.Cookie(didCookie) {
+		newDid := string(didCookie.Value())
+		if did != newDid {
+			// 更新did
+			deviceID.Store(newDid)
+		}
+	}
 
 	return resp, nil
 }
@@ -221,7 +261,6 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 	natsort.Sort(paramsStr)
 
 	minute := time.Now().Unix() / 60
-	rand.Seed(time.Now().UnixNano())
 	randomNum := rand.Int31()
 	var nonce int64 = minute | (int64(randomNum) << 32)
 	nonceStr := strconv.FormatInt(nonce, 10)

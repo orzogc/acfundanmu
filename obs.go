@@ -322,9 +322,8 @@ func loadFile(file string) (data []byte, contentType string, e error) {
 	var fileData []byte
 	if u, err := url.Parse(file); err == nil && u.Scheme != "" && u.Host != "" {
 		client := &httpClient{
-			url:     file,
-			method:  "GET",
-			referer: liveHost,
+			url:    file,
+			method: "GET",
 		}
 		fileData, err = client.request()
 		checkErr(err)
@@ -553,7 +552,6 @@ func (t *token) setLiveCutStatus(canCut bool) (e error) {
 		method:      "POST",
 		cookies:     t.Cookies,
 		contentType: jsonContentType,
-		referer:     liveHost,
 	}
 	body, err := client.request()
 	checkErr(err)

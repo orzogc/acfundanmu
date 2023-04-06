@@ -12,7 +12,7 @@ const (
 	midgroundSt    = "acfun.midground.api_st"
 	midgroundAt    = "acfun.midground.api.at"
 	acfunSignInURL = "https://id.app.acfun.cn/rest/web/login/signin"
-	liveHost       = "https://live.acfun.cn"
+	liveHost       = "https://live.acfun.cn/"
 	liveURL        = "https://live.acfun.cn/live/%d"
 	loginURL       = "https://id.app.acfun.cn/rest/app/visitor/login"
 	getTokenURL    = "https://id.app.acfun.cn/rest/web/token/get"
