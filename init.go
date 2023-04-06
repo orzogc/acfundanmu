@@ -58,8 +58,9 @@ func (t *token) getAcFunToken() (e error) {
 		}
 	}()
 
-	err := t.getDeviceID()
+	deviceID, err := getDeviceID()
 	checkErr(err)
+	t.DeviceID = deviceID
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
@@ -223,8 +224,8 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 	return stream, nil
 }
 
-// 获取deviceID
-func (t *token) getDeviceID() (e error) {
+// 获取设备ID
+func getDeviceID() (devideID string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getDeviceID() error: %v", err)
@@ -232,20 +233,21 @@ func (t *token) getDeviceID() (e error) {
 	}()
 
 	client := &httpClient{
-		url:    t.livePage,
+		url:    liveHost,
 		method: "GET",
 	}
 	resp, err := client.doRequest()
 	checkErr(err)
 	defer fasthttp.ReleaseResponse(resp)
 
-	did := deviceID.Load()
-	if did == "" {
+	didCookie := fasthttp.AcquireCookie()
+	defer fasthttp.ReleaseCookie(didCookie)
+	didCookie.SetKey("_did")
+	if !resp.Header.Cookie(didCookie) {
 		panic("无法获取didCookie")
 	}
-	t.DeviceID = did
 
-	return nil
+	return string(didCookie.Value()), nil
 }
 
 // 获取礼物列表

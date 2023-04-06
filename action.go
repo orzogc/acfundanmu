@@ -138,10 +138,11 @@ func (t *token) wearMedal(uid int64) (e error) {
 	}
 
 	client := &httpClient{
-		url:     fmt.Sprintf(wearMedalURL, uid),
-		method:  "GET",
-		cookies: t.Cookies,
-		referer: t.livePage,
+		url:      fmt.Sprintf(wearMedalURL, uid),
+		method:   "GET",
+		cookies:  t.Cookies,
+		referer:  t.livePage,
+		deviceID: t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -170,10 +171,11 @@ func (t *token) cancelWearMedal(liverUID int64) (e error) {
 	}
 
 	client := &httpClient{
-		url:     fmt.Sprintf(cancelWearMedalURL, liverUID),
-		method:  "GET",
-		cookies: t.Cookies,
-		referer: t.livePage,
+		url:      fmt.Sprintf(cancelWearMedalURL, liverUID),
+		method:   "GET",
+		cookies:  t.Cookies,
+		referer:  t.livePage,
+		deviceID: t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -221,7 +223,7 @@ func (ac *AcFunLive) CancelWearMedalWithLiverUID(liverUID int64) error {
 
 // CancelWearMedal 取消佩戴守护徽章，需要登陆AcFun帐号
 func (ac *AcFunLive) CancelWearMedal() error {
-	medal, err := getUserMedal(ac.t.UserID)
+	medal, err := getUserMedal(ac.t.UserID, ac.t.DeviceID)
 	if err != nil {
 		return err
 	}

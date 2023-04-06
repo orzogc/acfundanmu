@@ -72,9 +72,10 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 	}
 
 	client := &httpClient{
-		url:     checkLiveAuthURL,
-		method:  "POST",
-		cookies: t.Cookies,
+		url:      checkLiveAuthURL,
+		method:   "POST",
+		cookies:  t.Cookies,
+		deviceID: t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -125,8 +126,9 @@ func (t *token) getLiveTypeList() (list []LiveType, e error) {
 	}()
 
 	client := &httpClient{
-		url:    liveTypeListURL,
-		method: "POST",
+		url:      liveTypeListURL,
+		method:   "POST",
+		deviceID: t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -504,9 +506,10 @@ func (t *token) getLiveCutStatus() (canCut bool, e error) {
 	}
 
 	client := &httpClient{
-		url:     liveCutStatusURL,
-		method:  "POST",
-		cookies: t.Cookies,
+		url:      liveCutStatusURL,
+		method:   "POST",
+		cookies:  t.Cookies,
+		deviceID: t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -552,6 +555,7 @@ func (t *token) setLiveCutStatus(canCut bool) (e error) {
 		method:      "POST",
 		cookies:     t.Cookies,
 		contentType: jsonContentType,
+		deviceID:    t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)

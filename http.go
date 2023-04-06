@@ -15,7 +15,6 @@ import (
 
 	"facette.io/natsort"
 	"github.com/valyala/fasthttp"
-	"go.uber.org/atomic"
 )
 
 const maxIdleConnDuration = 90 * time.Second
@@ -24,15 +23,16 @@ const wsReadTimeout = 15 * time.Second
 const tickerTimeout = timeout + time.Second
 const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
 
-var deviceID = atomic.NewString("")
 var numRune = []rune("0123456789ABCDEF")
 
+// 默认HTTP客户端
 var defaultClient = &fasthttp.Client{
 	MaxIdleConnDuration: maxIdleConnDuration,
 	ReadTimeout:         timeout,
 	WriteTimeout:        timeout,
 }
 
+// 生成随机数字的字符串
 func genRandomNum() string {
 	num := rand.Intn(1e9)
 	chars := make([]rune, 7)
@@ -43,6 +43,7 @@ func genRandomNum() string {
 	return fmt.Sprintf("%d%s", num, string(chars))
 }
 
+// HTTP客户端
 type httpClient struct {
 	url         string
 	body        []byte
@@ -51,6 +52,7 @@ type httpClient struct {
 	contentType string
 	referer     string
 	userAgent   string
+	deviceID    string
 }
 
 // 完成http请求，调用后需要 defer fasthttp.ReleaseResponse(resp)
@@ -108,10 +110,9 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 		req.Header.SetUserAgent(userAgent)
 	}
 
-	did := deviceID.Load()
-	if did != "" {
-		// 需要设置did的cookie，否则会被反爬
-		req.Header.SetCookieBytesK([]byte("_did"), did)
+	if c.deviceID != "" {
+		// 设置did的cookie，否则可能会被反爬
+		req.Header.SetCookieBytesK([]byte("_did"), c.deviceID)
 	}
 
 	reqID := fmt.Sprintf("%s_self_%x", genRandomNum(), md5.Sum([]byte(referer)))
@@ -122,17 +123,6 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 
 	err := defaultClient.Do(req, resp)
 	checkErr(err)
-
-	didCookie := fasthttp.AcquireCookie()
-	defer fasthttp.ReleaseCookie(didCookie)
-	didCookie.SetKey("_did")
-	if resp.Header.Cookie(didCookie) {
-		newDid := string(didCookie.Value())
-		if did != newDid {
-			// 更新did
-			deviceID.Store(newDid)
-		}
-	}
 
 	return resp, nil
 }

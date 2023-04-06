@@ -746,9 +746,10 @@ func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 	}
 
 	client := &httpClient{
-		url:     fmt.Sprintf(medalDetailURL, uid),
-		method:  "GET",
-		cookies: t.Cookies,
+		url:      fmt.Sprintf(medalDetailURL, uid),
+		method:   "GET",
+		cookies:  t.Cookies,
+		deviceID: t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -794,9 +795,10 @@ func (t *token) getMedalList() (medalList []Medal, e error) {
 	}
 
 	client := &httpClient{
-		url:     medalListURL,
-		method:  "GET",
-		cookies: t.Cookies,
+		url:      medalListURL,
+		method:   "GET",
+		cookies:  t.Cookies,
+		deviceID: t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -852,6 +854,7 @@ func (t *token) getLiveData(days int) (data *LiveData, e error) {
 		method:      "POST",
 		cookies:     t.Cookies,
 		contentType: formContentType,
+		deviceID:    t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -986,6 +989,7 @@ func (t *token) getLiveCutInfo(uid int64, liveID string) (info *LiveCutInfo, e e
 		cookies:     t.Cookies,
 		contentType: formContentType,
 		referer:     t.livePage,
+		deviceID:    t.DeviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1001,9 +1005,10 @@ func (t *token) getLiveCutInfo(uid int64, liveID string) (info *LiveCutInfo, e e
 	token := string(v.GetStringBytes(midgroundAt))
 
 	client = &httpClient{
-		url:     fmt.Sprintf(liveCutInfoURL, uid, liveID),
-		method:  "GET",
-		cookies: t.Cookies,
+		url:      fmt.Sprintf(liveCutInfoURL, uid, liveID),
+		method:   "GET",
+		cookies:  t.Cookies,
+		deviceID: t.DeviceID,
 	}
 	body, err = client.request()
 	checkErr(err)
@@ -1034,7 +1039,7 @@ func (t *token) getLiveCutInfo(uid int64, liveID string) (info *LiveCutInfo, e e
 }
 
 // 获取指定用户正在佩戴的守护徽章信息
-func getUserMedal(uid int64) (medal *Medal, e error) {
+func getUserMedal(uid int64, deviceID string) (medal *Medal, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getUserMedal() error: %v", err)
@@ -1042,8 +1047,9 @@ func getUserMedal(uid int64) (medal *Medal, e error) {
 	}()
 
 	client := &httpClient{
-		url:    fmt.Sprintf(userMedalURL, uid),
-		method: "GET",
+		url:      fmt.Sprintf(userMedalURL, uid),
+		method:   "GET",
+		deviceID: deviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1159,7 +1165,7 @@ func getUserLiveInfoJSON(v *fastjson.Value) *UserLiveInfo {
 }
 
 // 获取指定用户的直播信息
-func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
+func getUserLiveInfo(uid int64, cookies Cookies, deviceID string) (info *UserLiveInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getUserLiveInfo() error: %v", err)
@@ -1167,9 +1173,10 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 	}()
 
 	client := &httpClient{
-		url:     fmt.Sprintf(liveInfoURL, uid),
-		method:  "GET",
-		cookies: cookies,
+		url:      fmt.Sprintf(liveInfoURL, uid),
+		method:   "GET",
+		cookies:  cookies,
+		deviceID: deviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1186,7 +1193,7 @@ func getUserLiveInfo(uid int64, cookies Cookies) (info *UserLiveInfo, e error) {
 }
 
 // 获取指定用户的信息
-func getUserInfo(uid int64, cookies Cookies) (info *UserProfileInfo, e error) {
+func getUserInfo(uid int64, cookies Cookies, deviceID string) (info *UserProfileInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getUserProfile() error: %v", err)
@@ -1194,9 +1201,10 @@ func getUserInfo(uid int64, cookies Cookies) (info *UserProfileInfo, e error) {
 	}()
 
 	client := &httpClient{
-		url:     fmt.Sprintf(userInfoURL, uid),
-		method:  "GET",
-		cookies: cookies,
+		url:      fmt.Sprintf(userInfoURL, uid),
+		method:   "GET",
+		cookies:  cookies,
+		deviceID: deviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1248,7 +1256,7 @@ func getUserInfo(uid int64, cookies Cookies) (info *UserProfileInfo, e error) {
 }
 
 // 获取指定主播的守护榜
-func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList, e error) {
+func getMedalRankList(uid int64, cookies Cookies, deviceID string) (medalRankList *MedalRankList, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getMedalRankList() error: %v", err)
@@ -1256,9 +1264,10 @@ func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList,
 	}()
 
 	client := &httpClient{
-		url:     fmt.Sprintf(medalRankURL, uid),
-		method:  "GET",
-		cookies: cookies,
+		url:      fmt.Sprintf(medalRankURL, uid),
+		method:   "GET",
+		cookies:  cookies,
+		deviceID: deviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1318,7 +1327,7 @@ func getMedalRankList(uid int64, cookies Cookies) (medalRankList *MedalRankList,
 }
 
 // 获取正在直播的直播间列表
-func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, lastPage bool, e error) {
+func getLiveList(count, page int, cookies Cookies, deviceID string) (liveList []UserLiveInfo, lastPage bool, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			e = fmt.Errorf("getLiveList() error: %v", err)
@@ -1326,9 +1335,10 @@ func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, las
 	}()
 
 	client := &httpClient{
-		url:     fmt.Sprintf(liveListURL, count, page),
-		method:  "GET",
-		cookies: cookies,
+		url:      fmt.Sprintf(liveListURL, count, page),
+		method:   "GET",
+		cookies:  cookies,
+		deviceID: deviceID,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -1356,8 +1366,8 @@ func getLiveList(count, page int, cookies Cookies) (liveList []UserLiveInfo, las
 }
 
 // 获取全部正在直播的直播间列表
-func getAllLiveList(cookies Cookies) ([]UserLiveInfo, error) {
-	list, _, err := getLiveList(1000000, 0, cookies)
+func getAllLiveList(cookies Cookies, deviceID string) ([]UserLiveInfo, error) {
+	list, _, err := getLiveList(1000000, 0, cookies, deviceID)
 	return list, err
 }
 
@@ -1525,27 +1535,27 @@ func (ac *AcFunLive) GetLiveCutInfo(uid int64, liveID string) (*LiveCutInfo, err
 
 // GetUserLiveInfo 返回uid指定用户的直播信息，可能会出现超时等各种网络原因的错误
 func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
-	return getUserLiveInfo(uid, ac.t.Cookies)
+	return getUserLiveInfo(uid, ac.t.Cookies, ac.t.DeviceID)
 }
 
 // GetUserInfo 返回uid指定用户的信息
 func (ac *AcFunLive) GetUserInfo(uid int64) (*UserProfileInfo, error) {
-	return getUserInfo(uid, ac.t.Cookies)
+	return getUserInfo(uid, ac.t.Cookies, ac.t.DeviceID)
 }
 
 // GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），可用于获取指定主播的守护徽章名字
 func (ac *AcFunLive) GetMedalRankList(uid int64) (medalRankList *MedalRankList, e error) {
-	return getMedalRankList(uid, ac.t.Cookies)
+	return getMedalRankList(uid, ac.t.Cookies, ac.t.DeviceID)
 }
 
 // GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），lastPage说明是否最后一页
 func (ac *AcFunLive) GetLiveList(count, page int) (liveList []UserLiveInfo, lastPage bool, err error) {
-	return getLiveList(count, page, ac.t.Cookies)
+	return getLiveList(count, page, ac.t.Cookies, ac.t.DeviceID)
 }
 
 // GetAllLiveList 返回全部正在直播的直播间列表
 func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
-	return getAllLiveList(ac.t.Cookies)
+	return getAllLiveList(ac.t.Cookies, ac.t.DeviceID)
 }
 
 // GetScheduleList 返回直播预告列表，目前有问题不可用
@@ -1553,34 +1563,39 @@ func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
 //	return getScheduleList(ac.t.Cookies)
 //}
 
+// GetDeviceID 获取设备ID
+func GetDeviceID() (string, error) {
+	return getDeviceID()
+}
+
 // GetUserMedal 返回uid指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
-func GetUserMedal(uid int64) (medal *Medal, e error) {
-	return getUserMedal(uid)
+func GetUserMedal(uid int64, deviceID string) (medal *Medal, e error) {
+	return getUserMedal(uid, deviceID)
 }
 
 // GetUserLiveInfo 返回uid指定用户的直播信息，可能会出现超时等各种网络原因的错误
-func GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
-	return getUserLiveInfo(uid, nil)
+func GetUserLiveInfo(uid int64, deviceID string) (*UserLiveInfo, error) {
+	return getUserLiveInfo(uid, nil, deviceID)
 }
 
 // GetUserInfo 返回uid指定用户的信息
-func GetUserInfo(uid int64) (*UserProfileInfo, error) {
-	return getUserInfo(uid, nil)
+func GetUserInfo(uid int64, deviceID string) (*UserProfileInfo, error) {
+	return getUserInfo(uid, nil, deviceID)
 }
 
 // GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），可用于获取指定主播的守护徽章名字
-func GetMedalRankList(uid int64) (medalRankList *MedalRankList, e error) {
-	return getMedalRankList(uid, nil)
+func GetMedalRankList(uid int64, deviceID string) (medalRankList *MedalRankList, e error) {
+	return getMedalRankList(uid, nil, deviceID)
 }
 
 // GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），lastPage说明是否最后一页
-func GetLiveList(count, page int) (liveList []UserLiveInfo, lastPage bool, err error) {
-	return getLiveList(count, page, nil)
+func GetLiveList(count, page int, deviceID string) (liveList []UserLiveInfo, lastPage bool, err error) {
+	return getLiveList(count, page, nil, deviceID)
 }
 
 // GetAllLiveList 返回全部正在直播的直播间列表
-func GetAllLiveList() ([]UserLiveInfo, error) {
-	return getAllLiveList(nil)
+func GetAllLiveList(deviceID string) ([]UserLiveInfo, error) {
+	return getAllLiveList(nil, deviceID)
 }
 
 // GetScheduleList 返回直播预告列表，目前有问题不可用
