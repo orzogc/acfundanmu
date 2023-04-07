@@ -392,6 +392,7 @@ func (t *token) startLive(title, coverFile, streamName string, portrait, panoram
 		method:      "POST",
 		contentType: contentType,
 		referer:     t.livePage,
+		noReqID:     true,
 	}
 	body, err := client.request()
 	checkErr(err)
@@ -479,6 +480,7 @@ func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 		method:      "POST",
 		contentType: contentType,
 		referer:     t.livePage,
+		noReqID:     true,
 	}
 	body, err := client.request()
 	checkErr(err)

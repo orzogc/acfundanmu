@@ -197,6 +197,7 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (bo
 		method:      "POST",
 		contentType: formContentType,
 		referer:     t.livePage,
+		noReqID:     true,
 	}
 
 	return client.request()

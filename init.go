@@ -148,6 +148,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 		method:      "POST",
 		contentType: formContentType,
 		referer:     t.livePage, // 会验证 Referer
+		noReqID:     true,
 	}
 	body, err := client.request()
 	checkErr(err)
