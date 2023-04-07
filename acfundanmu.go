@@ -581,7 +581,7 @@ func (ac *AcFunLive) SetLiverUID(uid int64) (newAC *AcFunLive, err error) {
 		return nil, fmt.Errorf("主播uid不能小于1")
 	}
 	tokenInfo := ac.GetTokenInfo()
-	newAC, err = NewAcFunLive(SetLiverUID(uid), SetTokenInfo(tokenInfo), SetDanmuClient(ac.danmuClient))
+	newAC, err = NewAcFunLive(SetLiverUID(uid), SetTokenInfo(tokenInfo), SetDanmuClient(ac.danmuClient.NewDanmuClient()))
 	if err != nil {
 		return nil, err
 	}

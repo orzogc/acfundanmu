@@ -52,6 +52,9 @@ const (
 
 // DanmuClient 弹幕客户端
 type DanmuClient interface {
+	// New 返回新的弹幕客户端
+	NewDanmuClient() DanmuClient
+
 	// Type 返回弹幕客户端类型
 	Type() DanmuClientType
 
@@ -71,6 +74,11 @@ type DanmuClient interface {
 // WebSocketDanmuClient 使用WebSocket连接的弹幕客户端
 type WebSocketDanmuClient struct {
 	conn *fastws.Conn
+}
+
+// NewDanmuClient 返回新的WebSocketDanmuClient
+func (client *WebSocketDanmuClient) NewDanmuClient() DanmuClient {
+	return &WebSocketDanmuClient{}
 }
 
 // Type 返回弹幕客户端类型WebSocketDanmuClientType
@@ -124,6 +132,11 @@ func (client *WebSocketDanmuClient) Close(message string) error {
 // TCPDanmuClient 使用TCP连接的弹幕客户端
 type TCPDanmuClient struct {
 	conn net.Conn
+}
+
+// NewDanmuClient 返回新的TCPDanmuClient
+func (client *TCPDanmuClient) NewDanmuClient() DanmuClient {
+	return &TCPDanmuClient{}
 }
 
 // Type 返回弹幕客户端类型TCPDanmuClientType
