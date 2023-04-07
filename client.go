@@ -278,8 +278,8 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 			case <-tickerCh:
 				ticker.Reset(tickerTimeout)
 			case <-ticker.C:
-				_ = ac.danmuClient.Close("")
 				isTimeOut.Store(true)
+				_ = ac.danmuClient.Close("")
 				break Outer
 			case <-wsCtx.Done():
 				_ = ac.danmuClient.Close("")
