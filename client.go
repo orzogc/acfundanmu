@@ -268,7 +268,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 			case <-tickerCh:
 				ticker.Reset(tickerTimeout)
 			case <-ticker.C:
-				log.Println("WebSocket接收弹幕数据超时")
+				log.Println("接收弹幕数据超时")
 				_ = ac.danmuClient.Close("")
 				break Outer
 			case <-wsCtx.Done():
@@ -293,8 +293,8 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 			n, err = ac.danmuClient.Read(*msg)
 			if err != nil {
 				if !(errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed)) {
-					log.Printf("WebSocket接收弹幕数据出现错误：%v", err)
-					log.Printf("停止获取uid为%d的主播的直播弹幕", ac.t.liverUID)
+					log.Printf("接收弹幕数据出现错误：%v", err)
+					log.Printf("停止获取uid为 %d 的主播的直播弹幕", ac.t.liverUID)
 					hasError = true
 					errCh <- err
 					close(errCh)
