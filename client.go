@@ -35,7 +35,7 @@ func getBytes() *[]byte {
 }
 
 // 放入byte slice到msgPool
-func pubBytes(msg *[]byte) {
+func putBytes(msg *[]byte) {
 	if msg != nil {
 		msgPool.Put(msg)
 	}
@@ -124,6 +124,10 @@ func (client *WebSocketDanmuClient) Write(p []byte) (n int, err error) {
 // Close 关闭连接
 func (client *WebSocketDanmuClient) Close(message string) error {
 	if client.conn != nil {
+		defer func() {
+			client.conn = nil
+		}()
+
 		return client.conn.CloseString(message)
 	} else {
 		return nil
@@ -178,6 +182,10 @@ func (client *TCPDanmuClient) Write(p []byte) (n int, err error) {
 // Close 关闭连接
 func (client *TCPDanmuClient) Close(message string) error {
 	if client.conn != nil {
+		defer func() {
+			client.conn = nil
+		}()
+
 		return client.conn.Close()
 	} else {
 		return nil
@@ -293,6 +301,9 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 		for {
 			msg := getBytes()
 			n, err = ac.danmuClient.Read(*msg)
+			if isTimeOut.Load() {
+				err = fmt.Errorf("接收弹幕数据超时")
+			}
 			if err != nil {
 				if !(errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed)) {
 					log.Printf("接收弹幕数据出现错误：%v", err)
@@ -303,16 +314,8 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 					if event {
 						ac.callEvent(stopDanmu, err)
 					}
-				} else if isTimeOut.Load() {
-					hasError = true
-					err = fmt.Errorf("接收弹幕数据超时")
-					errCh <- err
-					close(errCh)
-					if event {
-						ac.callEvent(stopDanmu, err)
-					}
 				}
-				pubBytes(msg)
+				putBytes(msg)
 				break
 			}
 			tickerCh <- struct{}{}
@@ -335,10 +338,10 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 				stream, err := ac.t.decode(msg.data())
 				if err != nil {
 					log.Printf("解码接收到的弹幕数据出现错误：%v", err)
-					pubBytes(msg.bytes)
+					putBytes(msg.bytes)
 					continue
 				}
-				pubBytes(msg.bytes)
+				putBytes(msg.bytes)
 				payloadCh <- stream
 			} else if ac.danmuClient.Type() == TCPDanmuClientType {
 				// TCP连接的数据需要自行分帧
@@ -354,7 +357,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 					frames, remain, err = getFrames(remain)
 					if err != nil {
 						log.Printf("解码接收到的弹幕数据出现错误：%v", err)
-						pubBytes(msg.bytes)
+						putBytes(msg.bytes)
 						continue
 					}
 
@@ -368,7 +371,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 					}
 				}
 
-				pubBytes(msg.bytes)
+				putBytes(msg.bytes)
 			}
 		}
 	}()
