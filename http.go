@@ -53,6 +53,7 @@ type httpClient struct {
 	referer     string
 	userAgent   string
 	deviceID    string
+	noReqID     bool
 }
 
 // 完成http请求，调用后需要 defer fasthttp.ReleaseResponse(resp)
@@ -115,9 +116,11 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 		req.Header.SetCookie("_did", c.deviceID)
 	}
 
-	reqID := fmt.Sprintf("%s_self_%x", genRandomNum(), md5.Sum([]byte(referer)))
-	req.Header.SetCookie("cur_req_id", reqID)
-	req.Header.SetCookie("cur_group_id", reqID+"_0")
+	if !c.noReqID {
+		reqID := fmt.Sprintf("%s_self_%x", genRandomNum(), md5.Sum([]byte(referer)))
+		req.Header.SetCookie("cur_req_id", reqID)
+		req.Header.SetCookie("cur_group_id", reqID+"_0")
+	}
 
 	req.Header.Set("Accept-Encoding", "gzip")
 

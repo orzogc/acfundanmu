@@ -324,8 +324,9 @@ func loadFile(file string) (data []byte, contentType string, e error) {
 	var fileData []byte
 	if u, err := url.Parse(file); err == nil && u.Scheme != "" && u.Host != "" {
 		client := &httpClient{
-			url:    file,
-			method: "GET",
+			url:     file,
+			method:  "GET",
+			noReqID: true,
 		}
 		fileData, err = client.request()
 		checkErr(err)
