@@ -13,7 +13,6 @@ import (
 
 	"github.com/orzogc/acfundanmu/acproto"
 	"github.com/orzogc/fastws"
-	"go.uber.org/atomic"
 )
 
 var msgPool = sync.Pool{
@@ -258,7 +257,6 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 		checkErr(err)
 	}
 
-	isTimeOut := atomic.NewBool(false)
 	tickerCh := make(chan struct{}, 10)
 	go func() {
 		ticker := time.NewTicker(tickerTimeout)
@@ -270,7 +268,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 			case <-tickerCh:
 				ticker.Reset(tickerTimeout)
 			case <-ticker.C:
-				isTimeOut.Store(true)
+				ac.t.err.Store(fmt.Errorf("接收弹幕数据超时"))
 				_ = ac.danmuClient.Close("")
 				break Outer
 			case <-wsCtx.Done():
@@ -293,10 +291,11 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 		for {
 			msg := getBytes()
 			n, err = ac.danmuClient.Read(*msg)
-			if isTimeOut.Load() {
-				err = fmt.Errorf("接收弹幕数据超时")
-			}
-			if err != nil {
+			if err != nil || ac.t.err.Load() != nil {
+				acErr := ac.t.err.Load()
+				if acErr != nil {
+					err = acErr
+				}
 				if !(errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed)) {
 					log.Printf("接收弹幕数据出现错误：%v", err)
 					log.Printf("停止获取uid为 %d 的主播的直播弹幕", ac.t.liverUID)

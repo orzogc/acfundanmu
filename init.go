@@ -180,6 +180,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	t.headerSeqID = atomic.NewInt64(1)
 	t.heartbeatSeqID = 0
 	t.ticketIndex = atomic.NewUint32(0)
+	t.err = atomic.NewError(nil)
 
 	giftList, err := t.getGiftList(t.liveID)
 	checkErr(err)

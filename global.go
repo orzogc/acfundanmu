@@ -108,6 +108,7 @@ type token struct {
 	gifts           map[int64]GiftDetail
 	liverUID        int64 // 主播uid
 	livePage        string
+	err             *atomic.Error
 }
 
 // 检查错误

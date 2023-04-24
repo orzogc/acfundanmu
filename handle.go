@@ -86,6 +86,7 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, stream *acproto.Downstre
 		unregister := &acproto.UnregisterResponse{}
 		err := proto.Unmarshal(stream.PayloadData, unregister)
 		checkErr(err)
+		ac.t.err.Store(fmt.Errorf("接收到Unregister信号"))
 		_ = ac.danmuClient.Close("Unregister")
 	case "Push.ZtLiveInteractive.Message":
 		_, err := ac.danmuClient.Write(ac.t.pushMessage())
@@ -138,9 +139,11 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, stream *acproto.Downstre
 		if stream.ErrorCode > 0 {
 			log.Println("DownstreamPayload error:", stream.ErrorCode, stream.ErrorMsg)
 			if stream.ErrorCode == 10018 {
+				ac.t.err.Store(fmt.Errorf(string(stream.ErrorData)))
 				ac.clientStop("Log out")
+			} else {
+				log.Printf("接收弹幕出现错误：%s", string(stream.ErrorData))
 			}
-			log.Println(string(stream.ErrorData))
 		} else {
 			log.Printf("未知的stream.Command：%s\npayload string:\n%s\npayload base64:\n%s\n",
 				stream.Command,
