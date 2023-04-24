@@ -198,8 +198,8 @@ func (m *message) data() []byte {
 func (ac *AcFunLive) clientHeartbeat(ctx context.Context, interval int64) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Printf("Recovering from panic in wsHeartbeat(), the error is: %v", err)
-			// 重新启动wsHeartbeat()
+			log.Printf("Recovering from panic in clientHeartbeat(), the error is: %v", err)
+			// 重新启动clientHeartbeat()
 			time.Sleep(2 * time.Second)
 			ac.clientHeartbeat(ctx, interval)
 		}
@@ -226,7 +226,7 @@ func (ac *AcFunLive) clientHeartbeat(ctx context.Context, interval int64) {
 func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- error) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Printf("Recovering from panic in wsStart(), the error is:  %v", err)
+			log.Printf("Recovering from panic in clientStart(), the error is:  %v", err)
 			log.Println("停止获取弹幕")
 			errCh <- err.(error)
 			close(errCh)
@@ -240,9 +240,9 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 		defer ac.q.Dispose()
 	}
 
-	// 关闭websocket
-	wsCtx, wsCancel := context.WithCancel(ctx)
-	defer wsCancel()
+	// 用于关闭danmuClient
+	clientCtx, clientCancel := context.WithCancel(ctx)
+	defer clientCancel()
 
 	// WebSocket连接可以直接发送注册消息，TCP连接需要先握手
 	if ac.danmuClient.Type() == WebSocketDanmuClientType {
@@ -271,7 +271,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 				ac.t.err.Store(fmt.Errorf("接收弹幕数据超时"))
 				_ = ac.danmuClient.Close("")
 				break Outer
-			case <-wsCtx.Done():
+			case <-clientCtx.Done():
 				_ = ac.danmuClient.Close("")
 				break Outer
 			}
@@ -372,7 +372,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 		defer wg.Done()
 		for stream := range payloadCh {
 			go func(stream *acproto.DownstreamPayload) {
-				err := ac.handleCommand(wsCtx, stream, event)
+				err := ac.handleCommand(clientCtx, stream, event)
 				if err != nil {
 					log.Printf("处理接收到的弹幕数据出现错误：%v", err)
 				}
