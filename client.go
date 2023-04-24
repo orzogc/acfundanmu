@@ -124,10 +124,6 @@ func (client *WebSocketDanmuClient) Write(p []byte) (n int, err error) {
 // Close 关闭连接
 func (client *WebSocketDanmuClient) Close(message string) error {
 	if client.conn != nil {
-		defer func() {
-			client.conn = nil
-		}()
-
 		return client.conn.CloseString(message)
 	} else {
 		return nil
@@ -182,10 +178,6 @@ func (client *TCPDanmuClient) Write(p []byte) (n int, err error) {
 // Close 关闭连接
 func (client *TCPDanmuClient) Close(message string) error {
 	if client.conn != nil {
-		defer func() {
-			client.conn = nil
-		}()
-
 		return client.conn.Close()
 	} else {
 		return nil
