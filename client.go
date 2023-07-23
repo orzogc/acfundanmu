@@ -93,8 +93,8 @@ func (client *WebSocketDanmuClient) Dial(address string) error {
 		client.conn = nil
 		return err
 	}
-	conn.ReadTimeout = wsReadTimeout
-	conn.WriteTimeout = timeout
+	conn.SetReadTimeout(wsReadTimeout)
+	conn.SetWriteTimeout(timeout)
 	client.conn = conn
 
 	return nil

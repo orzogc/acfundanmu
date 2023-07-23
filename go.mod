@@ -4,19 +4,19 @@ go 1.20
 
 require (
 	facette.io/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
-	github.com/Workiva/go-datastructures v1.0.53
-	github.com/orzogc/fastws v1.0.5-0.20220122125748-aa014b776886
+	github.com/Workiva/go-datastructures v1.1.0
+	github.com/orzogc/fastws v1.0.5-0.20230723221920-461d6941b97a
 	github.com/segmentio/encoding v0.3.6
-	github.com/valyala/fasthttp v1.46.0
+	github.com/valyala/fasthttp v1.48.0
 	github.com/valyala/fastjson v1.6.4
-	go.uber.org/atomic v1.10.0
-	google.golang.org/protobuf v1.30.0
+	go.uber.org/atomic v1.11.0
+	google.golang.org/protobuf v1.31.0
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
-	github.com/klauspost/compress v1.16.5 // indirect
+	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
 )
