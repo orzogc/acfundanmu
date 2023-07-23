@@ -19,8 +19,6 @@ import (
 
 const maxIdleConnDuration = 90 * time.Second
 const timeout = 10 * time.Second
-const wsReadTimeout = 15 * time.Second
-const tickerTimeout = timeout + time.Second
 const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
 
 var numRune = []rune("0123456789ABCDEF")

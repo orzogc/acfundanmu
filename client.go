@@ -93,7 +93,7 @@ func (client *WebSocketDanmuClient) Dial(address string) error {
 		client.conn = nil
 		return err
 	}
-	conn.SetReadTimeout(wsReadTimeout)
+	conn.SetReadTimeout(timeout)
 	conn.SetWriteTimeout(timeout)
 	client.conn = conn
 
@@ -256,27 +256,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 		_, err = ac.danmuClient.Write(ac.t.handshake())
 		checkErr(err)
 	}
-
-	tickerCh := make(chan struct{}, 10)
-	go func() {
-		ticker := time.NewTicker(tickerTimeout)
-		defer ticker.Stop()
-
-	Outer:
-		for {
-			select {
-			case <-tickerCh:
-				ticker.Reset(tickerTimeout)
-			case <-ticker.C:
-				ac.t.err.Store(fmt.Errorf("接收弹幕数据超时"))
-				_ = ac.danmuClient.Close("")
-				break Outer
-			case <-clientCtx.Done():
-				_ = ac.danmuClient.Close("")
-				break Outer
-			}
-		}
-	}()
+	defer ac.danmuClient.Close("")
 
 	msgCh := make(chan message, queueLen)
 	payloadCh := make(chan *acproto.DownstreamPayload, queueLen)
@@ -309,7 +289,6 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 				putBytes(msg)
 				break
 			}
-			tickerCh <- struct{}{}
 			msgCh <- message{bytes: msg, len: n}
 		}
 	}()
