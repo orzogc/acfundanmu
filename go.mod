@@ -5,7 +5,7 @@ go 1.20
 require (
 	facette.io/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
 	github.com/Workiva/go-datastructures v1.1.0
-	github.com/orzogc/fastws v1.0.5-0.20230723221920-461d6941b97a
+	github.com/orzogc/fastws v1.0.5-0.20230724120802-b5b15322ffd7
 	github.com/segmentio/encoding v0.3.6
 	github.com/valyala/fasthttp v1.48.0
 	github.com/valyala/fastjson v1.6.4

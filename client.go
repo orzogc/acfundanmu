@@ -159,6 +159,9 @@ func (client *TCPDanmuClient) Dial(address string) error {
 // Read 读数据
 func (client *TCPDanmuClient) Read(p []byte) (n int, err error) {
 	if client.conn != nil {
+		client.conn.SetReadDeadline(time.Now().Add(timeout))
+		defer client.conn.SetReadDeadline(time.Time{})
+
 		return client.conn.Read(p)
 	} else {
 		return 0, fmt.Errorf("请先调用 Dail() 连接服务器")
@@ -168,6 +171,9 @@ func (client *TCPDanmuClient) Read(p []byte) (n int, err error) {
 // Write 写数据
 func (client *TCPDanmuClient) Write(p []byte) (n int, err error) {
 	if client.conn != nil {
+		client.conn.SetWriteDeadline(time.Now().Add(timeout))
+		defer client.conn.SetWriteDeadline(time.Time{})
+
 		return client.conn.Write(p)
 	} else {
 		return 0, fmt.Errorf("请先调用 Dail() 连接服务器")
