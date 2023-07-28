@@ -262,7 +262,11 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 		_, err = ac.danmuClient.Write(ac.t.handshake())
 		checkErr(err)
 	}
-	defer ac.danmuClient.Close("")
+
+	go func() {
+		<-clientCtx.Done()
+		ac.danmuClient.Close("")
+	}()
 
 	msgCh := make(chan message, queueLen)
 	payloadCh := make(chan *acproto.DownstreamPayload, queueLen)
