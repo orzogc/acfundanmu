@@ -283,7 +283,7 @@ type Gift struct {
 	Value               int64        `json:"value"`               // 礼物价值，付费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
 	ComboID             string       `json:"comboID"`             // 礼物连击ID
 	SlotDisplayDuration int64        `json:"slotDisplayDuration"` // 应该是礼物动画持续的时间，单位为毫秒，送礼物后在该时间内再送一次可以实现礼物连击
-	ExpireDuration      int64        `json:"ExpireDuration"`
+	ExpireDuration      int64        `json:"expireDuration"`
 	DrawGiftInfo        DrawGiftInfo `json:"drawGiftInfo"` // 礼物涂鸦
 }
 
