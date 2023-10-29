@@ -346,10 +346,12 @@ func (t *token) decode(b []byte) (downstream *acproto.DownstreamPayload, e error
 	t.headerSeqID.Store(header.SeqId)
 
 	if header.EncryptionMode != acproto.PacketHeader_kEncryptionNone {
-		key := t.sessionKey
+		var key []byte
 		if header.EncryptionMode == acproto.PacketHeader_kEncryptionServiceToken {
 			key, err = base64.StdEncoding.DecodeString(t.SecurityKey)
 			checkErr(err)
+		} else {
+			key = t.sessionKey
 		}
 		payload = decrypt(payload, key)
 	}
