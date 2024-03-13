@@ -10,7 +10,7 @@ require (
 	github.com/valyala/fasthttp v1.50.0
 	github.com/valyala/fastjson v1.6.4
 	go.uber.org/atomic v1.11.0
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.33.0
 )
 
 require (
