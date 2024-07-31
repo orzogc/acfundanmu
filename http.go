@@ -43,6 +43,7 @@ func genRandomNum() string {
 
 // HTTP 客户端
 type httpClient struct {
+	client      *fasthttp.Client
 	url         string
 	body        []byte
 	method      string
@@ -62,6 +63,10 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 			fasthttp.ReleaseResponse(resp)
 		}
 	}()
+
+	if c.client == nil {
+		c.client = defaultClient
+	}
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -122,7 +127,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 
 	req.Header.Set("Accept-Encoding", "gzip")
 
-	err := defaultClient.Do(req, resp)
+	err := c.client.Do(req, resp)
 	checkErr(err)
 
 	return resp, nil

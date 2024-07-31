@@ -549,9 +549,10 @@ func Login(account, password string) (cookies Cookies, err error) {
 	return cookies, nil
 }
 
-// LoginWithQRCode 扫描二维码登陆，通过 qrCodeCallback 获取要扫描的二维码，返回的 cookies 为 nil 时说明登陆二维码失效
-func LoginWithQRCode(qrCodeCallback func(QRCode)) (cookies Cookies, e error) {
-	return loginWithQRCode(qrCodeCallback)
+// LoginWithQRCode 扫描二维码登陆，通过 qrCodeCallback 获取要扫描的二维码，二维码被成功扫描时 scannedCallback 会被调用
+// 返回的 cookies 为 nil 时说明登陆二维码失效或者用户取消扫码登陆
+func LoginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cookies Cookies, e error) {
+	return loginWithQRCode(qrCodeCallback, scannedCallback)
 }
 
 // NewAcFunLive 新建一个 *AcFunLive

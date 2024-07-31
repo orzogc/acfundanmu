@@ -52,7 +52,7 @@ func login(account, password string) (cookies Cookies, e error) {
 	return cookies, nil
 }
 
-func loginWithQRCode(qrCodeCallback func(QRCode)) (cookies Cookies, e error) {
+func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cookies Cookies, e error) {
 	defer func() {
 		if err := recover(); err != nil {
 			cookies = nil
@@ -91,8 +91,10 @@ func loginWithQRCode(qrCodeCallback func(QRCode)) (cookies Cookies, e error) {
 	}
 	qrCodeCallback(QRCode{ExpireTime: t + expireTime, ImageData: imageData})
 
+	// 留 10 秒多余的时间
+	expired := time.Duration((expireTime/1000 + 10) * int64(time.Second))
 	t = time.Now().UnixMilli()
-	_, body, err = fasthttp.GetTimeout([]byte{}, fmt.Sprintf(scanQRResultURL, qrLoginToken, qrLoginSignature, t), time.Duration((expireTime/1000+10)*int64(time.Second)))
+	_, body, err = fasthttp.GetTimeout([]byte{}, fmt.Sprintf(scanQRResultURL, qrLoginToken, qrLoginSignature, t), expired)
 	checkErr(err)
 
 	v, err = p.ParseBytes(body)
@@ -115,9 +117,13 @@ func loginWithQRCode(qrCodeCallback func(QRCode)) (cookies Cookies, e error) {
 	if len(qrLoginSignature) == 0 {
 		panic(fmt.Errorf("获取qrLoginSignature失败，响应为 %s", string(body)))
 	}
+	scannedCallback()
 
 	t = time.Now().UnixMilli()
 	client = &httpClient{
+		client: &fasthttp.Client{
+			ReadTimeout:  expired,
+			WriteTimeout: expired},
 		url:    fmt.Sprintf(acceptQRResultURL, qrLoginToken, qrLoginSignature, t),
 		method: "GET",
 	}
@@ -127,6 +133,15 @@ func loginWithQRCode(qrCodeCallback func(QRCode)) (cookies Cookies, e error) {
 	v, err = p.ParseBytes(body)
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
+		result := v.GetInt("result")
+		errorMsg := string(v.GetStringBytes("error_msg"))
+		if result == 100400004 && errorMsg == "token canceled" {
+			return nil, nil
+		}
+		if result == 100400002 && errorMsg == "token expired" {
+			return nil, nil
+		}
+
 		panic(fmt.Errorf("扫描二维码登陆失败，响应为 %s", string(body)))
 	}
 	if string(v.GetStringBytes("status")) != "ACCEPTED" {
