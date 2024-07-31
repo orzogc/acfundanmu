@@ -1,7 +1,6 @@
 package acfundanmu
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -93,14 +92,16 @@ func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cooki
 
 	// 留 10 秒多余的时间
 	expired := time.Duration((expireTime/1000 + 10) * int64(time.Second))
+	fasthttpClient := &fasthttp.Client{MaxIdleConnDuration: expired, ReadTimeout: expired, WriteTimeout: expired}
 	t = time.Now().UnixMilli()
-	_, body, err = fasthttp.GetTimeout([]byte{}, fmt.Sprintf(scanQRResultURL, qrLoginToken, qrLoginSignature, t), expired)
+	client = &httpClient{
+		client: fasthttpClient,
+		url:    fmt.Sprintf(scanQRResultURL, qrLoginToken, qrLoginSignature, t),
+		method: "GET"}
+	body, err = client.request()
 	checkErr(err)
 
 	v, err = p.ParseBytes(body)
-	if errors.Is(err, fasthttp.ErrTimeout) {
-		return nil, nil
-	}
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
 		if v.GetInt("result") == 100400002 && string(v.GetStringBytes("error_msg")) == "token expired" {
@@ -121,12 +122,9 @@ func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cooki
 
 	t = time.Now().UnixMilli()
 	client = &httpClient{
-		client: &fasthttp.Client{
-			ReadTimeout:  expired,
-			WriteTimeout: expired},
+		client: fasthttpClient,
 		url:    fmt.Sprintf(acceptQRResultURL, qrLoginToken, qrLoginSignature, t),
-		method: "GET",
-	}
+		method: "GET"}
 	body, cookies, err = client.getCookies()
 	checkErr(err)
 
