@@ -1,9 +1,11 @@
 package acfundanmu
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
@@ -45,6 +47,90 @@ func login(account, password string) (cookies Cookies, e error) {
 	checkErr(err)
 	if !v.Exists("result") || v.GetInt("result") != 0 {
 		panic(fmt.Errorf("以注册用户的身份登陆AcFun失败，响应为 %s", string(body)))
+	}
+
+	return cookies, nil
+}
+
+func loginWithQRCode(qrCodeCallback func(QRCode)) (cookies Cookies, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			cookies = nil
+			e = fmt.Errorf("loginWithQRCode() error: %v", err)
+		}
+	}()
+
+	t := time.Now().UnixMilli()
+	client := &httpClient{url: fmt.Sprintf(startScanQRURL, t), method: "GET"}
+	body, err := client.request()
+	checkErr(err)
+
+	p := generalParserPool.Get()
+	defer generalParserPool.Put(p)
+	v, err := p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("获取登陆二维码失败，响应为 %s", string(body)))
+	}
+
+	expireTime := v.GetInt64("expireTime")
+	if expireTime <= 0 {
+		panic(fmt.Errorf("获取登陆二维码失效时间失败，响应为 %s", string(body)))
+	}
+	qrLoginSignature := string(v.GetStringBytes("qrLoginSignature"))
+	if len(qrLoginSignature) == 0 {
+		panic(fmt.Errorf("获取qrLoginSignature失败，响应为 %s", string(body)))
+	}
+	imageData := string(v.GetStringBytes("imageData"))
+	if len(imageData) == 0 {
+		panic(fmt.Errorf("获取imageData失败，响应为 %s", string(body)))
+	}
+	qrLoginToken := string(v.GetStringBytes("qrLoginToken"))
+	if len(qrLoginToken) == 0 {
+		panic(fmt.Errorf("获取qrLoginToken失败，响应为 %s", string(body)))
+	}
+	qrCodeCallback(QRCode{ExpireTime: t + expireTime, ImageData: imageData})
+
+	t = time.Now().UnixMilli()
+	_, body, err = fasthttp.GetTimeout([]byte{}, fmt.Sprintf(scanQRResultURL, qrLoginToken, qrLoginSignature, t), time.Duration((expireTime/1000+10)*int64(time.Second)))
+	checkErr(err)
+
+	v, err = p.ParseBytes(body)
+	if errors.Is(err, fasthttp.ErrTimeout) {
+		return nil, nil
+	}
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		if v.GetInt("result") == 100400002 && string(v.GetStringBytes("error_msg")) == "token expired" {
+			return nil, nil
+		}
+
+		panic(fmt.Errorf("获取登陆二维码扫描状态失败，响应为 %s", string(body)))
+	}
+	if string(v.GetStringBytes("status")) != "SCANNED" {
+		panic(fmt.Errorf("获取登陆二维码扫描状态失败，响应为 %s", string(body)))
+	}
+
+	qrLoginSignature = string(v.GetStringBytes("qrLoginSignature"))
+	if len(qrLoginSignature) == 0 {
+		panic(fmt.Errorf("获取qrLoginSignature失败，响应为 %s", string(body)))
+	}
+
+	t = time.Now().UnixMilli()
+	client = &httpClient{
+		url:    fmt.Sprintf(acceptQRResultURL, qrLoginToken, qrLoginSignature, t),
+		method: "GET",
+	}
+	body, cookies, err = client.getCookies()
+	checkErr(err)
+
+	v, err = p.ParseBytes(body)
+	checkErr(err)
+	if !v.Exists("result") || v.GetInt("result") != 0 {
+		panic(fmt.Errorf("扫描二维码登陆失败，响应为 %s", string(body)))
+	}
+	if string(v.GetStringBytes("status")) != "ACCEPTED" {
+		panic(fmt.Errorf("扫描二维码登陆失败，响应为 %s", string(body)))
 	}
 
 	return cookies, nil

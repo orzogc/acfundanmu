@@ -389,6 +389,12 @@ type AuthorChatChangeSoundConfig struct {
 	SoundConfigChangeType SoundConfigChangeType `json:"soundConfigChangeType"` // 声音设置更改的类型
 }
 
+// QRCode 登陆二维码
+type QRCode struct {
+	ExpireTime int64  `json:"expireTime"` // 二维码失效时间，是以毫秒为单位的 Unix 时间
+	ImageData  string `json:"imageData"`  // 二维码数据，是以 Base64 编码的 PNG 图片
+}
+
 // Cookies 就是 AcFun 帐号的 cookies
 type Cookies []*fasthttp.Cookie
 
@@ -541,6 +547,11 @@ func Login(account, password string) (cookies Cookies, err error) {
 	}
 
 	return cookies, nil
+}
+
+// LoginWithQRCode 扫描二维码登陆，通过 qrCodeCallback 获取要扫描的二维码，返回的 cookies 为 nil 时说明登陆二维码失效
+func LoginWithQRCode(qrCodeCallback func(QRCode)) (cookies Cookies, e error) {
+	return loginWithQRCode(qrCodeCallback)
 }
 
 // NewAcFunLive 新建一个 *AcFunLive

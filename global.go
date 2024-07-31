@@ -40,6 +40,12 @@ const (
 )
 
 const (
+	startScanQRURL    = "https://scan.acfun.cn/rest/pc-direct/qr/start?type=WEB_LOGIN&_=%d"
+	scanQRResultURL   = "https://scan.acfun.cn/rest/pc-direct/qr/scanResult?qrLoginToken=%s&qrLoginSignature=%s&_=%d"
+	acceptQRResultURL = "https://scan.acfun.cn/rest/pc-direct/qr/acceptResult?qrLoginToken=%s&qrLoginSignature=%s&_=%d"
+)
+
+const (
 	playURL            = "https://api.kuaishouzt.com/rest/zt/live/web/startPlay?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	giftURL            = "https://api.kuaishouzt.com/rest/zt/live/web/gift/list?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
 	watchingListURL    = "https://api.kuaishouzt.com/rest/zt/live/web/watchingList?subBiz=mainApp&kpn=ACFUN_APP&kpf=PC_WEB&userId=%d&did=%s&%s=%s"
