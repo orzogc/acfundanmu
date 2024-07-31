@@ -10,7 +10,7 @@ import (
 	"go.uber.org/atomic"
 )
 
-// 登陆acfun账号
+// 登陆 acfun 账号
 func login(account, password string) (cookies Cookies, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -20,7 +20,7 @@ func login(account, password string) (cookies Cookies, e error) {
 	}()
 
 	if account == "" || password == "" {
-		panic(fmt.Errorf("AcFun帐号邮箱或密码为空，无法登陆"))
+		panic(fmt.Errorf("AcFun 帐号邮箱或密码为空，无法登陆"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -50,7 +50,7 @@ func login(account, password string) (cookies Cookies, e error) {
 	return cookies, nil
 }
 
-// 获取AcFun帐号的token
+// 获取 AcFun 帐号的 token
 func (t *token) getAcFunToken() (e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -99,7 +99,7 @@ func (t *token) getAcFunToken() (e error) {
 		panic(fmt.Errorf("获取AcFun token失败，响应为 %s", string(body)))
 	}
 
-	// 获取userId和对应的令牌
+	// 获取 userId 和对应的令牌
 	userID := v.GetInt64("userId")
 	var serviceToken, securityKey string
 	if len(t.Cookies) != 0 {
@@ -117,7 +117,7 @@ func (t *token) getAcFunToken() (e error) {
 	return nil
 }
 
-// 获取直播间的token
+// 获取直播间的 token
 func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -131,7 +131,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 
 	var play string
 	if len(t.Cookies) != 0 {
-		// 需要userId、deviceID和serviceToken
+		// 需要 userId、deviceID 和 serviceToken
 		play = fmt.Sprintf(playURL, t.UserID, t.DeviceID, midgroundSt, t.ServiceToken)
 	} else {
 		play = fmt.Sprintf(playURL, t.UserID, t.DeviceID, visitorSt, t.ServiceToken)
@@ -139,7 +139,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 
 	form := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(form)
-	// authorId就是主播的uid
+	// authorId 就是主播的 uid
 	form.Set("authorId", strconv.FormatInt(t.liverUID, 10))
 	form.Set("pullStreamType", "FLV")
 	client := &httpClient{
@@ -210,7 +210,7 @@ func (t *token) getLiveToken() (stream StreamInfo, e error) {
 	return stream, nil
 }
 
-// 获取全部token
+// 获取全部 token
 func (t *token) getToken() (stream StreamInfo, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -226,7 +226,7 @@ func (t *token) getToken() (stream StreamInfo, e error) {
 	return stream, nil
 }
 
-// 获取设备ID
+// 获取设备 ID
 func getDeviceID() (devideID string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -246,7 +246,7 @@ func getDeviceID() (devideID string, e error) {
 	defer fasthttp.ReleaseCookie(didCookie)
 	didCookie.SetKey("_did")
 	if !resp.Header.Cookie(didCookie) {
-		panic("无法获取didCookie")
+		panic("无法获取 didCookie")
 	}
 
 	return string(didCookie.Value()), nil

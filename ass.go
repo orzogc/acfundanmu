@@ -12,7 +12,7 @@ import (
 	"github.com/Workiva/go-datastructures/queue"
 )
 
-// ass文件的Script Info
+// ass 文件的 Script Info
 const scriptInfo = `[Script Info]
 ; LiveID: %s
 ; StreamName: %s
@@ -24,14 +24,14 @@ PlayResY: %d
 
 `
 
-// ass文件的V4+ Styles
+// ass 文件的 V4+ Styles
 const sytles = `[V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Danmu,Microsoft YaHei,%d,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,20,20,2,0
 
 `
 
-// ass文件的Events
+// ass 文件的 Events
 const events = `[Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `
@@ -40,7 +40,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 const dialogue = `Dialogue: 0,%s,%s,Danmu,%s(%d),20,20,2,,{\move(%d,%d,%d,%d)}%s
 `
 
-// ass文件里弹幕出现或消失的时间格式
+// ass 文件里弹幕出现或消失的时间格式
 const startEnd = `%d:%02d:%02d.%02d`
 
 // 弹幕持续时间，单位为纳秒
@@ -55,17 +55,17 @@ type SubConfig struct {
 	PlayResX  int    `json:"playResX"`  // 视频分辨率
 	PlayResY  int    `json:"playResY"`  // 视频分辨率
 	FontSize  int    `json:"fontSize"`  // 字体大小
-	StartTime int64  `json:"startTime"` // 直播录播开始的时间，是以纳秒为单位的Unix时间
+	StartTime int64  `json:"startTime"` // 直播录播开始的时间，是以纳秒为单位的 Unix 时间
 }
 
-// dTime就是计算弹幕碰撞需要的数据
+// dTime 就是计算弹幕碰撞需要的数据
 type dTime struct {
 	appear    int64 // 弹幕出现的时间
 	emerge    int64 // 整个弹幕完全出现在视频右边的时间
 	disappear int64 // 弹幕消失的时间
 }
 
-// 将指定时间转换为ass字幕特定格式
+// 将指定时间转换为 ass 字幕特定格式
 func (d danmuTime) String() string {
 	if d < 0 {
 		return fmt.Sprintf(startEnd, 0, 0, 0, 0)
@@ -85,23 +85,23 @@ func convert(name string) string {
 	return strings.ReplaceAll(name, ",", " ")
 }
 
-// WriteASS 将ass字幕写入到file里，s为字幕的设置，ctx用来结束写入ass字幕，需要先调用StartDanmu(ctx, false)。
-// newFile为true时覆盖写入，为false时不覆盖写入且只写入Dialogue字幕。
-// 一个AcFunLive只能同时调用WriteASS()一次。
+// WriteASS 将 ass 字幕写入到 file 里，s 为字幕的设置，ctx 用来结束写入 ass 字幕，需要先调用 StartDanmu(ctx, false)。
+// newFile 为 true 时覆盖写入，为 false 时不覆盖写入且只写入 Dialogue 字幕。
+// 一个 AcFunLive 只能同时调用 WriteASS() 一次。
 func (ac *AcFunLive) WriteASS(ctx context.Context, s SubConfig, file string, newFile bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("Recovering from panic in WriteASS(), the error is: %v", err)
-			log.Println("停止写入ass字幕")
+			log.Println("停止写入 ass 字幕")
 		}
 	}()
 
 	if ac.q == nil {
-		log.Println("需要先调用StartDanmu()，event不能为true")
+		log.Println("需要先调用 StartDanmu()，event 不能为 true")
 		return
 	}
 	if ac.t.liverUID == 0 {
-		log.Println("主播uid不能为0")
+		log.Println("主播 uid 不能为 0")
 		return
 	}
 	if (*queue.Queue)(ac.q).Disposed() {
@@ -130,7 +130,7 @@ func (ac *AcFunLive) WriteASS(ctx context.Context, s SubConfig, file string, new
 		defer f.Close()
 	}
 
-	// lastTime存放每一行最后的弹幕的dTime
+	// lastTime 存放每一行最后的弹幕的 dTime
 	lastTime := make([]dTime, queueLen)
 	for {
 		select {
@@ -150,7 +150,7 @@ func (ac *AcFunLive) WriteASS(ctx context.Context, s SubConfig, file string, new
 
 				length := utf8.RuneCountInString(c.Content) * s.FontSize
 				sendTime := c.SendTime * 1e6
-				// leftTime就是弹幕运动到视频左边的时间
+				// leftTime 就是弹幕运动到视频左边的时间
 				leftTime := sendTime - s.StartTime + (int64(s.PlayResX)*duration)/int64(s.PlayResX+length)
 				dt := dTime{
 					appear:    sendTime - s.StartTime,

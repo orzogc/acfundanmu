@@ -23,7 +23,7 @@ const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, li
 
 var numRune = []rune("0123456789ABCDEF")
 
-// 默认HTTP客户端
+// 默认 HTTP 客户端
 var defaultClient = &fasthttp.Client{
 	MaxIdleConnDuration: maxIdleConnDuration,
 	ReadTimeout:         timeout,
@@ -41,7 +41,7 @@ func genRandomNum() string {
 	return fmt.Sprintf("%d%s", num, string(chars))
 }
 
-// HTTP客户端
+// HTTP 客户端
 type httpClient struct {
 	url         string
 	body        []byte
@@ -54,7 +54,7 @@ type httpClient struct {
 	noReqID     bool
 }
 
-// 完成http请求，调用后需要 defer fasthttp.ReleaseResponse(resp)
+// 完成 http 请求，调用后需要 defer fasthttp.ReleaseResponse(resp)
 func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -70,7 +70,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	if c.url != "" {
 		req.SetRequestURI(c.url)
 	} else {
-		panic(fmt.Errorf("请求的url不能为空"))
+		panic(fmt.Errorf("请求的 url 不能为空"))
 	}
 
 	if len(c.body) != 0 {
@@ -80,7 +80,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	if c.method != "" {
 		req.Header.SetMethod(c.method)
 	} else {
-		// 默认为GET
+		// 默认为 GET
 		req.Header.SetMethod("GET")
 	}
 
@@ -98,7 +98,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	if c.referer != "" {
 		referer = c.referer
 	} else {
-		// 默认referer
+		// 默认 referer
 		referer = liveHost
 	}
 	req.Header.SetReferer(referer)
@@ -110,7 +110,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	}
 
 	if c.deviceID != "" {
-		// 设置did的cookie，否则可能会被反爬
+		// 设置 did 的 cookie，否则可能会被反爬
 		req.Header.SetCookie("_did", c.deviceID)
 	}
 
@@ -128,7 +128,7 @@ func (c *httpClient) doRequest() (resp *fasthttp.Response, e error) {
 	return resp, nil
 }
 
-// http请求，返回响应body
+// http 请求，返回响应 body
 func (c *httpClient) request() (body []byte, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -143,7 +143,7 @@ func (c *httpClient) request() (body []byte, e error) {
 	return getBody(resp), nil
 }
 
-// http请求，返回响应body和cookies
+// http 请求，返回响应 body 和 cookies
 func (c *httpClient) getCookies() (body []byte, cookies Cookies, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -165,7 +165,7 @@ func (c *httpClient) getCookies() (body []byte, cookies Cookies, e error) {
 	return getBody(resp), cookies, nil
 }
 
-// 通过快手API获取数据，form为nil时采用默认form，sign为true时会对请求签名
+// 通过快手 API 获取数据，form 为 nil 时采用默认 form，sign 为 true 时会对请求签名
 func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (body []byte, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -201,7 +201,7 @@ func (t *token) fetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (bo
 	return client.request()
 }
 
-// 默认form，调用后需要 defer fasthttp.ReleaseArgs(form)
+// 默认 form，调用后需要 defer fasthttp.ReleaseArgs(form)
 func (t *token) defaultForm(liveID string) *fasthttp.Args {
 	form := fasthttp.AcquireArgs()
 	form.Set("visitorId", strconv.FormatInt(t.UserID, 10))
@@ -209,7 +209,7 @@ func (t *token) defaultForm(liveID string) *fasthttp.Args {
 	return form
 }
 
-// 获取响应body
+// 获取响应 body
 func getBody(resp *fasthttp.Response) []byte {
 	if string(resp.Header.Peek("content-encoding")) == "gzip" || string(resp.Header.Peek("Content-Encoding")) == "gzip" {
 		body, err := resp.BodyGunzip()
@@ -223,7 +223,7 @@ func getBody(resp *fasthttp.Response) []byte {
 	return body
 }
 
-// 生成client sign
+// 生成 client sign
 func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign string, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -239,7 +239,7 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 	urlParams := uri.QueryArgs()
 	var paramsStr []string
 	if urlParams != nil {
-		// 应该要忽略以__开头的key
+		// 应该要忽略以__开头的 key
 		urlParams.VisitAll(func(key, value []byte) {
 			paramsStr = append(paramsStr, string(key)+"="+string(value))
 		})
@@ -249,7 +249,7 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 			paramsStr = append(paramsStr, string(key)+"="+string(value))
 		})
 	}
-	// 实际上这里应该要比较key
+	// 实际上这里应该要比较 key
 	natsort.Sort(paramsStr)
 
 	minute := time.Now().Unix() / 60
@@ -274,7 +274,7 @@ func (t *token) genClientSign(url string, form *fasthttp.Args) (clientSign strin
 	return clientSign, nil
 }
 
-// FetchKuaiShouAPI 获取快手API的响应，测试用
+// FetchKuaiShouAPI 获取快手 API 的响应，测试用
 func (ac *AcFunLive) FetchKuaiShouAPI(url string, form *fasthttp.Args, sign bool) (body []byte, e error) {
 	return ac.t.fetchKuaiShouAPI(url, form, sign)
 }

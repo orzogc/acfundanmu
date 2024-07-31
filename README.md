@@ -1,12 +1,15 @@
 # acfundanmu
+
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/orzogc/acfundanmu)](https://pkg.go.dev/github.com/orzogc/acfundanmu)
 
-AcFun直播API，弹幕实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
+AcFun 直播 API，弹幕实现参照 [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku/tree/master/AcFunDanmu)
 
 ### 示例代码
+
 #### 获取弹幕（非事件响应模式）
+
 ```go
-// uid为主播的uid
+// uid 为主播的 uid
 ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
@@ -60,9 +63,11 @@ for {
     }
 }
 ```
+
 #### 采用事件响应模式
+
 ```go
-// uid为主播的uid
+// uid 为主播的 uid
 ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
@@ -103,9 +108,11 @@ defer cancel()
 _ = ac.StartDanmu(ctx, true)
 // 做其他事情
 ```
+
 #### 获取直播间状态信息（非事件模式）
+
 ```go
-// uid为主播的uid
+// uid 为主播的 uid
 ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
@@ -118,7 +125,7 @@ for {
     case <-ctx.Done():
         return
     default:
-        // 循环获取info并处理
+        // 循环获取 info 并处理
         time.Sleep(5 * time.Second)
         info := ac.GetLiveInfo()
         log.Printf("%+v\n", info)
@@ -130,9 +137,11 @@ if err = <-ch; err != nil {
     log.Println("直播结束")
 }
 ```
-#### 获取直播间排名前50的在线观众信息列表
+
+#### 获取直播间排名前 50 的在线观众信息列表
+
 ```go
-// uid为主播的uid
+// uid 为主播的 uid
 ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)
@@ -146,7 +155,7 @@ go func() {
         case <-ctx.Done():
             return
         default:
-            // 循环获取watchingList并处理
+            // 循环获取 watchingList 并处理
             watchingList, err := ac.GetWatchingList(liveID)
             if err != nil {
                 log.Panicln(err)
@@ -158,9 +167,11 @@ go func() {
 }()
 // 做其他事情
 ```
-#### 将弹幕转换成ass字幕文件
+
+#### 将弹幕转换成 ass 字幕文件
+
 ```go
-// uid为主播的uid
+// uid 为主播的 uid
 ac, err := acfundanmu.NewAcFunLive(acfundanmu.SetLiverUID(uid))
 if err != nil {
     log.Panicln(err)

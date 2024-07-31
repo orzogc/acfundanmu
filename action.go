@@ -16,7 +16,7 @@ func (t *token) managerKick(liveID string, kickedUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("房管踢人需要登陆房管的AcFun帐号"))
+		panic(fmt.Errorf("房管踢人需要登陆房管的 AcFun 帐号"))
 	}
 
 	form := t.defaultForm(liveID)
@@ -45,7 +45,7 @@ func (t *token) authorKick(liveID string, kickedUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("主播踢人需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("主播踢人需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := t.defaultForm(liveID)
@@ -74,7 +74,7 @@ func (t *token) addManager(managerUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("主播添加房管需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("主播添加房管需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -104,7 +104,7 @@ func (t *token) deleteManager(managerUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("主播删除房管需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("主播删除房管需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -134,7 +134,7 @@ func (t *token) wearMedal(uid int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("佩戴守护徽章需要登陆AcFun帐号"))
+		panic(fmt.Errorf("佩戴守护徽章需要登陆 AcFun 帐号"))
 	}
 
 	client := &httpClient{
@@ -167,7 +167,7 @@ func (t *token) cancelWearMedal(liverUID int64) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("取消佩戴守护徽章需要登陆AcFun帐号"))
+		panic(fmt.Errorf("取消佩戴守护徽章需要登陆 AcFun 帐号"))
 	}
 
 	client := &httpClient{
@@ -191,37 +191,37 @@ func (t *token) cancelWearMedal(liverUID int64) (e error) {
 	return nil
 }
 
-// ManagerKick 房管踢人，需要登陆AcFun帐号，需要设置主播uid
+// ManagerKick 房管踢人，需要登陆 AcFun 帐号，需要设置主播 uid
 func (ac *AcFunLive) ManagerKick(liveID string, kickedUID int64) error {
 	return ac.t.managerKick(liveID, kickedUID)
 }
 
-// AuthorKick 主播踢人，需要登陆AcFun帐号，需要设置主播uid
+// AuthorKick 主播踢人，需要登陆 AcFun 帐号，需要设置主播 uid
 func (ac *AcFunLive) AuthorKick(liveID string, kickedUID int64) error {
 	return ac.t.authorKick(liveID, kickedUID)
 }
 
-// AddManager 主播添加房管，需要登陆AcFun帐号
+// AddManager 主播添加房管，需要登陆 AcFun 帐号
 func (ac *AcFunLive) AddManager(managerUID int64) error {
 	return ac.t.addManager(managerUID)
 }
 
-// DeleteManager 主播删除房管，需要登陆AcFun帐号
+// DeleteManager 主播删除房管，需要登陆 AcFun 帐号
 func (ac *AcFunLive) DeleteManager(managerUID int64) error {
 	return ac.t.deleteManager(managerUID)
 }
 
-// WearMedal 佩戴uid指定的主播的守护徽章，需要登陆AcFun帐号，如果登陆帐号没有uid指定的主播的守护徽章则会取消佩戴任何徽章
+// WearMedal 佩戴 uid 指定的主播的守护徽章，需要登陆 AcFun 帐号，如果登陆帐号没有 uid 指定的主播的守护徽章则会取消佩戴任何徽章
 func (ac *AcFunLive) WearMedal(uid int64) error {
 	return ac.t.wearMedal(uid)
 }
 
-// CancelWearMedalWithLiverUID 取消佩戴守护徽章，需要登陆AcFun帐号，liverUID必须是登陆帐号正在佩戴的守护徽章的主播uid
+// CancelWearMedalWithLiverUID 取消佩戴守护徽章，需要登陆 AcFun 帐号，liverUID 必须是登陆帐号正在佩戴的守护徽章的主播 uid
 func (ac *AcFunLive) CancelWearMedalWithLiverUID(liverUID int64) error {
 	return ac.t.cancelWearMedal(liverUID)
 }
 
-// CancelWearMedal 取消佩戴守护徽章，需要登陆AcFun帐号
+// CancelWearMedal 取消佩戴守护徽章，需要登陆 AcFun 帐号
 func (ac *AcFunLive) CancelWearMedal() error {
 	medal, err := getUserMedal(ac.t.UserID, ac.t.DeviceID)
 	if err != nil {

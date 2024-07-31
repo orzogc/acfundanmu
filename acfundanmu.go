@@ -46,9 +46,9 @@ type SharePlatformType int32
 const (
 	// PlatformUnknown 未知平台
 	PlatformUnknown SharePlatformType = iota
-	// PlatformQQ 分享给QQ好友或群
+	// PlatformQQ 分享给 QQ 好友或群
 	PlatformQQ
-	// PlatformQzone 分享到QQ空间
+	// PlatformQzone 分享到 QQ 空间
 	PlatformQzone
 	// PlatformWeibo 分享到新浪微博？
 	PlatformWeibo
@@ -56,7 +56,7 @@ const (
 	PlatformWeChat
 	// PlatformWeChatMoments 分享到微信朋友圈
 	PlatformWeChatMoments
-	// PlatformAcFunMoment 分享到AcFun动态
+	// PlatformAcFunMoment 分享到 AcFun 动态
 	PlatformAcFunMoment
 )
 
@@ -66,7 +66,7 @@ type RedpackDisplayStatus int32
 const (
 	// RedpackShow 红包出现？
 	RedpackShow RedpackDisplayStatus = iota
-	// RedpackGetToken 可以获取红包token？
+	// RedpackGetToken 可以获取红包 token？
 	RedpackGetToken
 	// RedpackGrab 可以抢红包
 	RedpackGrab
@@ -100,9 +100,9 @@ const (
 	ChatEndGuestReject
 	// ChatEndGuestTimeout 等待连麦超时
 	ChatEndGuestTimeout
-	// ChatEndGuestHeartbeatTimeout 被连麦的人Heartbeat超时
+	// ChatEndGuestHeartbeatTimeout 被连麦的人 Heartbeat 超时
 	ChatEndGuestHeartbeatTimeout
-	// ChatEndAuthorHeartbeatTimeout 连麦发起者（主播）Heartbeat超时
+	// ChatEndAuthorHeartbeatTimeout 连麦发起者（主播）Heartbeat 超时
 	ChatEndAuthorHeartbeatTimeout
 	// ChatEndPeerLiveStopped 直播下播？
 	ChatEndPeerLiveStopped
@@ -122,21 +122,21 @@ const (
 
 // GiftDetail 就是礼物的详细信息
 type GiftDetail struct {
-	GiftID                 int64  `json:"giftID"`                 // 礼物ID
+	GiftID                 int64  `json:"giftID"`                 // 礼物 ID
 	GiftName               string `json:"giftName"`               // 礼物名字
 	ARLiveName             string `json:"arLiveName"`             // 不为空时礼物属于虚拟偶像区的特殊礼物
-	PayWalletType          int    `json:"payWalletType"`          // 1为付费礼物，2为免费礼物
-	Price                  int    `json:"price"`                  // 礼物价格，付费礼物时单位为AC币，免费礼物（香蕉）时为1
-	WebpPic                string `json:"webpPic"`                // 礼物的webp格式图片（动图）
-	PngPic                 string `json:"pngPic"`                 // 礼物的png格式图片（大）
-	SmallPngPic            string `json:"smallPngPic"`            // 礼物的png格式图片（小）
-	AllowBatchSendSizeList []int  `json:"allowBatchSendSizeList"` // 网页或APP单次能够赠送的礼物数量列表
+	PayWalletType          int    `json:"payWalletType"`          // 1 为付费礼物，2 为免费礼物
+	Price                  int    `json:"price"`                  // 礼物价格，付费礼物时单位为 AC 币，免费礼物（香蕉）时为 1
+	WebpPic                string `json:"webpPic"`                // 礼物的 webp 格式图片（动图）
+	PngPic                 string `json:"pngPic"`                 // 礼物的 png 格式图片（大）
+	SmallPngPic            string `json:"smallPngPic"`            // 礼物的 png 格式图片（小）
+	AllowBatchSendSizeList []int  `json:"allowBatchSendSizeList"` // 网页或 APP 单次能够赠送的礼物数量列表
 	CanCombo               bool   `json:"canCombo"`               // 是否能连击
 	CanDraw                bool   `json:"canDraw"`                // 是否能涂鸦
 	MagicFaceID            int    `json:"magicFaceID"`
 	VupArID                int    `json:"vupArID"`
 	Description            string `json:"description"`  // 礼物的描述
-	RedpackPrice           int    `json:"redpackPrice"` // 礼物红包价格总额，单位为AC币
+	RedpackPrice           int    `json:"redpackPrice"` // 礼物红包价格总额，单位为 AC 币
 	CornerMarkerText       string `json:"cornerMarkerText"`
 }
 
@@ -159,14 +159,14 @@ type DrawGiftInfo struct {
 
 // UserInfo 就是用户信息
 type UserInfo struct {
-	UserID      int64       `json:"userID"`      // 用户uid
+	UserID      int64       `json:"userID"`      // 用户 uid
 	Nickname    string      `json:"nickname"`    // 用户名字
 	Avatar      string      `json:"avatar"`      // 用户头像
 	Medal       MedalInfo   `json:"medal"`       // 用户正在佩戴的守护徽章
 	ManagerType ManagerType `json:"managerType"` // 用户是否房管
 }
 
-// NewUserInfo 创建UserInfo
+// NewUserInfo 创建 UserInfo
 func NewUserInfo(userInfo *acproto.ZtLiveUserInfo) *UserInfo {
 	user := &UserInfo{
 		UserID:   userInfo.UserId,
@@ -211,8 +211,8 @@ func NewUserInfo(userInfo *acproto.ZtLiveUserInfo) *UserInfo {
 
 // MedalInfo 就是守护徽章信息
 type MedalInfo struct {
-	UperID   int64  `json:"uperID"`   // UP主的uid
-	UserID   int64  `json:"userID"`   // 用户的uid
+	UperID   int64  `json:"uperID"`   // UP 主的 uid
+	UserID   int64  `json:"userID"`   // 用户的 uid
 	ClubName string `json:"clubName"` // 守护徽章名字
 	Level    int    `json:"level"`    // 守护徽章等级
 }
@@ -244,12 +244,12 @@ type RichTextImage struct {
 // DanmuMessage 弹幕的接口
 type DanmuMessage interface {
 	GetSendTime() int64     // 获取弹幕发送时间
-	GetUserInfo() *UserInfo // 获取UserInfo
+	GetUserInfo() *UserInfo // 获取 UserInfo
 }
 
 // DanmuCommon 弹幕通用部分
 type DanmuCommon struct {
-	SendTime int64 `json:"sendTime"` // 弹幕发送时间，是以毫秒为单位的Unix时间
+	SendTime int64 `json:"sendTime"` // 弹幕发送时间，是以毫秒为单位的 Unix 时间
 	UserInfo `json:"userInfo"`
 }
 
@@ -268,7 +268,7 @@ type EnterRoom DanmuCommon
 // FollowAuthor 用户关注主播的弹幕
 type FollowAuthor DanmuCommon
 
-// ThrowBanana 用户投蕉的弹幕，没有Avatar、Medal和ManagerType，现在基本不用这个，通常用Gift代替
+// ThrowBanana 用户投蕉的弹幕，没有 Avatar、Medal 和 ManagerType，现在基本不用这个，通常用 Gift 代替
 type ThrowBanana struct {
 	DanmuCommon `json:"danmuInfo"`
 	BananaCount int `json:"bananaCount"` // 投蕉数量
@@ -278,10 +278,10 @@ type ThrowBanana struct {
 type Gift struct {
 	DanmuCommon         `json:"danmuInfo"`
 	GiftDetail          `json:"giftDetail"`
-	Count               int32        `json:"count"`               // 礼物单次赠送的数量，礼物总数是Count * Combo
-	Combo               int32        `json:"combo"`               // 礼物连击数量，礼物总数是Count * Combo
-	Value               int64        `json:"value"`               // 礼物价值，付费礼物时单位为AC币*1000，免费礼物（香蕉）时单位为礼物数量
-	ComboID             string       `json:"comboID"`             // 礼物连击ID
+	Count               int32        `json:"count"`               // 礼物单次赠送的数量，礼物总数是 Count * Combo
+	Combo               int32        `json:"combo"`               // 礼物连击数量，礼物总数是 Count * Combo
+	Value               int64        `json:"value"`               // 礼物价值，付费礼物时单位为 AC 币*1000，免费礼物（香蕉）时单位为礼物数量
+	ComboID             string       `json:"comboID"`             // 礼物连击 ID
 	SlotDisplayDuration int64        `json:"slotDisplayDuration"` // 应该是礼物动画持续的时间，单位为毫秒，送礼物后在该时间内再送一次可以实现礼物连击
 	ExpireDuration      int64        `json:"expireDuration"`
 	DrawGiftInfo        DrawGiftInfo `json:"drawGiftInfo"` // 礼物涂鸦
@@ -289,13 +289,13 @@ type Gift struct {
 
 // RichText 富文本，目前是用于发红包和抢红包的相关消息
 type RichText struct {
-	SendTime int64             `json:"sendTime"` // 富文本的发送时间，是以毫秒为单位的Unix时间，可能为0
-	Segments []RichTextSegment `json:"segments"` // 富文本各部分，类型是RichTextUserInfo、RichTextPlain或RichTextImage
+	SendTime int64             `json:"sendTime"` // 富文本的发送时间，是以毫秒为单位的 Unix 时间，可能为 0
+	Segments []RichTextSegment `json:"segments"` // 富文本各部分，类型是 RichTextUserInfo、RichTextPlain 或 RichTextImage
 }
 
-// JoinClub 用户加入主播的守护团，FansInfo和UperInfo都没有Avatar、Medal和ManagerType
+// JoinClub 用户加入主播的守护团，FansInfo 和 UperInfo 都没有 Avatar、Medal 和 ManagerType
 type JoinClub struct {
-	JoinTime int64    `json:"joinTime"` // 用户加入守护团的时间，是以毫秒为单位的Unix时间
+	JoinTime int64    `json:"joinTime"` // 用户加入守护团的时间，是以毫秒为单位的 Unix 时间
 	FansInfo UserInfo `json:"fansInfo"` // 用户的信息
 	UperInfo UserInfo `json:"uperInfo"` // 主播的信息
 }
@@ -307,65 +307,65 @@ type ShareLive struct {
 	SharePlatformIcon string            `json:"sharePlatformIcon"` // 将直播间分享到的平台的图标
 }
 
-// TopUser 就是礼物榜在线前三，目前没有Medal和ManagerType
+// TopUser 就是礼物榜在线前三，目前没有 Medal 和 ManagerType
 type TopUser WatchingUser
 
 // Redpack 红包信息
 type Redpack struct {
 	UserInfo           `json:"userInfo"`    // 发红包的用户
 	DisplayStatus      RedpackDisplayStatus `json:"displayStatus"`      // 红包的状态
-	GrabBeginTime      int64                `json:"grabBeginTime"`      // 开始抢红包的时间，是以毫秒为单位的Unix时间
-	GetTokenLatestTime int64                `json:"getTokenLatestTime"` // 抢红包的用户获得token的最晚时间？是以毫秒为单位的Unix时间
-	RedpackID          string               `json:"redpackID"`          // 红包ID
+	GrabBeginTime      int64                `json:"grabBeginTime"`      // 开始抢红包的时间，是以毫秒为单位的 Unix 时间
+	GetTokenLatestTime int64                `json:"getTokenLatestTime"` // 抢红包的用户获得 token 的最晚时间？是以毫秒为单位的 Unix 时间
+	RedpackID          string               `json:"redpackID"`          // 红包 ID
 	RedpackBizUnit     string               `json:"redpackBizUnit"`     // "ztLiveAcfunRedpackGift"代表的是观众，"ztLiveAcfunRedpackAuthor"代表的是主播？
-	RedpackAmount      int64                `json:"redpackAmount"`      // 红包的总价值，单位是AC币
-	SettleBeginTime    int64                `json:"settleBeginTime"`    // 抢红包的结束时间，是以毫秒为单位的Unix时间
+	RedpackAmount      int64                `json:"redpackAmount"`      // 红包的总价值，单位是 AC 币
+	SettleBeginTime    int64                `json:"settleBeginTime"`    // 抢红包的结束时间，是以毫秒为单位的 Unix 时间
 }
 
 // ChatCall 主播发起连麦
 type ChatCall struct {
-	ChatID   string `json:"chatID"`   // 连麦ID
-	LiveID   string `json:"liveID"`   // 直播ID
-	CallTime int64  `json:"callTime"` // 连麦发起时间，是以毫秒为单位的Unix时间
+	ChatID   string `json:"chatID"`   // 连麦 ID
+	LiveID   string `json:"liveID"`   // 直播 ID
+	CallTime int64  `json:"callTime"` // 连麦发起时间，是以毫秒为单位的 Unix 时间
 }
 
 // ChatAccept 用户接受连麦
 type ChatAccept struct {
-	ChatID     string        `json:"chatID"`    // 连麦ID
+	ChatID     string        `json:"chatID"`    // 连麦 ID
 	MediaType  ChatMediaType `json:"mediaType"` // 连麦类型
 	SignalInfo string        `json:"signalInfo"`
 }
 
 // ChatReady 用户接受连麦的信息
 type ChatReady struct {
-	ChatID    string        `json:"chatID"`    // 连麦ID
+	ChatID    string        `json:"chatID"`    // 连麦 ID
 	Guest     UserInfo      `json:"guest"`     // 被连麦的帐号信息，目前没有房管类型
 	MediaType ChatMediaType `json:"mediaType"` // 连麦类型
 }
 
 // ChatEnd 连麦结束
 type ChatEnd struct {
-	ChatID  string      `json:"chatID"`  // 连麦ID
+	ChatID  string      `json:"chatID"`  // 连麦 ID
 	EndType ChatEndType `json:"endType"` // 连麦结束类型
 }
 
 // AuthorChatPlayerInfo 主播之间连麦的主播信息
 type AuthorChatPlayerInfo struct {
 	UserInfo               `json:"userInfo"`
-	LiveID                 string `json:"liveID"`                 // 直播ID
+	LiveID                 string `json:"liveID"`                 // 直播 ID
 	EnableJumpPeerLiveRoom bool   `json:"enableJumpPeerLiveRoom"` // 允许跳转到连麦的主播直播间？
 }
 
 // AuthorChatCall 主播发起连麦
 type AuthorChatCall struct {
 	Inviter  AuthorChatPlayerInfo `json:"inviter"`  // 发起连麦的主播的用户信息
-	ChatID   string               `json:"chatID"`   // 连麦ID
-	CallTime int64                `json:"callTime"` // 连麦发起时间，是以毫秒为单位的Unix时间
+	ChatID   string               `json:"chatID"`   // 连麦 ID
+	CallTime int64                `json:"callTime"` // 连麦发起时间，是以毫秒为单位的 Unix 时间
 }
 
 // AuthorChatAccept 主播接受连麦
 type AuthorChatAccept struct {
-	ChatID     string `json:"chatID"` // 连麦ID
+	ChatID     string `json:"chatID"` // 连麦 ID
 	SignalInfo string `json:"signalInfo"`
 }
 
@@ -373,32 +373,32 @@ type AuthorChatAccept struct {
 type AuthorChatReady struct {
 	Inviter AuthorChatPlayerInfo `json:"inviter"` // 发起连麦的主播的用户信息
 	Invitee AuthorChatPlayerInfo `json:"invitee"` // 接受连麦的主播的用户信息
-	ChatID  string               `json:"chatID"`  // 连麦ID
+	ChatID  string               `json:"chatID"`  // 连麦 ID
 }
 
 // AuthorChatEnd 主播连麦结束
 type AuthorChatEnd struct {
-	ChatID    string      `json:"chatID"`    // 连麦ID
+	ChatID    string      `json:"chatID"`    // 连麦 ID
 	EndType   ChatEndType `json:"endType"`   // 连麦结束类型
-	EndLiveID string      `json:"endLiveID"` // 结束连麦的直播ID
+	EndLiveID string      `json:"endLiveID"` // 结束连麦的直播 ID
 }
 
 // AuthorChatChangeSoundConfig 主播连麦更改声音设置
 type AuthorChatChangeSoundConfig struct {
-	ChatID                string                `json:"chatID"`                // 连麦ID
+	ChatID                string                `json:"chatID"`                // 连麦 ID
 	SoundConfigChangeType SoundConfigChangeType `json:"soundConfigChangeType"` // 声音设置更改的类型
 }
 
-// Cookies 就是AcFun帐号的cookies
+// Cookies 就是 AcFun 帐号的 cookies
 type Cookies []*fasthttp.Cookie
 
-// TokenInfo 就是AcFun直播的token相关信息
+// TokenInfo 就是 AcFun 直播的 token 相关信息
 type TokenInfo struct {
-	UserID       int64   `json:"userID"`       // 登陆模式或游客模式的uid
-	SecurityKey  string  `json:"securityKey"`  // 密钥，第一次发送ws信息时用
+	UserID       int64   `json:"userID"`       // 登陆模式或游客模式的 uid
+	SecurityKey  string  `json:"securityKey"`  // 密钥，第一次发送 ws 信息时用
 	ServiceToken string  `json:"serviceToken"` // 令牌
-	DeviceID     string  `json:"deviceID"`     // 设备ID
-	Cookies      Cookies `json:"cookies"`      // AcFun帐号的cookies
+	DeviceID     string  `json:"deviceID"`     // 设备 ID
+	Cookies      Cookies `json:"cookies"`      // AcFun 帐号的 cookies
 }
 
 // StreamURL 就是直播源相关信息
@@ -411,9 +411,9 @@ type StreamURL struct {
 
 // StreamInfo 就是直播的直播源信息
 type StreamInfo struct {
-	LiveID        string      `json:"liveID"`        // 直播ID
+	LiveID        string      `json:"liveID"`        // 直播 ID
 	Title         string      `json:"title"`         // 直播间标题
-	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
+	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的 Unix 时间
 	Panoramic     bool        `json:"panoramic"`     // 是否全景直播
 	StreamList    []StreamURL `json:"streamList"`    // 直播源列表
 	StreamName    string      `json:"streamName"`    // 直播源名字（ID）
@@ -434,30 +434,30 @@ type LiveInfo struct {
 	AllBananaCount   string       `json:"allBananaCount"`   // 直播间香蕉总数
 	DisplayInfo      `json:"displayInfo"`
 	TopUsers         []TopUser `json:"topUsers"`      // 礼物榜在线前三
-	RecentComment    []Comment `json:"recentComment"` // APP进直播间时显示的最近发的弹幕
+	RecentComment    []Comment `json:"recentComment"` // APP 进直播间时显示的最近发的弹幕
 	RedpackList      []Redpack `json:"redpackList"`   // 红包列表
 }
 
-// 带锁的LiveInfo
+// 带锁的 LiveInfo
 type liveInfo struct {
-	sync.RWMutex // LiveInfo的锁
+	sync.RWMutex // LiveInfo 的锁
 	LiveInfo
 	StreamInfo
 }
 
 // AcFunLive 就是直播间弹幕系统相关信息，支持并行
 type AcFunLive struct {
-	q           *queue.Queue // DanmuMessage的队列
+	q           *queue.Queue // DanmuMessage 的队列
 	info        *liveInfo    // 直播间的相关信息状态
 	t           *token       // 令牌相关信息
-	handlerMap  *handlerMap  // 事件handler的map
+	handlerMap  *handlerMap  // 事件 handler 的 map
 	danmuClient DanmuClient  // 弹幕客户端
 }
 
-// Option 就是AcFunLive的选项
+// Option 就是 AcFunLive 的选项
 type Option func(*AcFunLive)
 
-// SetLiverUID 设置主播uid
+// SetLiverUID 设置主播 uid
 func SetLiverUID(uid int64) Option {
 	if uid <= 0 {
 		return func(ac *AcFunLive) {}
@@ -468,14 +468,14 @@ func SetLiverUID(uid int64) Option {
 	}
 }
 
-// SetCookies 设置AcFun帐号的cookies
+// SetCookies 设置 AcFun 帐号的 cookies
 func SetCookies(cookies Cookies) Option {
 	return func(ac *AcFunLive) {
 		ac.t.Cookies = append([]*fasthttp.Cookie{}, cookies...)
 	}
 }
 
-// SetTokenInfo 设置TokenInfo
+// SetTokenInfo 设置 TokenInfo
 func SetTokenInfo(tokenInfo *TokenInfo) Option {
 	if tokenInfo == nil && tokenInfo.UserID < 0 && len(tokenInfo.SecurityKey) == 0 && len(tokenInfo.ServiceToken) == 0 && len(tokenInfo.DeviceID) == 0 {
 		return func(ac *AcFunLive) {}
@@ -498,7 +498,7 @@ func SetDanmuClient(client DanmuClient) Option {
 	}
 }
 
-// MarshalJSON 实现json的Marshaler接口
+// MarshalJSON 实现 json 的 Marshaler 接口
 func (c Cookies) MarshalJSON() ([]byte, error) {
 	cookies := make([]string, 0, len(c))
 	for _, cookie := range c {
@@ -508,7 +508,7 @@ func (c Cookies) MarshalJSON() ([]byte, error) {
 	return json.Marshal(cookies)
 }
 
-// UnmarshalJSON 实现json的Unmarshaler接口
+// UnmarshalJSON 实现 json 的 Unmarshaler 接口
 func (c *Cookies) UnmarshalJSON(b []byte) error {
 	cookies := new([]string)
 	err := json.Unmarshal(b, cookies)
@@ -528,16 +528,16 @@ func (c *Cookies) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Login 登陆AcFun帐号，account为帐号邮箱或手机号，password为帐号密码
+// Login 登陆 AcFun 帐号，account 为帐号邮箱或手机号，password 为帐号密码
 func Login(account, password string) (cookies Cookies, err error) {
 	if account == "" || password == "" {
-		return nil, fmt.Errorf("AcFun帐号或密码为空，无法登陆")
+		return nil, fmt.Errorf("AcFun 帐号或密码为空，无法登陆")
 	}
 
 	cookies, err = login(account, password)
 	if err != nil {
 		log.Printf("登陆AcFun帐号失败：%v", err)
-		return nil, fmt.Errorf("Login() error: 登陆AcFun帐号失败：%w", err)
+		return nil, fmt.Errorf("Login() error: 登陆 AcFun 帐号失败：%w", err)
 	}
 
 	return cookies, nil
@@ -556,7 +556,7 @@ func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 		option(ac)
 	}
 
-	// 默认弹幕客户端使用WebSocket连接
+	// 默认弹幕客户端使用 WebSocket 连接
 	if ac.danmuClient == nil {
 		ac.danmuClient = &WebSocketDanmuClient{}
 		//ac.danmuClient = &TCPDanmuClient{}
@@ -575,10 +575,10 @@ func NewAcFunLive(options ...Option) (ac *AcFunLive, err error) {
 	return ac, nil
 }
 
-// SetLiverUID 设置主播uid，返回一个新的 *AcFunLive，不会复制弹幕获取采用事件响应模式时的事件处理函数
+// SetLiverUID 设置主播 uid，返回一个新的 *AcFunLive，不会复制弹幕获取采用事件响应模式时的事件处理函数
 func (ac *AcFunLive) SetLiverUID(uid int64) (newAC *AcFunLive, err error) {
 	if uid <= 0 {
-		return nil, fmt.Errorf("主播uid不能小于1")
+		return nil, fmt.Errorf("主播 uid 不能小于 1")
 	}
 	tokenInfo := ac.GetTokenInfo()
 	newAC, err = NewAcFunLive(SetLiverUID(uid), SetTokenInfo(tokenInfo), SetDanmuClient(ac.danmuClient.NewDanmuClient()))
@@ -600,13 +600,13 @@ func (ac *AcFunLive) CopyEventHandlers(anotherAC *AcFunLive) {
 	}
 }
 
-// StartDanmu 获取弹幕，ctx用来结束弹幕的获取，event为true时采用事件响应模式。
-// event为false时最好调用GetDanmu()或WriteASS()以清空弹幕队列。
-// 一个AcFunLive只能同时调用StartDanmu()一次。
+// StartDanmu 获取弹幕，ctx 用来结束弹幕的获取，event 为 true 时采用事件响应模式。
+// event 为 false 时最好调用 GetDanmu() 或 WriteASS() 以清空弹幕队列。
+// 一个 AcFunLive 只能同时调用 StartDanmu() 一次。
 func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	ch := make(chan error, 1)
 	if ac.t.liverUID <= 0 {
-		err := fmt.Errorf("主播uid不能小于1")
+		err := fmt.Errorf("主播 uid 不能小于 1")
 		log.Println(err)
 		ch <- err
 		return ch
@@ -618,15 +618,15 @@ func (ac *AcFunLive) StartDanmu(ctx context.Context, event bool) <-chan error {
 	return ch
 }
 
-// GetDanmu 返回弹幕数据danmu，danmu为nil时说明弹幕获取结束（出现错误或者主播下播），需要先调用StartDanmu(ctx, false)。
-// 一个AcFunLive只能同时调用GetDanmu()一次。
+// GetDanmu 返回弹幕数据 danmu，danmu 为 nil 时说明弹幕获取结束（出现错误或者主播下播），需要先调用 StartDanmu(ctx, false)。
+// 一个 AcFunLive 只能同时调用 GetDanmu() 一次。
 func (ac *AcFunLive) GetDanmu() (danmu []DanmuMessage) {
 	if ac.q == nil {
-		log.Println("需要先调用StartDanmu()，event不能为true")
+		log.Println("需要先调用 StartDanmu()，event 不能为 true")
 		return nil
 	}
 	if ac.t.liverUID <= 0 {
-		log.Println("主播uid不能小于1")
+		log.Println("主播 uid 不能小于 1")
 		return nil
 	}
 	if (*queue.Queue)(ac.q).Disposed() {
@@ -645,7 +645,7 @@ func (ac *AcFunLive) GetDanmu() (danmu []DanmuMessage) {
 	return danmu
 }
 
-// GetLiveInfo 返回直播间的状态信息，需要先调用StartDanmu(ctx, false)
+// GetLiveInfo 返回直播间的状态信息，需要先调用 StartDanmu(ctx, false)
 func (ac *AcFunLive) GetLiveInfo() *LiveInfo {
 	ac.info.RLock()
 	defer ac.info.RUnlock()
@@ -656,41 +656,41 @@ func (ac *AcFunLive) GetLiveInfo() *LiveInfo {
 	return &info
 }
 
-// GetTokenInfo 返回直播间token相关信息，不需要调用StartDanmu()
+// GetTokenInfo 返回直播间 token 相关信息，不需要调用 StartDanmu()
 func (ac *AcFunLive) GetTokenInfo() *TokenInfo {
 	info := ac.t.TokenInfo
 	info.Cookies = append([]*fasthttp.Cookie{}, ac.t.Cookies...)
 	return &info
 }
 
-// GetStreamInfo 返回直播的直播源信息，不需要调用StartDanmu()
+// GetStreamInfo 返回直播的直播源信息，不需要调用 StartDanmu()
 func (ac *AcFunLive) GetStreamInfo() *StreamInfo {
 	info := ac.info.StreamInfo
 	info.StreamList = append([]StreamURL{}, ac.info.StreamList...)
 	return &info
 }
 
-// GetUserID 返回AcFun帐号的uid
+// GetUserID 返回 AcFun 帐号的 uid
 func (ac *AcFunLive) GetUserID() int64 {
 	return ac.t.UserID
 }
 
-// GetLiverUID 返回主播的uid，有可能是0
+// GetLiverUID 返回主播的 uid，有可能是 0
 func (ac *AcFunLive) GetLiverUID() int64 {
 	return ac.t.liverUID
 }
 
-// GetLiveID 返回liveID，有可能为空
+// GetLiveID 返回 liveID，有可能为空
 func (ac *AcFunLive) GetLiveID() string {
 	return ac.t.liveID
 }
 
-// GetDeviceID 返回设备ID
+// GetDeviceID 返回设备 ID
 func (ac *AcFunLive) GetDeviceID() string {
 	return ac.t.DeviceID
 }
 
-// GetTokenInfo 返回TokenInfo，cookies可以利用Login()获取，为nil时为游客模式
+// GetTokenInfo 返回 TokenInfo，cookies 可以利用 Login() 获取，为 nil 时为游客模式
 func GetTokenInfo(cookies Cookies) (*TokenInfo, error) {
 	ac, err := NewAcFunLive(SetCookies(cookies))
 	if err != nil {

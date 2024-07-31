@@ -10,15 +10,15 @@ import (
 	"github.com/valyala/fastjson"
 )
 
-// WatchingUser 就是观看直播的用户的信息，目前没有Medal
+// WatchingUser 就是观看直播的用户的信息，目前没有 Medal
 type WatchingUser struct {
 	UserInfo          `json:"userInfo"`
 	AnonymousUser     bool   `json:"anonymousUser"`     // 是否匿名用户
-	DisplaySendAmount string `json:"displaySendAmount"` // 赠送的全部礼物的价值，单位是AC币，注意不一定是纯数字的字符串
-	CustomData        string `json:"customData"`        // 用户的一些额外信息，格式为json
+	DisplaySendAmount string `json:"displaySendAmount"` // 赠送的全部礼物的价值，单位是 AC 币，注意不一定是纯数字的字符串
+	CustomData        string `json:"customData"`        // 用户的一些额外信息，格式为 json
 }
 
-// BillboardUser 就是礼物贡献榜上的用户的信息，没有AnonymousUser、Medal和ManagerType
+// BillboardUser 就是礼物贡献榜上的用户的信息，没有 AnonymousUser、Medal 和 ManagerType
 type BillboardUser WatchingUser
 
 // Summary 就是直播的总结信息
@@ -27,25 +27,25 @@ type Summary struct {
 	LikeCount    string `json:"likeCount"`    // 点赞总数
 	WatchCount   string `json:"watchCount"`   // 观看过直播的人数总数
 	GiftCount    int    `json:"giftCount"`    // 直播收到的付费礼物数量
-	DiamondCount int    `json:"diamondCount"` // 主播收到的实际钻石数量（扣除平台相关费用），100钻石=1AC币
+	DiamondCount int    `json:"diamondCount"` // 主播收到的实际钻石数量（扣除平台相关费用），100 钻石=1AC 币
 	BananaCount  int    `json:"bananaCount"`  // 直播收到的香蕉数量
 }
 
 // Medal 就是指定用户的守护徽章信息
 type Medal struct {
 	MedalInfo          `json:"medalInfo"`
-	UperName           string `json:"uperName"`           // UP主的名字
-	UperAvatar         string `json:"uperAvatar"`         // UP主的头像
+	UperName           string `json:"uperName"`           // UP 主的名字
+	UperAvatar         string `json:"uperAvatar"`         // UP 主的头像
 	WearMedal          bool   `json:"wearMedal"`          // 是否正在佩戴该守护徽章
 	FriendshipDegree   int    `json:"friendshipDegree"`   // 目前守护徽章的亲密度
-	JoinClubTime       int64  `json:"joinClubTime"`       // 加入守护团的时间，是以毫秒为单位的Unix时间
+	JoinClubTime       int64  `json:"joinClubTime"`       // 加入守护团的时间，是以毫秒为单位的 Unix 时间
 	CurrentDegreeLimit int    `json:"currentDegreeLimit"` // 守护徽章目前等级的亲密度的上限
 	MedalCount         int    `json:"medalCount"`         // 指定用户拥有的守护徽章数量
 }
 
 // MedalDegree 就是守护徽章的亲密度信息
 type MedalDegree struct {
-	UperID               int64 `json:"uperID"`               // UP主的uid
+	UperID               int64 `json:"uperID"`               // UP 主的 uid
 	GiftDegree           int   `json:"giftDegree"`           // 本日送直播礼物增加的亲密度
 	GiftDegreeLimit      int   `json:"giftDegreeLimit"`      // 本日送直播礼物增加的亲密度上限
 	PeachDegree          int   `json:"peachDegree"`          // 本日投桃增加的亲密度
@@ -69,10 +69,10 @@ type MedalDetail struct {
 //	MedalDetail MedalDetail `json:"medalDetail"` // 指定主播的守护徽章详细信息
 //}
 
-// LuckyUser 就是抢到红包的用户，没有Medal和ManagerType
+// LuckyUser 就是抢到红包的用户，没有 Medal 和 ManagerType
 type LuckyUser struct {
 	UserInfo   `json:"userInfo"`
-	GrabAmount int `json:"grabAmount"` // 抢红包抢到的AC币
+	GrabAmount int `json:"grabAmount"` // 抢红包抢到的 AC 币
 }
 
 // Playback 就是直播回放的相关信息
@@ -85,16 +85,16 @@ type Playback struct {
 	Height    int    `json:"height"`    // 录播视频高度
 }
 
-// Manager 就是房管的用户信息，目前没有Medal和ManagerType
+// Manager 就是房管的用户信息，目前没有 Medal 和 ManagerType
 type Manager struct {
 	UserInfo   `json:"userInfo"`
-	CustomData string `json:"customData"` // 用户的一些额外信息，格式为json
+	CustomData string `json:"customData"` // 用户的一些额外信息，格式为 json
 	Online     bool   `json:"online"`     // 是否直播间在线？
 }
 
 // UserProfile 就是用户信息
 type UserProfile struct {
-	UserID          int64  `json:"userID"`          // 用户uid
+	UserID          int64  `json:"userID"`          // 用户 uid
 	Nickname        string `json:"nickname"`        // 用户名字
 	Avatar          string `json:"avatar"`          // 用户头像
 	AvatarFrame     string `json:"avatarFrame"`     // 用户头像挂件
@@ -112,10 +112,10 @@ type UserProfile struct {
 type UserLiveInfo struct {
 	Profile               UserProfile `json:"profile"`               // 用户信息
 	LiveType              LiveType    `json:"liveType"`              // 直播分类
-	LiveID                string      `json:"liveID"`                // 直播ID
+	LiveID                string      `json:"liveID"`                // 直播 ID
 	StreamName            string      `json:"streamName"`            // 直播源名字（ID）
 	Title                 string      `json:"title"`                 // 直播间标题
-	LiveStartTime         int64       `json:"liveStartTime"`         // 直播开始的时间，是以毫秒为单位的Unix时间
+	LiveStartTime         int64       `json:"liveStartTime"`         // 直播开始的时间，是以毫秒为单位的 Unix 时间
 	Portrait              bool        `json:"portrait"`              // 是否手机直播
 	Panoramic             bool        `json:"panoramic"`             // 是否全景直播
 	LiveCover             string      `json:"liveCover"`             // 直播间封面
@@ -128,7 +128,7 @@ type UserLiveInfo struct {
 
 // UserProfileInfo 就是用户信息
 type UserProfileInfo struct {
-	UserID          int64  `json:"userID"`          // 用户uid
+	UserID          int64  `json:"userID"`          // 用户 uid
 	Nickname        string `json:"nickname"`        // 用户名字
 	Avatar          string `json:"avatar"`          // 用户头像
 	AvatarFrame     string `json:"avatarFrame"`     // 用户头像挂件
@@ -140,7 +140,7 @@ type UserProfileInfo struct {
 	IsJoinUpCollege bool   `json:"isJoinUpCollege"` // 用户是否加入阿普学院
 	IsFollowing     bool   `json:"isFollowing"`     // 登陆帐号是否关注了用户
 	IsFollowed      bool   `json:"isFollowed"`      // 用户是否关注了登陆帐号
-	LiveID          string `json:"liveID"`          // 直播ID
+	LiveID          string `json:"liveID"`          // 直播 ID
 	LikeCount       int    `json:"likeCount"`       // 最近一次直播的点赞总数
 }
 
@@ -167,15 +167,15 @@ type LiveStat struct {
 	Duration           int64 `json:"duration"` // 直播时长，单位为毫秒
 	MaxPopularityValue int   `json:"maxPopularityValue"`
 	WatchCount         int   `json:"watchCount"`   // 观看过直播的人数总数
-	DiamondCount       int   `json:"diamondCount"` // 直播收到的付费礼物对应的钻石数量，100钻石=1AC币
+	DiamondCount       int   `json:"diamondCount"` // 直播收到的付费礼物对应的钻石数量，100 钻石=1AC 币
 	CommentCount       int   `json:"commentCount"` // 直播弹幕数量
 	BananaCount        int   `json:"bananaCount"`  // 直播收到的香蕉数量
 }
 
 // LiveDetail 就是单场直播统计数据
 type LiveDetail struct {
-	LiveStartTime int64 `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
-	LiveEndTime   int64 `json:"liveEndTime"`   // 直播结束的时间，是以毫秒为单位的Unix时间
+	LiveStartTime int64 `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的 Unix 时间
+	LiveEndTime   int64 `json:"liveEndTime"`   // 直播结束的时间，是以毫秒为单位的 Unix 时间
 	LiveStat      `json:"liveStat"`
 }
 
@@ -191,17 +191,17 @@ type LiveData struct {
 	BeginDate  string                  `json:"beginDate"`  // 统计开始的日期
 	EndDate    string                  `json:"endDate"`    // 统计结束的日期
 	Overview   LiveStat                `json:"overview"`   // 全部直播的统计概况
-	LiveDetail map[string][]LiveDetail `json:"liveDetail"` // 单场直播统计数据，key为直播日期，格式类似"20210206"
+	LiveDetail map[string][]LiveDetail `json:"liveDetail"` // 单场直播统计数据，key 为直播日期，格式类似"20210206"
 	DailyData  []DailyData             `json:"dailyData"`  // 单日直播统计数据
 }
 
 // LiveSchedule 就是直播预告
 type LiveSchedule struct {
-	ActivityID    int         `json:"activityID"`    // 活动ID
+	ActivityID    int         `json:"activityID"`    // 活动 ID
 	Profile       UserProfile `json:"profile"`       // 主播的用户信息
 	Title         string      `json:"title"`         // 预告标题
 	Cover         string      `json:"cover"`         // 预告封面
-	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
+	LiveStartTime int64       `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的 Unix 时间
 	LiveType      LiveType    `json:"liveType"`      // 直播分类
 	Reserve       bool        `json:"reserve"`       // 登陆帐号是否预约了该直播
 	ReserveNumber int         `json:"reserveNumber"` // 已预约用户的数量
@@ -209,19 +209,19 @@ type LiveSchedule struct {
 
 // KickHistory 就是踢人历史记录
 type KickHistory struct {
-	UserID   int64  `json:"userID"`   // 被踢用户的uid
+	UserID   int64  `json:"userID"`   // 被踢用户的 uid
 	Nickname string `json:"nickname"` // 被踢用户的名字
-	KickTime int64  `json:"kickTime"` // 用户被踢的时间，是以毫秒为单位的Unix时间
+	KickTime int64  `json:"kickTime"` // 用户被踢的时间，是以毫秒为单位的 Unix 时间
 }
 
 // LiveCutInfo 就是直播剪辑信息
 type LiveCutInfo struct {
 	Status      bool   `json:"status"`      // 是否允许剪辑直播录像（主播允许观众剪辑观众才能剪辑，主播直播时总是能剪辑自己的直播）
 	URL         string `json:"url"`         // 剪辑直播的地址，直接访问可能出现登陆问题，需要访问跳转地址
-	RedirectURL string `json:"redirectURL"` // 跳转直播剪辑的地址，访问一次后链接里的token就会失效
+	RedirectURL string `json:"redirectURL"` // 跳转直播剪辑的地址，访问一次后链接里的 token 就会失效
 }
 
-// 获取直播间排名前50的在线观众信息列表
+// 获取直播间排名前 50 的在线观众信息列表
 func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -271,7 +271,7 @@ func (t *token) getWatchingList(liveID string) (watchingList []WatchingUser, e e
 	return watchingList, nil
 }
 
-// 获取主播最近七日内的礼物贡献榜前50名观众的详细信息
+// 获取主播最近七日内的礼物贡献榜前 50 名观众的详细信息
 func (t *token) getBillboard(uid int64) (billboard []BillboardUser, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -371,7 +371,7 @@ func (t *token) getLuckList(liveID, redpackID, redpackBizUnit string) (luckyList
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取抢到红包的用户列表需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取抢到红包的用户列表需要登陆 AcFun 帐号"))
 	}
 
 	form := t.defaultForm(liveID)
@@ -449,12 +449,12 @@ func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 	v, err = p.ParseBytes(adaptiveManifest)
 	checkErr(err)
 	if len(v.GetArray("adaptationSet")) > 1 {
-		log.Println("adaptationSet列表长度大于1，请报告issue")
+		log.Println("adaptationSet 列表长度大于 1，请报告 issue")
 	}
 	v = v.Get("adaptationSet", "0")
 	duration := v.GetInt64("duration")
 	if len(v.GetArray("representation")) > 1 {
-		log.Println("representation列表长度大于1，请报告issue")
+		log.Println("representation 列表长度大于 1，请报告 issue")
 	}
 	v = v.Get("representation", "0")
 	playback = &Playback{
@@ -466,13 +466,13 @@ func (t *token) getPlayback(liveID string) (playback *Playback, e error) {
 		Height:    v.GetInt("height"),
 	}
 	if len(v.GetArray("backupUrl")) > 1 {
-		log.Println("backupUrl列表长度大于1，请报告issue")
+		log.Println("backupUrl 列表长度大于 1，请报告 issue")
 	}
 
 	return playback, nil
 }
 
-// 获取直播源信息，和getLiveToken()重复了
+// 获取直播源信息，和 getLiveToken() 重复了
 /*
 func (t *token) getPlayURL() (e error) {
 	defer func() {
@@ -523,7 +523,7 @@ func (t *token) getAllGift() (gifts map[int64]GiftDetail, e error) {
 	return updateGiftList(v), nil
 }
 
-// 获取钱包里AC币和拥有的香蕉的数量
+// 获取钱包里 AC 币和拥有的香蕉的数量
 func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -532,7 +532,7 @@ func (t *token) getWalletBalance() (accoins int, bananas int, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取钱包里AC币和拥有的香蕉的数量需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取钱包里 AC 币和拥有的香蕉的数量需要登陆 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -573,7 +573,7 @@ func (t *token) getKickHistory(liveID string, count, page int) (list []KickHisto
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("获取主播踢人的历史记录需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := t.defaultForm(liveID)
@@ -626,7 +626,7 @@ func (t *token) getManagerList() (managerList []Manager, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取主播的房管列表需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("获取主播的房管列表需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -668,7 +668,7 @@ func (t *token) getManagerList() (managerList []Manager, e error) {
 	return managerList, nil
 }
 
-// 从json里获取登陆帐号的守护徽章信息，uid是登陆帐号的uid
+// 从 json 里获取登陆帐号的守护徽章信息，uid 是登陆帐号的 uid
 func getMedalJSON(v *fastjson.Value, uid int64) *Medal {
 	medal := new(Medal)
 	o := v.GetObject()
@@ -701,7 +701,7 @@ func getMedalJSON(v *fastjson.Value, uid int64) *Medal {
 	return medal
 }
 
-// 从json里获取登陆帐号的守护徽章亲密度信息
+// 从 json 里获取登陆帐号的守护徽章亲密度信息
 func getMedalDegreeJSON(v *fastjson.Value) *MedalDegree {
 	medal := new(MedalDegree)
 	o := v.GetObject()
@@ -742,7 +742,7 @@ func (t *token) getMedalDetail(uid int64) (medal *MedalDetail, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取登陆帐号拥有的指定主播的守护徽章详细信息需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取登陆帐号拥有的指定主播的守护徽章详细信息需要登陆 AcFun 帐号"))
 	}
 
 	client := &httpClient{
@@ -791,7 +791,7 @@ func (t *token) getMedalList() (medalList []Medal, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取登陆帐号拥有的守护徽章列表需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取登陆帐号拥有的守护徽章列表需要登陆 AcFun 帐号"))
 	}
 
 	client := &httpClient{
@@ -842,7 +842,7 @@ func (t *token) getLiveData(days int) (data *LiveData, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取直播统计数据需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("获取直播统计数据需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -976,7 +976,7 @@ func (t *token) getLiveCutInfo(uid int64, liveID string) (info *LiveCutInfo, e e
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取直播剪辑信息需要登陆AcFun帐号"))
+		panic(fmt.Errorf("获取直播剪辑信息需要登陆 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -1088,7 +1088,7 @@ func getUserMedal(uid int64, deviceID string) (medal *Medal, e error) {
 	return medal, nil
 }
 
-// 从json里获取用户信息，除了UserID
+// 从 json 里获取用户信息，除了 UserID
 func getUserProfileJSON(v *fastjson.Value) *UserProfile {
 	profile := new(UserProfile)
 	o := v.GetObject()
@@ -1122,7 +1122,7 @@ func getUserProfileJSON(v *fastjson.Value) *UserProfile {
 	return profile
 }
 
-// 从json里获取用户直播信息
+// 从 json 里获取用户直播信息
 func getUserLiveInfoJSON(v *fastjson.Value) *UserLiveInfo {
 	info := new(UserLiveInfo)
 	o := v.GetObject()
@@ -1424,7 +1424,7 @@ func getScheduleList(cookies Cookies) (scheduleList []LiveSchedule, e error) {
 			case "reserveNumber":
 				scheduleList[i].ReserveNumber = v.GetInt()
 			default:
-				log.Printf("直播预告列表里出现未处理的key和value：%s %s", string(k), string(v.MarshalTo([]byte{})))
+				log.Printf("直播预告列表里出现未处理的 key 和 value：%s %s", string(k), string(v.MarshalTo([]byte{})))
 			}
 		})
 		scheduleList[i].Profile.UserID = l.GetInt64("authorId")
@@ -1457,12 +1457,12 @@ func (pb *Playback) Distinguish() (aliURL, txURL string) {
 	return aliURL, txURL
 }
 
-// GetWatchingList 返回直播间排名前50的在线观众信息列表
+// GetWatchingList 返回直播间排名前 50 的在线观众信息列表
 func (ac *AcFunLive) GetWatchingList(liveID string) ([]WatchingUser, error) {
 	return ac.t.getWatchingList(liveID)
 }
 
-// GetBillboard 返回指定uid的主播最近七日内的礼物贡献榜前50名观众的详细信息
+// GetBillboard 返回指定 uid 的主播最近七日内的礼物贡献榜前 50 名观众的详细信息
 func (ac *AcFunLive) GetBillboard(uid int64) ([]BillboardUser, error) {
 	return ac.t.getBillboard(uid)
 }
@@ -1472,7 +1472,7 @@ func (ac *AcFunLive) GetSummary(liveID string) (*Summary, error) {
 	return ac.t.getSummary(liveID)
 }
 
-// GetLuckList 返回抢到红包的用户列表，需要登陆AcFun帐号，redpackBizUnit为空时默认为ztLiveAcfunRedpackGift
+// GetLuckList 返回抢到红包的用户列表，需要登陆 AcFun 帐号，redpackBizUnit 为空时默认为 ztLiveAcfunRedpackGift
 func (ac *AcFunLive) GetLuckList(liveID, redpackID, redpackBizUnit string) ([]LuckyUser, error) {
 	return ac.t.getLuckList(liveID, redpackID, redpackBizUnit)
 }
@@ -1492,63 +1492,63 @@ func (ac *AcFunLive) GetAllGiftList() (map[int64]GiftDetail, error) {
 	return ac.t.getAllGift()
 }
 
-// GetWalletBalance 返回钱包里AC币和拥有的香蕉的数量，需要登陆AcFun帐号
+// GetWalletBalance 返回钱包里 AC 币和拥有的香蕉的数量，需要登陆 AcFun 帐号
 func (ac *AcFunLive) GetWalletBalance() (accoins int, bananas int, e error) {
 	return ac.t.getWalletBalance()
 }
 
-// GetKickHistory 返回主播正在直播的那一场踢人的历史记录，count为每页的数量，page为第几页（从0开始数起），lastPage说明是否最后一页，需要登陆主播的AcFun帐号
+// GetKickHistory 返回主播正在直播的那一场踢人的历史记录，count 为每页的数量，page 为第几页（从 0 开始数起），lastPage 说明是否最后一页，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) GetKickHistory(liveID string, count, page int) (list []KickHistory, lastPage bool, e error) {
 	return ac.t.getKickHistory(liveID, count, page)
 }
 
-// GetAllKickHistory 返回主播正在直播的那一场踢人的全部历史记录，需要登陆主播的AcFun帐号
+// GetAllKickHistory 返回主播正在直播的那一场踢人的全部历史记录，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) GetAllKickHistory(liveID string) ([]KickHistory, error) {
 	list, _, err := ac.t.getKickHistory(liveID, 1000000, 0)
 	return list, err
 }
 
-// GetManagerList 返回主播的房管列表，需要登陆主播的AcFun帐号
+// GetManagerList 返回主播的房管列表，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) GetManagerList() ([]Manager, error) {
 	return ac.t.getManagerList()
 }
 
-// GetMedalDetail 返回登陆帐号拥有的指定主播的守护徽章详细信息，需要登陆AcFun帐号
+// GetMedalDetail 返回登陆帐号拥有的指定主播的守护徽章详细信息，需要登陆 AcFun 帐号
 func (ac *AcFunLive) GetMedalDetail(uid int64) (*MedalDetail, error) {
 	return ac.t.getMedalDetail(uid)
 }
 
-// GetMedalList 返回登陆用户拥有的守护徽章列表，最多返回亲密度最高的300个，需要登陆AcFun帐号
+// GetMedalList 返回登陆用户拥有的守护徽章列表，最多返回亲密度最高的 300 个，需要登陆 AcFun 帐号
 func (ac *AcFunLive) GetMedalList() ([]Medal, error) {
 	return ac.t.getMedalList()
 }
 
-// GetLiveData 返回前days日到目前为止所有直播的统计数据，需要登陆主播的AcFun帐号
+// GetLiveData 返回前 days 日到目前为止所有直播的统计数据，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) GetLiveData(days int) (*LiveData, error) {
 	return ac.t.getLiveData(days)
 }
 
-// GetLiveCutInfo 获取uid指定主播的直播剪辑信息，只在主播直播时才能请求，需要直播的liveID，需要登陆AcFun帐号
+// GetLiveCutInfo 获取 uid 指定主播的直播剪辑信息，只在主播直播时才能请求，需要直播的 liveID，需要登陆 AcFun 帐号
 func (ac *AcFunLive) GetLiveCutInfo(uid int64, liveID string) (*LiveCutInfo, error) {
 	return ac.t.getLiveCutInfo(uid, liveID)
 }
 
-// GetUserLiveInfo 返回uid指定用户的直播信息，可能会出现超时等各种网络原因的错误
+// GetUserLiveInfo 返回 uid 指定用户的直播信息，可能会出现超时等各种网络原因的错误
 func (ac *AcFunLive) GetUserLiveInfo(uid int64) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, ac.t.Cookies, ac.t.DeviceID)
 }
 
-// GetUserInfo 返回uid指定用户的信息
+// GetUserInfo 返回 uid 指定用户的信息
 func (ac *AcFunLive) GetUserInfo(uid int64) (*UserProfileInfo, error) {
 	return getUserInfo(uid, ac.t.Cookies, ac.t.DeviceID)
 }
 
-// GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），可用于获取指定主播的守护徽章名字
+// GetMedalRankList 返回 uid 指定主播的守护榜（守护徽章亲密度排名前 50 名的用户），可用于获取指定主播的守护徽章名字
 func (ac *AcFunLive) GetMedalRankList(uid int64) (medalRankList *MedalRankList, e error) {
 	return getMedalRankList(uid, ac.t.Cookies, ac.t.DeviceID)
 }
 
-// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），lastPage说明是否最后一页
+// GetLiveList 返回正在直播的直播间列表，count 为每页的直播间数量，page 为第几页（从 0 开始数起），lastPage 说明是否最后一页
 func (ac *AcFunLive) GetLiveList(count, page int) (liveList []UserLiveInfo, lastPage bool, err error) {
 	return getLiveList(count, page, ac.t.Cookies, ac.t.DeviceID)
 }
@@ -1563,32 +1563,32 @@ func (ac *AcFunLive) GetAllLiveList() ([]UserLiveInfo, error) {
 //	return getScheduleList(ac.t.Cookies)
 //}
 
-// GetDeviceID 获取设备ID
+// GetDeviceID 获取设备 ID
 func GetDeviceID() (string, error) {
 	return getDeviceID()
 }
 
-// GetUserMedal 返回uid指定用户正在佩戴的守护徽章信息，没有FriendshipDegree、JoinClubTime和CurrentDegreeLimit
+// GetUserMedal 返回 uid 指定用户正在佩戴的守护徽章信息，没有 FriendshipDegree、JoinClubTime 和 CurrentDegreeLimit
 func GetUserMedal(uid int64, deviceID string) (medal *Medal, e error) {
 	return getUserMedal(uid, deviceID)
 }
 
-// GetUserLiveInfo 返回uid指定用户的直播信息，可能会出现超时等各种网络原因的错误
+// GetUserLiveInfo 返回 uid 指定用户的直播信息，可能会出现超时等各种网络原因的错误
 func GetUserLiveInfo(uid int64, deviceID string) (*UserLiveInfo, error) {
 	return getUserLiveInfo(uid, nil, deviceID)
 }
 
-// GetUserInfo 返回uid指定用户的信息
+// GetUserInfo 返回 uid 指定用户的信息
 func GetUserInfo(uid int64, deviceID string) (*UserProfileInfo, error) {
 	return getUserInfo(uid, nil, deviceID)
 }
 
-// GetMedalRankList 返回uid指定主播的守护榜（守护徽章亲密度排名前50名的用户），可用于获取指定主播的守护徽章名字
+// GetMedalRankList 返回 uid 指定主播的守护榜（守护徽章亲密度排名前 50 名的用户），可用于获取指定主播的守护徽章名字
 func GetMedalRankList(uid int64, deviceID string) (medalRankList *MedalRankList, e error) {
 	return getMedalRankList(uid, nil, deviceID)
 }
 
-// GetLiveList 返回正在直播的直播间列表，count为每页的直播间数量，page为第几页（从0开始数起），lastPage说明是否最后一页
+// GetLiveList 返回正在直播的直播间列表，count 为每页的直播间数量，page 为第几页（从 0 开始数起），lastPage 说明是否最后一页
 func GetLiveList(count, page int, deviceID string) (liveList []UserLiveInfo, lastPage bool, err error) {
 	return getLiveList(count, page, nil, deviceID)
 }

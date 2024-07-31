@@ -16,9 +16,9 @@ import (
 
 // LiveType 就是直播分类
 type LiveType struct {
-	CategoryID      int    `json:"categoryID"`      // 直播主分类ID
+	CategoryID      int    `json:"categoryID"`      // 直播主分类 ID
 	CategoryName    string `json:"categoryName"`    // 直播主分类名字
-	SubCategoryID   int    `json:"subCategoryID"`   // 直播次分类ID
+	SubCategoryID   int    `json:"subCategoryID"`   // 直播次分类 ID
 	SubCategoryName string `json:"subCategoryName"` // 直播次分类名字
 }
 
@@ -29,27 +29,27 @@ type PushConfig struct {
 	StreamPushAddress []string `json:"streamPushAddress"` // 推流地址，目前分为阿里云和腾讯云两种
 	Panoramic         bool     `json:"panoramic"`         // 是否全景直播
 	Interval          int64    `json:"interval"`          // 查询转码信息的时间间隔，单位为毫秒
-	RTMPServer        string   `json:"rtmpServer"`        // RTMP服务器
+	RTMPServer        string   `json:"rtmpServer"`        // RTMP 服务器
 	StreamKey         string   `json:"streamKey"`         // 直播码/串流密钥
 }
 
 // LiveStatus 就是直播状态
 type LiveStatus struct {
-	LiveID        string `json:"liveID"`        // 直播ID
+	LiveID        string `json:"liveID"`        // 直播 ID
 	StreamName    string `json:"streamName"`    // 直播源名字
 	Title         string `json:"title"`         // 直播间标题
 	LiveCover     string `json:"liveCover"`     // 直播间封面
-	LiveStartTime int64  `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的Unix时间
+	LiveStartTime int64  `json:"liveStartTime"` // 直播开始的时间，是以毫秒为单位的 Unix 时间
 	Panoramic     bool   `json:"panoramic"`     // 是否全景直播
 	BizUnit       string `json:"bizUnit"`       // 通常是"acfun"
-	BizCustomData string `json:"bizCustomData"` // 直播分类，格式是json
+	BizCustomData string `json:"bizCustomData"` // 直播分类，格式是 json
 }
 
 // TranscodeInfo 就是转码信息
 type TranscodeInfo struct {
 	StreamURL  `json:"streamURL"`
 	Resolution string `json:"resolution"` // 直播视频分辨率
-	FrameRate  int    `json:"frameRate"`  // 直播视频FPS？
+	FrameRate  int    `json:"frameRate"`  // 直播视频 FPS？
 	Template   string `json:"template"`   // 直播模板？
 }
 
@@ -68,7 +68,7 @@ func (t *token) checkLiveAuth() (canLive bool, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("检测开播权限需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("检测开播权限需要登陆主播的 AcFun 帐号"))
 	}
 
 	client := &httpClient{
@@ -159,7 +159,7 @@ func (t *token) getPushConfig() (config *PushConfig, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取推流设置需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("获取推流设置需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -214,7 +214,7 @@ func (t *token) getLiveStatus() (status *LiveStatus, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取直播状态需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("获取直播状态需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -267,7 +267,7 @@ func (t *token) getTranscodeInfo(streamName string) (info []TranscodeInfo, e err
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("获取转码信息需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("获取转码信息需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -348,7 +348,7 @@ func loadFile(file string) (data []byte, contentType string, e error) {
 	return buf.Bytes(), w.FormDataContentType(), nil
 }
 
-// 推流地址的query
+// 推流地址的 query
 func pushQuery(title string, liveType *LiveType) (query string) {
 	args := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(args)
@@ -373,7 +373,7 @@ func (t *token) startLive(title, coverFile, streamName string, portrait, panoram
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("启动直播需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("启动直播需要登陆主播的 AcFun 帐号"))
 	}
 
 	var data []byte
@@ -419,7 +419,7 @@ func (t *token) stopLive(liveID string) (info *StopPushInfo, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("停止直播需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("停止直播需要登陆主播的 AcFun 帐号"))
 	}
 
 	form := fasthttp.AcquireArgs()
@@ -461,7 +461,7 @@ func (t *token) changeTitleAndCover(title, coverFile, liveID string) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("更改直播间标题和封面需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("更改直播间标题和封面需要登陆主播的 AcFun 帐号"))
 	}
 
 	var data []byte
@@ -505,7 +505,7 @@ func (t *token) getLiveCutStatus() (canCut bool, e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("查询是否允许观众剪辑直播录像需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("查询是否允许观众剪辑直播录像需要登陆主播的 AcFun 帐号"))
 	}
 
 	client := &httpClient{
@@ -544,7 +544,7 @@ func (t *token) setLiveCutStatus(canCut bool) (e error) {
 	}()
 
 	if len(t.Cookies) == 0 {
-		panic(fmt.Errorf("设置是否允许观众剪辑直播录像需要登陆主播的AcFun帐号"))
+		panic(fmt.Errorf("设置是否允许观众剪辑直播录像需要登陆主播的 AcFun 帐号"))
 	}
 
 	status := 1
@@ -579,7 +579,7 @@ func (t *token) setLiveCutStatus(canCut bool) (e error) {
 	return nil
 }
 
-// CheckLiveAuth 检测登陆帐号是否有直播权限，需要登陆主播的AcFun帐号
+// CheckLiveAuth 检测登陆帐号是否有直播权限，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) CheckLiveAuth() (bool, error) {
 	return ac.t.checkLiveAuth()
 }
@@ -589,44 +589,44 @@ func (ac *AcFunLive) GetLiveTypeList() ([]LiveType, error) {
 	return ac.t.getLiveTypeList()
 }
 
-// GetPushConfig 返回推流设置，需要登陆主播的AcFun帐号
+// GetPushConfig 返回推流设置，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) GetPushConfig() (*PushConfig, error) {
 	return ac.t.getPushConfig()
 }
 
-// GetLiveStatus 返回直播状态，需要登陆主播的AcFun帐号并启动直播后调用
+// GetLiveStatus 返回直播状态，需要登陆主播的 AcFun 帐号并启动直播后调用
 func (ac *AcFunLive) GetLiveStatus() (*LiveStatus, error) {
 	return ac.t.getLiveStatus()
 }
 
-// GetTranscodeInfo 返回转码信息，推流后调用，返回的info长度不为0说明推流成功，需要登陆主播的AcFun帐号
+// GetTranscodeInfo 返回转码信息，推流后调用，返回的 info 长度不为 0 说明推流成功，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) GetTranscodeInfo(streamName string) ([]TranscodeInfo, error) {
 	return ac.t.getTranscodeInfo(streamName)
 }
 
-// StartLive 启动直播，title为直播间标题，coverFile为直播间封面图片（可以是gif）的本地路径或网络链接，portrait为是否手机直播，panoramic为是否全景直播。
-// 推流成功服务器开始转码（用GetTranscodeInfo()判断）后调用，title和coverFile不能为空，需要登陆主播的AcFun帐号。
+// StartLive 启动直播，title 为直播间标题，coverFile 为直播间封面图片（可以是 gif）的本地路径或网络链接，portrait 为是否手机直播，panoramic 为是否全景直播。
+// 推流成功服务器开始转码（用 GetTranscodeInfo() 判断）后调用，title 和 coverFile 不能为空，需要登陆主播的 AcFun 帐号。
 func (ac *AcFunLive) StartLive(title, coverFile, streamName string, portrait, panoramic bool, liveType *LiveType) (liveID string, e error) {
 	return ac.t.startLive(title, coverFile, streamName, portrait, panoramic, liveType)
 }
 
-// StopLive 停止直播，需要登陆主播的AcFun帐号
+// StopLive 停止直播，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) StopLive(liveID string) (*StopPushInfo, error) {
 	return ac.t.stopLive(liveID)
 }
 
-// ChangeTitleAndCover 更改直播间标题和封面，coverFile为直播间封面图片（可以是gif）的本地路径或网络链接。
-// title为空时会没有标题，coverFile为空时只更改标题，需要登陆主播的AcFun帐号。
+// ChangeTitleAndCover 更改直播间标题和封面，coverFile 为直播间封面图片（可以是 gif）的本地路径或网络链接。
+// title 为空时会没有标题，coverFile 为空时只更改标题，需要登陆主播的 AcFun 帐号。
 func (ac *AcFunLive) ChangeTitleAndCover(title, coverFile, liveID string) error {
 	return ac.t.changeTitleAndCover(title, coverFile, liveID)
 }
 
-// GetLiveCutStatus 查询是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号
+// GetLiveCutStatus 查询是否允许观众剪辑直播录像，需要登陆主播的 AcFun 帐号
 func (ac *AcFunLive) GetLiveCutStatus() (bool, error) {
 	return ac.t.getLiveCutStatus()
 }
 
-// SetLiveCutStatus 设置是否允许观众剪辑直播录像，需要登陆主播的AcFun帐号，主播直播时无法设置
+// SetLiveCutStatus 设置是否允许观众剪辑直播录像，需要登陆主播的 AcFun 帐号，主播直播时无法设置
 func (ac *AcFunLive) SetLiveCutStatus(canCut bool) error {
 	return ac.t.setLiveCutStatus(canCut)
 }

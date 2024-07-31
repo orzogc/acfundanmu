@@ -22,7 +22,7 @@ var msgPool = sync.Pool{
 	},
 }
 
-// 从msgPool获取byte slice
+// 从 msgPool 获取 byte slice
 func getBytes() *[]byte {
 	msg := msgPool.Get().(*[]byte)
 	if msg == nil {
@@ -33,7 +33,7 @@ func getBytes() *[]byte {
 	return msg
 }
 
-// 放入byte slice到msgPool
+// 放入 byte slice 到 msgPool
 func putBytes(msg *[]byte) {
 	if msg != nil {
 		msgPool.Put(msg)
@@ -44,9 +44,9 @@ func putBytes(msg *[]byte) {
 type DanmuClientType uint8
 
 const (
-	// 弹幕客户端使用WebSocket连接
+	// 弹幕客户端使用 WebSocket 连接
 	WebSocketDanmuClientType DanmuClientType = iota
-	// 弹幕客户端使用TCP连接
+	// 弹幕客户端使用 TCP 连接
 	TCPDanmuClientType
 )
 
@@ -58,7 +58,7 @@ type DanmuClient interface {
 	// Type 返回弹幕客户端类型
 	Type() DanmuClientType
 
-	// Dial 连接弹幕服务器，address是地址，在调用Close()后可重复调用
+	// Dial 连接弹幕服务器，address 是地址，在调用 Close() 后可重复调用
 	Dial(address string) error
 
 	// 读接口
@@ -71,22 +71,22 @@ type DanmuClient interface {
 	Close(message string) error
 }
 
-// WebSocketDanmuClient 使用WebSocket连接的弹幕客户端
+// WebSocketDanmuClient 使用 WebSocket 连接的弹幕客户端
 type WebSocketDanmuClient struct {
 	conn *fastws.Conn
 }
 
-// NewDanmuClient 返回新的WebSocketDanmuClient
+// NewDanmuClient 返回新的 WebSocketDanmuClient
 func (client *WebSocketDanmuClient) NewDanmuClient() DanmuClient {
 	return &WebSocketDanmuClient{}
 }
 
-// Type 返回弹幕客户端类型WebSocketDanmuClientType
+// Type 返回弹幕客户端类型 WebSocketDanmuClientType
 func (client *WebSocketDanmuClient) Type() DanmuClientType {
 	return WebSocketDanmuClientType
 }
 
-// Dial 连接弹幕服务器，address是地址
+// Dial 连接弹幕服务器，address 是地址
 func (client *WebSocketDanmuClient) Dial(address string) error {
 	conn, err := fastws.Dial(address)
 	if err != nil {
@@ -129,22 +129,22 @@ func (client *WebSocketDanmuClient) Close(message string) error {
 	}
 }
 
-// TCPDanmuClient 使用TCP连接的弹幕客户端
+// TCPDanmuClient 使用 TCP 连接的弹幕客户端
 type TCPDanmuClient struct {
 	conn net.Conn
 }
 
-// NewDanmuClient 返回新的TCPDanmuClient
+// NewDanmuClient 返回新的 TCPDanmuClient
 func (client *TCPDanmuClient) NewDanmuClient() DanmuClient {
 	return &TCPDanmuClient{}
 }
 
-// Type 返回弹幕客户端类型TCPDanmuClientType
+// Type 返回弹幕客户端类型 TCPDanmuClientType
 func (client *TCPDanmuClient) Type() DanmuClientType {
 	return TCPDanmuClientType
 }
 
-// Dial 连接弹幕服务器，address是地址
+// Dial 连接弹幕服务器，address 是地址
 func (client *TCPDanmuClient) Dial(address string) error {
 	conn, err := net.DialTimeout("tcp", address, timeout)
 	if err != nil {
@@ -200,12 +200,12 @@ func (m *message) data() []byte {
 	return (*m.bytes)[:m.len]
 }
 
-// 定时发送heartbeat和keepalive数据
+// 定时发送 heartbeat 和 keepalive 数据
 func (ac *AcFunLive) clientHeartbeat(ctx context.Context, interval int64) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("Recovering from panic in clientHeartbeat(), the error is: %v", err)
-			// 重新启动clientHeartbeat()
+			// 重新启动 clientHeartbeat()
 			time.Sleep(2 * time.Second)
 			ac.clientHeartbeat(ctx, interval)
 		}
@@ -228,7 +228,7 @@ func (ac *AcFunLive) clientHeartbeat(ctx context.Context, interval int64) {
 	}
 }
 
-// 启动弹幕client
+// 启动弹幕 client
 func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -246,11 +246,11 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 		defer ac.q.Dispose()
 	}
 
-	// 用于关闭danmuClient
+	// 用于关闭 danmuClient
 	clientCtx, clientCancel := context.WithCancel(ctx)
 	defer clientCancel()
 
-	// WebSocket连接可以直接发送注册消息，TCP连接需要先握手
+	// WebSocket 连接可以直接发送注册消息，TCP 连接需要先握手
 	if ac.danmuClient.Type() == WebSocketDanmuClientType {
 		err := ac.danmuClient.Dial(wsHost)
 		checkErr(err)
@@ -288,7 +288,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 				}
 				if !(errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed)) {
 					log.Printf("接收弹幕数据出现错误：%v", err)
-					log.Printf("停止获取uid为 %d 的主播的直播弹幕", ac.t.liverUID)
+					log.Printf("停止获取 uid 为 %d 的主播的直播弹幕", ac.t.liverUID)
 					hasError = true
 					errCh <- err
 					close(errCh)
@@ -314,7 +314,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 			}
 
 			if ac.danmuClient.Type() == WebSocketDanmuClientType {
-				// WebSocket连接的数据自动分帧
+				// WebSocket 连接的数据自动分帧
 				stream, err := ac.t.decode(msg.data())
 				if err != nil {
 					log.Printf("解码接收到的弹幕数据出现错误：%v", err)
@@ -324,7 +324,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 				putBytes(msg.bytes)
 				payloadCh <- stream
 			} else if ac.danmuClient.Type() == TCPDanmuClientType {
-				// TCP连接的数据需要自行分帧
+				// TCP 连接的数据需要自行分帧
 				if remain != nil {
 					remain = append(remain, msg.data()...)
 				} else {
@@ -379,7 +379,7 @@ func (ac *AcFunLive) clientStart(ctx context.Context, event bool, errCh chan<- e
 	}
 }
 
-// 停止弹幕client
+// 停止弹幕 client
 func (ac *AcFunLive) clientStop(message string) {
 	_, err := ac.danmuClient.Write(ac.t.userExit())
 	checkErr(err)

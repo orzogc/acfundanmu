@@ -24,7 +24,7 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, stream *acproto.Downstre
 	}()
 
 	if stream == nil {
-		panic(fmt.Errorf("stream为nil"))
+		panic(fmt.Errorf("stream 为 nil"))
 	}
 
 	switch stream.Command {
@@ -86,7 +86,7 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, stream *acproto.Downstre
 		unregister := &acproto.UnregisterResponse{}
 		err := proto.Unmarshal(stream.PayloadData, unregister)
 		checkErr(err)
-		ac.t.err.Store(fmt.Errorf("接收到Unregister信号"))
+		ac.t.err.Store(fmt.Errorf("接收到 Unregister 信号"))
 		_ = ac.danmuClient.Close("Unregister")
 	case "Push.ZtLiveInteractive.Message":
 		_, err := ac.danmuClient.Write(ac.t.pushMessage())
@@ -130,7 +130,7 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, stream *acproto.Downstre
 				string(payload),
 				base64.StdEncoding.EncodeToString(payload))
 		}
-	// AcFun帐号收到的私信信息
+	// AcFun 帐号收到的私信信息
 	case "Push.Message":
 	case "Push.DataUpdate":
 	case "Push.SyncSession":
@@ -155,7 +155,7 @@ func (ac *AcFunLive) handleCommand(ctx context.Context, stream *acproto.Downstre
 	return nil
 }
 
-// 处理action signal数据
+// 处理 action signal 数据
 func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 	actionSignal := &acproto.ZtLiveScActionSignal{}
 	err := proto.Unmarshal(*payload, actionSignal)
@@ -312,7 +312,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 						}
 						d.Segments[i] = image
 					default:
-						log.Println("出现未处理的RichText Segment")
+						log.Println("出现未处理的 RichText Segment")
 					}
 				}
 				danmu = append(danmu, d)
@@ -354,7 +354,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 		}
 	}
 
-	// 按SendTime大小排序
+	// 按 SendTime 大小排序
 	sort.Slice(danmu, func(i, j int) bool {
 		return danmu[i].GetSendTime() < danmu[j].GetSendTime()
 	})
@@ -381,7 +381,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 			case *ShareLive:
 				ac.callEvent(shareLiveDanmu, d)
 			default:
-				log.Println("出现未处理的DanmuMessage")
+				log.Println("出现未处理的 DanmuMessage")
 			}
 		} else {
 			err = ac.q.Put(d)
@@ -390,7 +390,7 @@ func (ac *AcFunLive) handleActionSignal(payload *[]byte, event bool) {
 	}
 }
 
-// 处理state signal数据
+// 处理 state signal 数据
 func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 	stateSignal := &acproto.ZtLiveScStateSignal{}
 	err := proto.Unmarshal(*payload, stateSignal)
@@ -613,7 +613,7 @@ func (ac *AcFunLive) handleStateSignal(payload *[]byte, event bool) {
 	}
 }
 
-// 处理notify signal数据
+// 处理 notify signal 数据
 func (ac *AcFunLive) handleNotifySignal(payload *[]byte, event bool) {
 	notifySignal := &acproto.ZtLiveScNotifySignal{}
 	err := proto.Unmarshal(*payload, notifySignal)

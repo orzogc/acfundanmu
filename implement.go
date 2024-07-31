@@ -1,6 +1,6 @@
 package acfundanmu
 
-// 验证是否实现了DanmuMessage接口
+// 验证是否实现了 DanmuMessage 接口
 var _ DanmuMessage = (*Comment)(nil)
 var _ DanmuMessage = (*Like)(nil)
 var _ DanmuMessage = (*EnterRoom)(nil)
@@ -82,7 +82,7 @@ func (d *RichText) GetSendTime() int64 {
 	return d.SendTime
 }
 
-// GetUserInfo 获取弹幕的用户信息，返回第一个RichTextUserInfo的UserInfo，否则返回nil
+// GetUserInfo 获取弹幕的用户信息，返回第一个 RichTextUserInfo 的 UserInfo，否则返回 nil
 func (d *RichText) GetUserInfo() *UserInfo {
 	for _, segment := range d.Segments {
 		if u, ok := segment.(*RichTextUserInfo); ok {
@@ -115,22 +115,22 @@ func (d *ShareLive) GetUserInfo() *UserInfo {
 	return &info
 }
 
-// 验证是否实现了RichTextSegment接口
+// 验证是否实现了 RichTextSegment 接口
 var _ RichTextSegment = (*RichTextUserInfo)(nil)
 var _ RichTextSegment = (*RichTextPlain)(nil)
 var _ RichTextSegment = (*RichTextImage)(nil)
 
-// RichTextType 返回RichText的类型，也就是 "RichTextUserInfo"
+// RichTextType 返回 RichText 的类型，也就是 "RichTextUserInfo"
 func (*RichTextUserInfo) RichTextType() string {
 	return "RichTextUserInfo"
 }
 
-// RichTextType 返回RichText的类型，也就是 "RichTextPlain"
+// RichTextType 返回 RichText 的类型，也就是 "RichTextPlain"
 func (*RichTextPlain) RichTextType() string {
 	return "RichTextPlain"
 }
 
-// RichTextType 返回RichText的类型，也就是 "RichTextImage"
+// RichTextType 返回 RichText 的类型，也就是 "RichTextImage"
 func (*RichTextImage) RichTextType() string {
 	return "RichTextImage"
 }

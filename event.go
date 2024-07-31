@@ -38,23 +38,23 @@ const (
 	managerStateEvent
 )
 
-// 事件handler
+// 事件 handler
 type eventHandler func(*AcFunLive, any)
 
-// 事件handler的map
+// 事件 handler 的 map
 type handlerMap struct {
 	sync.RWMutex
 	listMap map[eventType][]eventHandler
 }
 
-// 将f加入到t对应的事件handler列表里
+// 将 f 加入到 t 对应的事件 handler 列表里
 func (h *handlerMap) add(t eventType, f eventHandler) {
 	h.Lock()
 	defer h.Unlock()
 	h.listMap[t] = append(h.listMap[t], f)
 }
 
-// 调用事件handler列表里的handler
+// 调用事件 handler 列表里的 handler
 func (ac *AcFunLive) callEvent(t eventType, i any) {
 	ac.handlerMap.RLock()
 	defer ac.handlerMap.RUnlock()
@@ -84,91 +84,91 @@ func (ac *AcFunLive) OnDanmuStop(handler func(*AcFunLive, error)) {
 	})
 }
 
-// OnComment 处理评论弹幕，handler需要支持并行处理，可以多次调用
+// OnComment 处理评论弹幕，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnComment(handler func(*AcFunLive, *Comment)) {
 	ac.handlerMap.add(commentDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*Comment))
 	})
 }
 
-// OnLike 处理点赞弹幕，handler需要支持并行处理，可以多次调用
+// OnLike 处理点赞弹幕，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnLike(handler func(*AcFunLive, *Like)) {
 	ac.handlerMap.add(likeDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*Like))
 	})
 }
 
-// OnEnterRoom 处理用户进场，handler需要支持并行处理，可以多次调用
+// OnEnterRoom 处理用户进场，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnEnterRoom(handler func(*AcFunLive, *EnterRoom)) {
 	ac.handlerMap.add(enterRoomDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*EnterRoom))
 	})
 }
 
-// OnFollowAuthor 处理用户关注主播，handler需要支持并行处理，可以多次调用
+// OnFollowAuthor 处理用户关注主播，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnFollowAuthor(handler func(*AcFunLive, *FollowAuthor)) {
 	ac.handlerMap.add(followAuthorDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*FollowAuthor))
 	})
 }
 
-// OnThrowBanana 处理用户投蕉，现在基本用 OnGift 代替，handler需要支持并行处理，可以多次调用
+// OnThrowBanana 处理用户投蕉，现在基本用 OnGift 代替，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnThrowBanana(handler func(*AcFunLive, *ThrowBanana)) {
 	ac.handlerMap.add(throwBananaDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*ThrowBanana))
 	})
 }
 
-// OnGift 处理用户赠送礼物，handler需要支持并行处理，可以多次调用
+// OnGift 处理用户赠送礼物，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnGift(handler func(*AcFunLive, *Gift)) {
 	ac.handlerMap.add(giftDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*Gift))
 	})
 }
 
-// OnRichText 处理富文本，handler需要支持并行处理，可以多次调用
+// OnRichText 处理富文本，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnRichText(handler func(*AcFunLive, *RichText)) {
 	ac.handlerMap.add(richTextDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*RichText))
 	})
 }
 
-// OnJoinClub 处理用户加入主播守护团，handler需要支持并行处理，可以多次调用
+// OnJoinClub 处理用户加入主播守护团，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnJoinClub(handler func(*AcFunLive, *JoinClub)) {
 	ac.handlerMap.add(joinClubDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*JoinClub))
 	})
 }
 
-// OnShareLive 处理分享直播间到其他平台的弹幕，handler需要支持并行处理，可以多次调用
+// OnShareLive 处理分享直播间到其他平台的弹幕，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnShareLive(handler func(*AcFunLive, *ShareLive)) {
 	ac.handlerMap.add(shareLiveDanmu, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*ShareLive))
 	})
 }
 
-// OnBananaCount 处理直播间获得的香蕉数，handler需要支持并行处理，可以多次调用
+// OnBananaCount 处理直播间获得的香蕉数，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnBananaCount(handler func(ac *AcFunLive, allBananaCount string)) {
 	ac.handlerMap.add(bananaCountEvent, func(ac *AcFunLive, i any) {
 		handler(ac, i.(string))
 	})
 }
 
-// OnDisplayInfo 处理直播间的一些数据，handler需要支持并行处理，可以多次调用
+// OnDisplayInfo 处理直播间的一些数据，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnDisplayInfo(handler func(*AcFunLive, *DisplayInfo)) {
 	ac.handlerMap.add(displayEvent, func(ac *AcFunLive, i any) {
 		handler(ac, i.(*DisplayInfo))
 	})
 }
 
-// OnTopUsers 处理直播间礼物榜在线前三的信息，handler需要支持并行处理，可以多次调用
+// OnTopUsers 处理直播间礼物榜在线前三的信息，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnTopUsers(handler func(*AcFunLive, []TopUser)) {
 	ac.handlerMap.add(topUsersEvent, func(ac *AcFunLive, i any) {
 		handler(ac, i.([]TopUser))
 	})
 }
 
-// OnRecentComment 处理APP进直播间时显示的最近发的弹幕，可以多次调用
+// OnRecentComment 处理 APP 进直播间时显示的最近发的弹幕，可以多次调用
 func (ac *AcFunLive) OnRecentComment(handler func(*AcFunLive, []Comment)) {
 	ac.handlerMap.add(recentCommentEvent, func(ac *AcFunLive, i any) {
 		handler(ac, i.([]Comment))
@@ -238,7 +238,7 @@ func (ac *AcFunLive) OnAuthorChatChangeSoundConfig(handler func(*AcFunLive, *Aut
 	})
 }
 
-// OnRedpackList 处理直播间的红包列表，handler需要支持并行处理，可以多次调用
+// OnRedpackList 处理直播间的红包列表，handler 需要支持并行处理，可以多次调用
 func (ac *AcFunLive) OnRedpackList(handler func(*AcFunLive, []Redpack)) {
 	ac.handlerMap.add(redpackListEvent, func(ac *AcFunLive, i any) {
 		handler(ac, i.([]Redpack))

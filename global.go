@@ -99,14 +99,14 @@ type token struct {
 	tickets         []string
 	appID           int32
 	instanceID      int64
-	sessionKey      []byte        // 除第一次外发送ws信息时所用密钥
+	sessionKey      []byte        // 除第一次外发送 ws 信息时所用密钥
 	seqID           *atomic.Int64 // 要用原子锁操作
 	headerSeqID     *atomic.Int64 // 要用原子锁操作
 	heartbeatSeqID  int64
 	ticketIndex     *atomic.Uint32 // 要用原子锁操作
 	giftsMutex      sync.RWMutex
 	gifts           map[int64]GiftDetail
-	liverUID        int64 // 主播uid
+	liverUID        int64 // 主播 uid
 	livePage        string
 	err             *atomic.Error
 }
