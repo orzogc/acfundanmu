@@ -41,8 +41,8 @@ const (
 
 const (
 	startScanQRURL    = "https://scan.acfun.cn/rest/pc-direct/qr/start?type=WEB_LOGIN&_=%d"
-	scanQRResultURL   = "https://scan.acfun.cn/rest/pc-direct/qr/scanResult?qrLoginToken=%s&qrLoginSignature=%s&_=%d"
-	acceptQRResultURL = "https://scan.acfun.cn/rest/pc-direct/qr/acceptResult?qrLoginToken=%s&qrLoginSignature=%s&_=%d"
+	scanQRResultURL   = "https://scan.acfun.cn/rest/pc-direct/qr/scanResult"
+	acceptQRResultURL = "https://scan.acfun.cn/rest/pc-direct/qr/acceptResult"
 )
 
 const (
