@@ -60,7 +60,7 @@ func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cooki
 	}()
 
 	t := time.Now().UnixMilli()
-	client := &httpClient{url: fmt.Sprintf(startScanQRURL, t), method: "GET"}
+	client := &httpClient{url: fmt.Sprintf(startScanQRURL, t), method: "GET", noReqID: true}
 	body, err := client.request()
 	checkErr(err)
 
@@ -95,9 +95,10 @@ func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cooki
 	fasthttpClient := &fasthttp.Client{MaxIdleConnDuration: expired, ReadTimeout: expired, WriteTimeout: expired}
 	t = time.Now().UnixMilli()
 	client = &httpClient{
-		client: fasthttpClient,
-		url:    fmt.Sprintf(scanQRResultURL, qrLoginToken, qrLoginSignature, t),
-		method: "GET"}
+		client:  fasthttpClient,
+		url:     fmt.Sprintf(scanQRResultURL, qrLoginToken, qrLoginSignature, t),
+		method:  "GET",
+		noReqID: true}
 	body, err = client.request()
 	checkErr(err)
 
@@ -122,9 +123,10 @@ func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cooki
 
 	t = time.Now().UnixMilli()
 	client = &httpClient{
-		client: fasthttpClient,
-		url:    fmt.Sprintf(acceptQRResultURL, qrLoginToken, qrLoginSignature, t),
-		method: "GET"}
+		client:  fasthttpClient,
+		url:     fmt.Sprintf(acceptQRResultURL, qrLoginToken, qrLoginSignature, t),
+		method:  "GET",
+		noReqID: true}
 	body, cookies, err = client.getCookies()
 	checkErr(err)
 
