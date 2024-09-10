@@ -3,7 +3,6 @@ package acfundanmu
 import (
 	"fmt"
 	"log"
-	"net/url"
 	"strconv"
 	"time"
 
@@ -61,7 +60,7 @@ func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cooki
 	}()
 
 	t := time.Now().UnixMilli()
-	client := &httpClient{url: fmt.Sprintf(startScanQRURL, t), method: "GET", noReqID: true}
+	client := &httpClient{url: fmt.Sprintf(startScanQRURL, t), method: "GET"}
 	body, err := client.request()
 	checkErr(err)
 
@@ -94,14 +93,11 @@ func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cooki
 	// 留 10 秒多余的时间
 	expired := time.Duration((expireTime/1000 + 10) * int64(time.Second))
 	fasthttpClient := &fasthttp.Client{MaxIdleConnDuration: expired, ReadTimeout: expired, WriteTimeout: expired}
-	url, err := url.Parse(scanQRResultURL)
-	checkErr(err)
-	query := url.Query()
-	query.Set("qrLoginToken", qrLoginToken)
-	query.Set("qrLoginSignature", qrLoginSignature)
-	query.Set("_", strconv.FormatInt(time.Now().UnixMilli(), 10))
-	url.RawQuery = query.Encode()
-	client = &httpClient{client: fasthttpClient, url: url.String(), method: "GET", noReqID: true}
+	t = time.Now().UnixMilli()
+	client = &httpClient{
+		client: fasthttpClient,
+		url:    fmt.Sprintf(scanQRResultURL, qrLoginToken, qrLoginSignature, t),
+		method: "GET"}
 	body, err = client.request()
 	checkErr(err)
 
@@ -124,14 +120,11 @@ func loginWithQRCode(qrCodeCallback func(QRCode), scannedCallback func()) (cooki
 	}
 	scannedCallback()
 
-	url, err = url.Parse(acceptQRResultURL)
-	checkErr(err)
-	query = url.Query()
-	query.Set("qrLoginToken", qrLoginToken)
-	query.Set("qrLoginSignature", qrLoginSignature)
-	query.Set("_", strconv.FormatInt(time.Now().UnixMilli(), 10))
-	url.RawQuery = query.Encode()
-	client = &httpClient{client: fasthttpClient, url: url.String(), method: "GET", noReqID: true}
+	t = time.Now().UnixMilli()
+	client = &httpClient{
+		client: fasthttpClient,
+		url:    fmt.Sprintf(acceptQRResultURL, qrLoginToken, qrLoginSignature, t),
+		method: "GET"}
 	body, cookies, err = client.getCookies()
 	checkErr(err)
 
