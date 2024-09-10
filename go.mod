@@ -1,6 +1,6 @@
 module github.com/orzogc/acfundanmu
 
-go 1.22
+go 1.23
 
 require (
 	facette.io/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
@@ -18,5 +18,5 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 )
